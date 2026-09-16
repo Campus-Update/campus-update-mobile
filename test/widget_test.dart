@@ -30,7 +30,7 @@ void main() {
     expect(find.text('Sign in'), findsOneWidget);
   });
 
-  testWidgets('a signed-in session lands on the news tab with the tab bar', (
+  testWidgets('a signed-in session lands on home with the tab bar', (
     tester,
   ) async {
     final container = ProviderContainer();
@@ -46,6 +46,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.text('News'), findsWidgets);
+    // Home is the landing tab; its title and its tab label both render.
+    expect(find.text('Home'), findsWidgets);
+    expect(find.text('News'), findsOneWidget); // the tab label only
   });
 }

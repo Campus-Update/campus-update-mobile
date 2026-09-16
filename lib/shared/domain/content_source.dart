@@ -1,17 +1,29 @@
+/// `News | Announcement | Event | Advertisement`, matching the API's
+/// `ContentType`.
+enum ContentType {
+  news,
+  announcement,
+  event,
+  advertisement;
+
+  static ContentType fromApi(String value) => switch (value) {
+    'Announcement' => ContentType.announcement,
+    'Event' => ContentType.event,
+    'Advertisement' => ContentType.advertisement,
+    _ => ContentType.news,
+  };
+}
+
 /// The trust label shown on every content item.
 ///
-/// The PRD requires four labels; the API's `SourceType` enum carries three
-/// (`Official`, `External`, `Sponsored`). [campusUpdate] is the platform's own
-/// content and is distinguished client-side until the backend models it.
+/// The PRD wording differs by content type: official news is labelled
+/// "Official", while an official event is "Official Event" and a paid external
+/// one is "Promoted Event". [labelFor] resolves that.
 enum ContentSource {
-  officialSchool('Official School'),
-  campusUpdate('Campus Update'),
-  sponsored('Sponsored'),
-  externalEvent('External Event');
-
-  const ContentSource(this.label);
-
-  final String label;
+  officialSchool,
+  campusUpdate,
+  sponsored,
+  externalEvent;
 
   /// Maps the API's `SourceType` string.
   ///
@@ -22,6 +34,14 @@ enum ContentSource {
     'Sponsored' => ContentSource.sponsored,
     'External' => ContentSource.externalEvent,
     _ => ContentSource.campusUpdate,
+  };
+
+  String labelFor(ContentType type) => switch (this) {
+    ContentSource.officialSchool =>
+      type == ContentType.event ? 'Official Event' : 'Official',
+    ContentSource.campusUpdate => 'Campus Update',
+    ContentSource.sponsored => 'Sponsored',
+    ContentSource.externalEvent => 'Promoted Event',
   };
 }
 

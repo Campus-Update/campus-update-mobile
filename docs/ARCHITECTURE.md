@@ -95,6 +95,9 @@ lib/
 │       └── validators.dart
 │
 └── features/
+    ├── home/
+    │   └── presentation/screens/      home — aggregates the other surfaces
+    │
     ├── auth/
     │   ├── domain/                    Credentials, AuthUser
     │   ├── data/
@@ -163,23 +166,25 @@ UNAUTHENTICATED
   /onboarding                 first-run only
   /login
   /register                   multi-step — see cascade below
-  /verify                     shape depends on the verification rule (open question)
   /forgot-password
 
 AUTHENTICATED — bottom tab shell, tabs persist across navigation
-  /news            [tab 1]    default landing
-  /announcements   [tab 2]
-  /events          [tab 3]
-  /calendar        [tab 4]
+  /home            [tab 1]    default landing, aggregates the other surfaces
+  /news            [tab 2]
+  /announcements   [tab 3]
+  /events          [tab 4]
   /profile         [tab 5]
 
-  pushed on top of whichever tab is active:
+  inside the active tab, so the tab bar stays:
     /news/:id
     /announcements/:id
     /events/:id
-    /notifications              the notification centre
     /profile/edit
     /profile/preferences        personalised vs all-campus, notification settings
+
+  above the shell, popping back to the active tab:
+    /calendar                   the school calendar, opened from Home
+    /notifications              the notification centre
     /search                     cross-content search
 ```
 
@@ -195,15 +200,15 @@ on back.
 | 2 | Onboarding | `/onboarding` | first run only |
 | 3 | Login | `/login` | |
 | 4 | Register | `/register` | multi-step, includes the audience cascade |
-| 5 | Verification | `/verify` | **blocked** — rule undefined |
 | 6 | Forgot password | `/forgot-password` | |
+| 5 | Home | `/home` | default landing; surfaces announcements, news, events, calendar |
 | 7 | News list | `/news` | categories, search, pagination |
 | 8 | News detail | `/news/:id` | images, source badge |
 | 9 | Announcements list | `/announcements` | urgency treatment per item |
 | 10 | Announcement detail | `/announcements/:id` | |
 | 11 | Events list | `/events` | official and external mixed |
 | 12 | Event detail | `/events/:id` | date, time, location, registration info |
-| 13 | Calendar | `/calendar` | month + agenda views |
+| 13 | Calendar | `/calendar` | month + agenda views; opened from Home, not a tab |
 | 14 | Notification centre | `/notifications` | read/unread state |
 | 15 | Profile | `/profile` | institution, faculty, department, level |
 | 16 | Edit profile | `/profile/edit` | |
@@ -212,6 +217,15 @@ on back.
 
 Eighteen screens. Every list screen needs loading, empty and error states, which
 is why those live in `shared/widgets/` rather than being written per feature.
+
+**No verification screen.** The approved PRD (16 Sep 2026) has no verification
+step: a user creates an account, selects their institution, provides profile
+details and enters the app. Institution isolation is enforced by targeting, not
+by proving identity.
+
+**Six surfaces, five tabs.** Adding Home would make six tabs, which does not fit
+a 720px phone. Calendar is the one that moves — it is consulted occasionally
+rather than daily — and opens from Home.
 
 ### The registration cascade
 
@@ -227,8 +241,8 @@ values must come from the backend rather than being hardcoded in the app.
 
 ### Screens buildable before designs or API
 
-Everything except `/verify` can be built against mock repositories. The layouts
-change when designs land; the routing, state handling and data flow do not.
+Every screen can be built against mock repositories. The layouts change when
+designs land; the routing, state handling and data flow do not.
 
 ## 4. Layer rules
 
@@ -276,8 +290,16 @@ Section 8 of the PRD requires that users can immediately identify where
 information came from. Every content item renders a `SourceBadge`:
 
 ```
-Official School  |  CAMPUS UPDATE  |  Sponsored  |  External Event
+Official  |  Official Event  |  Campus Update  |  Sponsored  |  Promoted Event
 ```
+
+Wording follows the PRD and depends on content type: official news reads
+"Official", an official event reads "Official Event", and a paid external event
+reads "Promoted Event". `ContentSource.labelFor(ContentType)` resolves it.
+
+Announcement priority is a separate badge, `UrgencyBadge`. The PRD requires
+priority to be distinguishable **not by colour alone**, so each level carries
+its own icon and word; colour only reinforces.
 
 `source_badge.dart` and `content_card.dart` are the highest-leverage widgets in
 the codebase — every screen renders them — and should be built first.
@@ -357,18 +379,34 @@ a project of this size. Raise it if release builds with R8 ever hit an
 
 ## 12. Open questions
 
-These are unresolved and block parts of the implementation:
+Updated 16 Sep 2026 against the approved PRD and the backend's integration guide.
 
-1. **User verification.** The PRD specifies how *content* sources are labelled
-   but not how a sign-up is proven to belong to a real institution. School email,
-   matriculation number, admin invite and manual approval are very different
-   amounts of work. This is the largest unknown.
-2. **API contract.** No stack, endpoints or data contract defined. Specifically:
-   will there be an OpenAPI/Swagger endpoint, and is there a BFF aggregating
-   services, or does the app call microservices directly?
-3. **Push targeting.** FCM topics versus server-side fan-out to device tokens.
-4. **Event registration.** PRD says "registration information", which reads as
-   display-only. In-app registration would be a separate feature.
-5. **Offline behaviour.** Unspecified, but pilot users are students on poor
-   connectivity.
-6. **Flutter version.** Must match the team's before upgrading; consider FVM.
+**Answered**
+
+- **User verification** — not in the MVP. The approved PRD has no verification
+  step, so there is no `/verify` screen and registration goes straight to the
+  app.
+- **API contract** — ASP.NET Core 10, a single REST API rather than a BFF.
+  `api/openapi-v1.json` holds the contract.
+
+**Still open, and who owns each**
+
+1. **Enums in the spec** *(backend)*. Declared `integer`, serialised as strings.
+   Generating a client before this is fixed produces `int` fields and every
+   response fails to parse. Blocks the generated data layer.
+2. **No deployed server** *(backend)*. Everything is localhost, so nothing can
+   be verified end to end on a device.
+3. **Calendar shape** *(backend)*. The PRD requires session, semester,
+   registration, examination, resumption and holiday dates, each openable with a
+   title, category and description. The API returns one image URL.
+4. **Matriculation number** *(backend / product)*. `POST /auth/register`
+   requires it; the PRD's profile does not list it.
+5. **Search and news categories** *(backend)*. Both required by the PRD, neither
+   present in the API.
+6. **Push** *(backend)*. Not implemented. The PRD makes it a per-announcement
+   choice by the publisher, explicitly not driven by priority, so the API needs
+   that flag and device tokens mapped to the audience hierarchy.
+7. **Palette and type scale** *(design)*. Placeholders are in place; swapping
+   them is one file.
+8. **Offline behaviour** *(product)*. Unspecified, but pilot users are students
+   on poor connectivity.

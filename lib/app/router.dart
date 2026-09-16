@@ -10,10 +10,10 @@ import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/onboarding_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
-import '../features/auth/presentation/screens/verify_screen.dart';
 import '../features/calendar/presentation/screens/calendar_screen.dart';
 import '../features/events/presentation/screens/event_detail_screen.dart';
 import '../features/events/presentation/screens/events_list_screen.dart';
+import '../features/home/presentation/screens/home_screen.dart';
 import '../features/news/presentation/screens/news_detail_screen.dart';
 import '../features/news/presentation/screens/news_list_screen.dart';
 import '../features/notifications/presentation/screens/notifications_screen.dart';
@@ -27,15 +27,15 @@ abstract final class Routes {
   static const onboarding = '/onboarding';
   static const login = '/login';
   static const register = '/register';
-  static const verify = '/verify';
   static const forgotPassword = '/forgot-password';
 
+  static const home = '/home';
   static const news = '/news';
   static const announcements = '/announcements';
   static const events = '/events';
-  static const calendar = '/calendar';
   static const profile = '/profile';
 
+  static const calendar = '/calendar';
   static const notifications = '/notifications';
   static const search = '/search';
   static const editProfile = '/profile/edit';
@@ -47,7 +47,6 @@ abstract final class Routes {
     onboarding,
     login,
     register,
-    verify,
     forgotPassword,
   };
 }
@@ -79,7 +78,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           inUnauthenticatedZone && location != Routes.splash
               ? null
               : Routes.login,
-        AuthStatus.signedIn => inUnauthenticatedZone ? Routes.news : null,
+        AuthStatus.signedIn => inUnauthenticatedZone ? Routes.home : null,
       };
     },
     routes: [
@@ -93,7 +92,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.register,
         builder: (_, __) => const RegisterScreen(),
       ),
-      GoRoute(path: Routes.verify, builder: (_, __) => const VerifyScreen()),
       GoRoute(
         path: Routes.forgotPassword,
         builder: (_, __) => const ForgotPasswordScreen(),
@@ -109,6 +107,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       StatefulShellRoute.indexedStack(
         builder: (_, __, shell) => _TabShell(shell: shell),
         branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.home,
+                builder: (_, __) => const HomeScreen(),
+              ),
+            ],
+          ),
           StatefulShellBranch(
             routes: [
               GoRoute(

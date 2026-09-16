@@ -9,9 +9,16 @@ import '../domain/content_source.dart';
 /// The PRD makes this a hard requirement: every item must visibly say where it
 /// came from. It is never optional on a content surface.
 class SourceBadge extends StatelessWidget {
-  const SourceBadge({super.key, required this.source});
+  const SourceBadge({
+    super.key,
+    required this.source,
+    this.contentType = ContentType.news,
+  });
 
   final ContentSource source;
+
+  /// Only changes the wording: an official event reads "Official Event".
+  final ContentType contentType;
 
   Color get _color => switch (source) {
     ContentSource.officialSchool => AppColors.sourceOfficial,
@@ -32,7 +39,7 @@ class SourceBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
       child: Text(
-        source.label,
+        source.labelFor(contentType),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(color: _color),
       ),
     );
