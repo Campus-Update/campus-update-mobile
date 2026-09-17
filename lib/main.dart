@@ -17,48 +17,54 @@ void main() {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   setupLocator();
   // timeago.setLocaleMessages(
-  //     'fr', timeago.FrMessages()); 
+  //     'fr', timeago.FrMessages());
   // timeago.setLocaleMessages('ar', timeago.ArMessages());
 
   runApp(ProviderScope(child: MyApp()));
   FlutterNativeSplash.remove();
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ref, child) {
-      ref.read(userDataReaderProvider.notifier).loadUserData();
-      // final themeMode = ref.watch(themeStateNotifierProvider);
-      return ScreenUtilInit(
+    return Consumer(
+      builder: (context, ref, child) {
+        ref.read(userDataReaderProvider.notifier).loadUserData();
+        // final themeMode = ref.watch(themeStateNotifierProvider);
+        return ScreenUtilInit(
           designSize: Size(393, 852),
           minTextAdapt: true,
           splitScreenMode: true,
           builder: (_, child) {
-            return Builder(builder: (context) {
-              return MaterialApp(
-                builder: EasyLoading.init(),
-                debugShowCheckedModeBanner: false,
-                navigatorKey: navigatorKey,
-                title: AppConstant.appName,
-                theme: AppTheme.light(),
-                // localizationsDelegates: [
-                //   AppLocalizations.delegate,
-                //   GlobalMaterialLocalizations.delegate,
-                //   GlobalWidgetsLocalizations.delegate,
-                //   GlobalCupertinoLocalizations.delegate,
-                // ],
-                supportedLocales: [
-                  const Locale('en', 'US'),
-                  const Locale('fr', 'FR'),
-                  const Locale('ar', 'TN')
-                ],
-                home: child,
-              );
-            });
+            return Builder(
+              builder: (context) {
+                return MaterialApp(
+                  builder: EasyLoading.init(),
+                  debugShowCheckedModeBanner: false,
+                  navigatorKey: navigatorKey,
+                  title: AppConstant.appName,
+                  theme: AppTheme.light(),
+                  // localizationsDelegates: [
+                  //   AppLocalizations.delegate,
+                  //   GlobalMaterialLocalizations.delegate,
+                  //   GlobalWidgetsLocalizations.delegate,
+                  //   GlobalCupertinoLocalizations.delegate,
+                  // ],
+                  supportedLocales: [
+                    const Locale('en', 'US'),
+                    const Locale('fr', 'FR'),
+                    const Locale('ar', 'TN'),
+                  ],
+                  home: child,
+                );
+              },
+            );
           },
-          child: SplashScreen());
-    });
+          child: SplashScreen(),
+        );
+      },
+    );
   }
 }
 
