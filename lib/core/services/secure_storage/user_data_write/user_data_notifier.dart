@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../constant.dart';
 import '../secure_storage.dart';
@@ -9,7 +8,7 @@ class UserDataNotifier extends StateNotifier<UserDataState> {
   final SecureStorageService _secureStorageService;
 
   UserDataNotifier(this._secureStorageService)
-      : super(UserDataState.initial()) {
+    : super(UserDataState.initial()) {
     initUserData();
   }
 
@@ -21,7 +20,7 @@ class UserDataNotifier extends StateNotifier<UserDataState> {
       secure_storage_key.username,
       secure_storage_key.email,
       secure_storage_key.role,
-     
+
       secure_storage_key.is_verified,
     ];
 
