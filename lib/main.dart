@@ -7,7 +7,6 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/config/constant.dart';
-import 'core/l10n/app_localizations.dart';
 import 'core/services/secure_storage/user_data_read/user_data_notifier.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -17,9 +16,9 @@ void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   setupLocator();
-  timeago.setLocaleMessages(
-      'fr', timeago.FrMessages()); 
-  timeago.setLocaleMessages('ar', timeago.ArMessages());
+  // timeago.setLocaleMessages(
+  //     'fr', timeago.FrMessages()); 
+  // timeago.setLocaleMessages('ar', timeago.ArMessages());
 
   runApp(ProviderScope(child: MyApp()));
   FlutterNativeSplash.remove();

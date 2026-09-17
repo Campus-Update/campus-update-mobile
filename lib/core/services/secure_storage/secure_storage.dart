@@ -30,7 +30,7 @@ class SecureStorageService {
   }
 
   Future<void> deleteMultiple(List<String> keys) async {
-    for (var key in keys) { 
+    for (var key in keys) {
       log("<<$key>> deleted ");
       await _secureStorage.delete(key: key);
     }
