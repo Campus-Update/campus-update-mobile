@@ -1,12 +1,53 @@
+import 'package:campus_update/app/app.dart';
+import 'package:campus_update/core/auth/auth_state.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:campus_update/main.dart';
-
 void main() {
-  testWidgets('welcome screen renders', (tester) async {
-    await tester.pumpWidget(const CampusUpdateApp());
+  testWidgets('starts on the splash screen while the session is unknown', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: CampusUpdateApp()));
+    await tester.pumpAndSettle();
 
-    expect(find.text('CAMPUS UPDATE'), findsOneWidget);
-    expect(find.text('Ready to be implemented'), findsOneWidget);
+    expect(find.text('Campus Update'), findsOneWidget);
+  });
+
+  testWidgets('a signed-out session lands on login', (tester) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedOut();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sign in'), findsOneWidget);
+  });
+
+  testWidgets('a signed-in session lands on home with the tab bar', (
+    tester,
+  ) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NavigationBar), findsOneWidget);
+    // Home is the landing tab; its title and its tab label both render.
+    expect(find.text('Home'), findsWidgets);
+    expect(find.text('News'), findsOneWidget); // the tab label only
   });
 }
