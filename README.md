@@ -101,6 +101,19 @@ dart format .       # formatting
 
 Both `analyze` and `test` should be clean before opening a pull request.
 
+### Run the checks automatically
+
+A pre-commit hook runs all three and blocks the commit if any fails. Enable it once
+after cloning:
+
+```bash
+git config core.hooksPath hooks
+```
+
+It takes about twenty seconds per commit and catches what CI would reject, before the
+push rather than after. In a genuine emergency, `git commit --no-verify` skips it — CI
+still runs the same checks on the pull request.
+
 ## 🩺 Troubleshooting
 
 **`Lost connection to device`** — the app usually keeps running; reattach instead of
