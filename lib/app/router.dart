@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/auth/auth_state.dart';
+import '../core/storage/storage_providers.dart';
 import '../features/announcements/presentation/screens/announcement_detail_screen.dart';
 import '../features/announcements/presentation/screens/announcements_list_screen.dart';
 import '../features/auth/presentation/screens/forgot_password_screen.dart';
@@ -74,10 +75,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       return switch (status) {
         // Session is still being restored; hold on the splash screen.
         AuthStatus.unknown => location == Routes.splash ? null : Routes.splash,
+        // First run lands on onboarding; after that, straight to login.
         AuthStatus.signedOut =>
           inUnauthenticatedZone && location != Routes.splash
               ? null
-              : Routes.login,
+              : (ref.read(prefsStorageProvider).onboardingSeen
+                    ? Routes.login
+                    : Routes.onboarding),
         AuthStatus.signedIn => inUnauthenticatedZone ? Routes.home : null,
       };
     },
