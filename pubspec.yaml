@@ -55,11 +55,35 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.7.1
   json_serializable: ^6.11.2
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+# Native splash, shown by the OS before Flutter starts. This is what covers the
+# status and navigation bars at launch - a Flutter screen cannot, because the
+# engine is not running yet. Regenerate after changing the image or colour:
+#   dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#EDE9FE"
+  image: assets/images/splash_logo.png
+  fullscreen: true
+  android_12:
+    color: "#EDE9FE"
+    image: assets/images/splash_logo.png
+
+# Launcher icon generation. Regenerate after changing the source images:
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#4F46E5"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+  remove_alpha_ios: true
+
 flutter:
 
   # The following line ensures that the Material Icons font is
@@ -72,15 +96,14 @@ flutter:
     - assets/icons/
 
   # Archivo is the sole typeface: Regular 400 for body and labels,
-  # Medium 500 for headings, buttons and active navigation. Uncomment
-  # once the files are in assets/fonts/.
-  # fonts:
-  #   - family: Archivo
-  #     fonts:
-  #       - asset: assets/fonts/Archivo-Regular.ttf
-  #         weight: 400
-  #       - asset: assets/fonts/Archivo-Medium.ttf
-  #         weight: 500
+  # Medium 500 for headings, buttons and active navigation.
+  fonts:
+    - family: Archivo
+      fonts:
+        - asset: assets/fonts/Archivo-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Archivo-Medium.ttf
+          weight: 500
 
   # To add assets to your application, add an assets section, like this:
   # assets:
