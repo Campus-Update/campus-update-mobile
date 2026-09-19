@@ -9,18 +9,33 @@ abstract final class AppTheme {
   static ThemeData dark() => _build(Brightness.dark);
 
   static ThemeData _build(Brightness brightness) {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.seed,
-      brightness: brightness,
-    );
+    // The generated scheme fills in the surface and container tones; the four
+    // brand colours are then pinned to their exact values so Indigo, Alert Red
+    // and Emerald render as designed rather than as tonal approximations.
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: AppColors.seed,
+          brightness: brightness,
+        ).copyWith(
+          primary: AppColors.indigo,
+          onPrimary: Colors.white,
+          error: AppColors.alertRed,
+          onError: Colors.white,
+        );
+
+    final isLight = brightness == Brightness.light;
 
     return ThemeData(
       colorScheme: scheme,
-      textTheme: AppTextStyles.textTheme,
+      fontFamily: AppFonts.family,
+      textTheme: AppTextStyles.textTheme.apply(
+        bodyColor: isLight ? AppColors.graphite : scheme.onSurface,
+        displayColor: isLight ? AppColors.graphite : scheme.onSurface,
+      ),
       scaffoldBackgroundColor: scheme.surface,
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surface,
-        foregroundColor: scheme.onSurface,
+        foregroundColor: isLight ? AppColors.graphite : scheme.onSurface,
         elevation: 0,
         centerTitle: true,
       ),
@@ -46,9 +61,20 @@ abstract final class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
+          textStyle: AppTextStyles.textTheme.labelLarge,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           ),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: scheme.surface,
+        indicatorColor: AppColors.indigo.withValues(alpha: 0.12),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              // Medium 500 for active navigation, Regular 400 otherwise.
+              ? AppTextStyles.textTheme.labelSmall
+              : AppTextStyles.textTheme.labelMedium,
         ),
       ),
     );

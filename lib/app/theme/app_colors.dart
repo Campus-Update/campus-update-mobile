@@ -1,22 +1,49 @@
 import 'package:flutter/material.dart';
 
-/// Semantic colour tokens.
+/// The Campus Update palette.
 ///
-/// Designs have not been delivered yet, so the palette below is a placeholder.
-/// When the brand palette arrives, only the values in this file change — no
-/// screen references a raw colour, so nothing else has to be touched.
+/// Four foundational colours from the design system: Indigo carries the brand,
+/// Graphite handles text and structure, Alert Red is reserved for actions and
+/// alerts, Emerald confirms success.
 abstract final class AppColors {
-  /// Drives the generated [ColorScheme] for both brightnesses.
-  static const seed = Color(0xFF1B5E9B);
+  // Core palette.
+  static const indigo = Color(0xFF4F46E5); // primary, brand
+  static const graphite = Color(0xFF111214); // text, structure
+  static const alertRed = Color(0xFFDC2626); // actions, alerts
+  static const emerald = Color(0xFF047857); // success, confirmed
 
-  // Urgency, per the PRD's Normal / Important / Urgent ladder.
-  static const urgencyNormal = Color(0xFF4B5563);
-  static const urgencyImportant = Color(0xFFB45309);
-  static const urgencyUrgent = Color(0xFFB91C1C);
+  /// Drives the generated [ColorScheme].
+  static const seed = indigo;
 
-  // Trust indicators. Every content item is labelled with one of these.
-  static const sourceOfficial = Color(0xFF15803D);
-  static const sourceCampusUpdate = Color(0xFF1B5E9B);
-  static const sourceSponsored = Color(0xFF7C3AED);
-  static const sourceExternal = Color(0xFF9A3412);
+  // Announcement priority. The PRD requires these to be distinguishable
+  // without relying on colour, so UrgencyBadge pairs each with an icon and a
+  // word — see urgency_badge.dart.
+  //
+  // The palette has no amber, so Important currently borrows Indigo. Worth
+  // confirming with design: a warning colour would read better, and Urgent
+  // sharing Alert Red with system errors is a deliberate overlap.
+  static const urgencyUrgent = alertRed;
+  static const urgencyImportant = indigo;
+  static const urgencyNormal = Color(0xFF6B7280); // graphite ramp, mid
+
+  // Trust indicators on every content item.
+  //
+  // Also constrained by a four-colour palette: Sponsored and Promoted Event
+  // both fall back to graphite tones, which makes paid content quieter than
+  // official content. That reads correctly, but design should confirm it.
+  static const sourceOfficial = emerald;
+  static const sourceCampusUpdate = indigo;
+  static const sourceSponsored = Color(0xFF6B7280);
+  static const sourcePromotedEvent = Color(0xFF374151);
+}
+
+/// Archivo is the sole typeface: Regular 400 for body and labels, Medium 500
+/// for headings, buttons and active navigation. No bold, no italic.
+///
+/// Until the .ttf files are added to assets/fonts/ and the fonts block in
+/// pubspec.yaml is uncommented, Flutter falls back to the platform default.
+abstract final class AppFonts {
+  static const family = 'Archivo';
+  static const regular = FontWeight.w400;
+  static const medium = FontWeight.w500;
 }

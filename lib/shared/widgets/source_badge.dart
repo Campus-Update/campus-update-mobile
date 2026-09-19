@@ -24,7 +24,7 @@ class SourceBadge extends StatelessWidget {
     ContentSource.officialSchool => AppColors.sourceOfficial,
     ContentSource.campusUpdate => AppColors.sourceCampusUpdate,
     ContentSource.sponsored => AppColors.sourceSponsored,
-    ContentSource.externalEvent => AppColors.sourceExternal,
+    ContentSource.externalEvent => AppColors.sourcePromotedEvent,
   };
 
   @override
