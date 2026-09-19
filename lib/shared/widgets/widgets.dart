@@ -7,6 +7,7 @@ library;
 
 export 'app_button.dart';
 export 'app_input.dart';
+export 'app_logo.dart';
 export 'app_scaffold.dart';
 export 'empty_state.dart';
 export 'error_state.dart';

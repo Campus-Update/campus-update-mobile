@@ -41,6 +41,7 @@ dependencies:
   shared_preferences: ^2.5.5
   intl: ^0.20.3
   json_annotation: ^4.9.0
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +66,21 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+
+  # Archivo is the sole typeface: Regular 400 for body and labels,
+  # Medium 500 for headings, buttons and active navigation. Uncomment
+  # once the files are in assets/fonts/.
+  # fonts:
+  #   - family: Archivo
+  #     fonts:
+  #       - asset: assets/fonts/Archivo-Regular.ttf
+  #         weight: 400
+  #       - asset: assets/fonts/Archivo-Medium.ttf
+  #         weight: 500
 
   # To add assets to your application, add an assets section, like this:
   # assets:
