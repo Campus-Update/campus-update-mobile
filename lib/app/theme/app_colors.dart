@@ -15,6 +15,28 @@ abstract final class AppColors {
   /// Drives the generated [ColorScheme].
   static const seed = indigo;
 
+  /// Lightest step of the indigo ramp, used as the splash ground.
+  /// Estimated from the design until the ramp hex values arrive.
+  static const indigoSurface = Color(0xFFEDE9FE);
+
+  /// The two stops of the primary button's gradient, sampled from the
+  /// onboarding design: a bright violet falling to a deep indigo.
+  static const indigoBright = Color(0xFF5A15E6);
+  static const indigoDeep = Color(0xFF2B0F6D);
+
+  /// The pale ring drawn around the primary button, sitting outside the
+  /// gradient. Measured off the design: it lifts the button off a photograph
+  /// without resorting to a shadow.
+  static const buttonRing = Color(0xFFDED7FD);
+
+  /// The primary button gradient. Runs top to bottom — measured off the
+  /// design rather than guessed, so the button reads as lit from above.
+  static const buttonGradient = LinearGradient(
+    colors: [indigoBright, indigoDeep],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
   // Announcement priority. The PRD requires these to be distinguishable
   // without relying on colour, so UrgencyBadge pairs each with an icon and a
   // word — see urgency_badge.dart.
