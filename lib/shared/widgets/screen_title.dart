@@ -14,8 +14,10 @@ class ScreenTitle extends StatelessWidget {
   final String title;
   final String? subtitle;
 
-  /// Gap between the two lines.
-  static const _gap = 8.0;
+  /// Gap between the two lines. Derived rather than read off the design:
+  /// its title sits on a 36 line, so the ink-to-ink gap is larger than the
+  /// layout one by the slack above and below the cap.
+  static const _gap = 12.0;
 
   @override
   Widget build(BuildContext context) {
@@ -33,11 +35,21 @@ class ScreenTitle extends StatelessWidget {
         ),
         if (subtitle != null) ...[
           const SizedBox(height: _gap),
-          Text(
-            subtitle!,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: AppColors.textMuted,
+          // The design sets this as a single line and it fits at the default
+          // text size with room to spare. Above roughly 1.15x it no longer
+          // does, so it shrinks to fit rather than wrapping to two lines,
+          // which is what the design asks for — at the cost of not growing
+          // the whole way with the reader's font setting.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              subtitle!,
+              maxLines: 1,
+              softWrap: false,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: AppColors.textMuted,
+              ),
             ),
           ),
         ],
