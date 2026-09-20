@@ -21,10 +21,11 @@ abstract final class AppTextStyles {
       height: 1.2,
       fontWeight: AppFonts.medium,
     ),
+    // Measured off the design's screen titles: 24/500 on a 36 line.
     headlineMedium: TextStyle(
       fontFamily: _f,
       fontSize: 24,
-      height: 1.25,
+      height: 1.5,
       fontWeight: AppFonts.medium,
     ),
     headlineSmall: TextStyle(
@@ -69,10 +70,12 @@ abstract final class AppTextStyles {
       height: 1.2,
       fontWeight: AppFonts.medium,
     ),
+    // Measured off the design's field labels and subtitles: 12/400 on a
+    // 100% line.
     labelMedium: TextStyle(
       fontFamily: _f,
       fontSize: 12,
-      height: 1.2,
+      height: 1,
       fontWeight: AppFonts.regular,
     ),
     labelSmall: TextStyle(

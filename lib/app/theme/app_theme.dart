@@ -5,6 +5,11 @@ import 'app_spacing.dart';
 import 'app_text_styles.dart';
 
 abstract final class AppTheme {
+  static OutlineInputBorder _fieldBorder(Color color) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(10),
+    borderSide: BorderSide(color: color),
+  );
+
   static ThemeData light() => _build(Brightness.light);
   static ThemeData dark() => _build(Brightness.dark);
 
@@ -46,17 +51,28 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         ),
       ),
+      // Fields are white with a hairline border, sitting on AppFormPanel.
+      // Measured off the design: 48 high, 10 radius, 1px #E2E2E2.
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: scheme.surfaceContainerHighest,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: BorderSide.none,
+        fillColor: Colors.white,
+        hintStyle: AppTextStyles.textTheme.bodyMedium?.copyWith(
+          color: AppColors.fieldHint,
+          height: 1,
         ),
+        // 17 + a 14pt line at height 1 + 17 gives the design's 48.
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
+          horizontal: 17,
+          vertical: 17,
         ),
+        border: _fieldBorder(AppColors.fieldBorder),
+        enabledBorder: _fieldBorder(AppColors.fieldBorder),
+        disabledBorder: _fieldBorder(AppColors.fieldBorder),
+        // The design does not show a focused or error field, so these follow
+        // the palette and should be confirmed.
+        focusedBorder: _fieldBorder(AppColors.indigo),
+        errorBorder: _fieldBorder(AppColors.alertRed),
+        focusedErrorBorder: _fieldBorder(AppColors.alertRed),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(

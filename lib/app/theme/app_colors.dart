@@ -37,6 +37,36 @@ abstract final class AppColors {
     end: Alignment.bottomCenter,
   );
 
+  // Forms. The panel groups a form's fields and is what makes white fields
+  // legible — on the page's own white they would disappear, which is also why
+  // the fields carry a hairline border. All measured off the design.
+  static const formPanel = Color(0xFFEFECFE);
+  static const fieldBorder = Color(0xFFE2E2E2);
+  static const fieldLabel = Color(0xFF555555);
+
+  /// Placeholder text. Sampled rather than specified, so worth confirming:
+  /// small grey text antialiases lighter than its true value.
+  static const fieldHint = Color(0xFFBDBDBD);
+
+  /// The dots a password field shows in place of placeholder text, and the
+  /// same grey an unticked checkbox is filled with.
+  static const fieldHintDot = Color(0xFFD9D9D9);
+  static const checkboxOff = fieldHintDot;
+
+  /// Muted text under a screen title.
+  static const textMuted = Color(0xFF8C8994);
+
+  /// The dark pill a social sign-in button is drawn with, top to bottom.
+  static const socialGradient = LinearGradient(
+    colors: [Color(0xFF383838), Color(0xFF222222)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  /// Tappable text inside a sentence. Sampled off the design and more
+  /// saturated than [indigo]; confirm against the indigo ramp when it lands.
+  static const link = Color(0xFF652FEF);
+
   // Announcement priority. The PRD requires these to be distinguishable
   // without relying on colour, so UrgencyBadge pairs each with an icon and a
   // word — see urgency_badge.dart.
