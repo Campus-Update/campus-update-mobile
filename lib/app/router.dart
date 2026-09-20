@@ -11,6 +11,7 @@ import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/onboarding_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
+import '../features/auth/presentation/screens/verify_otp_screen.dart';
 import '../features/calendar/presentation/screens/calendar_screen.dart';
 import '../features/events/presentation/screens/event_detail_screen.dart';
 import '../features/events/presentation/screens/events_list_screen.dart';
@@ -28,6 +29,7 @@ abstract final class Routes {
   static const onboarding = '/onboarding';
   static const login = '/login';
   static const register = '/register';
+  static const verifyOtp = '/verify-otp';
   static const forgotPassword = '/forgot-password';
 
   static const home = '/home';
@@ -48,6 +50,7 @@ abstract final class Routes {
     onboarding,
     login,
     register,
+    verifyOtp,
     forgotPassword,
   };
 }
@@ -95,6 +98,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.register,
         builder: (_, __) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: Routes.verifyOtp,
+        builder: (_, __) => const VerifyOtpScreen(),
       ),
       GoRoute(
         path: Routes.forgotPassword,

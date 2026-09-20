@@ -11,6 +11,7 @@ export 'app_form_panel.dart';
 export 'app_input.dart';
 export 'app_link_text.dart';
 export 'labelled_divider.dart';
+export 'otp_field.dart';
 export 'app_logo.dart';
 export 'app_scaffold.dart';
 export 'empty_state.dart';

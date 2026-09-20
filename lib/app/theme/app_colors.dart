@@ -53,6 +53,16 @@ abstract final class AppColors {
   static const fieldHintDot = Color(0xFFD9D9D9);
   static const checkboxOff = fieldHintDot;
 
+  /// The OTP box's resting border. Darker than a text field's, which the
+  /// design draws at [fieldBorder].
+  static const otpBorder = Color(0xFF8C8C8C);
+
+  /// The OTP field's borders when a code is judged. Taken from the palette
+  /// rather than the design — the correct and wrong frames were not to hand
+  /// when this was built, so confirm both against Figma.
+  static const otpCorrect = emerald;
+  static const otpWrong = alertRed;
+
   /// Muted text under a screen title.
   static const textMuted = Color(0xFF8C8994);
 
