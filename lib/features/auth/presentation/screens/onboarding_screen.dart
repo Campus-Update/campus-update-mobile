@@ -59,6 +59,9 @@ class OnboardingScreen extends ConsumerWidget {
                     photo: _photo,
                     button: AppButton(
                       label: 'Get Started',
+                      // The ring only belongs where the button sits on the
+                      // photograph, which is here and nowhere else.
+                      onImage: true,
                       trailingIcon: Icons.chevron_right,
                       onPressed: () => _leaveTo(context, ref, Routes.register),
                     ),

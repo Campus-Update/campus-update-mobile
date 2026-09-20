@@ -26,6 +26,7 @@ class AppButton extends StatelessWidget {
     this.leadingIcon,
     this.trailingIcon,
     this.expand = true,
+    this.onImage = false,
   });
 
   final String label;
@@ -38,6 +39,12 @@ class AppButton extends StatelessWidget {
   /// Fill the available width, as the design's `Fill` layout does.
   final bool expand;
 
+  /// Adds the pale ring the design draws when the button sits on a
+  /// photograph, which is the only place it appears — on a white page the
+  /// gradient meets the background directly. Onboarding uses it; the auth
+  /// screens do not.
+  final bool onImage;
+
   /// Height of the gradient itself. The primary variant then carries
   /// [_ringWidth] of ring outside that, so its box is taller by twice it.
   static const _height = 50.0;
@@ -47,9 +54,11 @@ class AppButton extends StatelessWidget {
   /// The pale ring around the primary button, measured off the design.
   static const _ringWidth = 2.0;
 
-  /// The primary button's full box, gradient plus ring.
-  double get _boxHeight =>
-      variant == AppButtonVariant.primary ? _height + _ringWidth * 2 : _height;
+  bool get _ringed => onImage && variant == AppButtonVariant.primary;
+
+  /// The ring sits outside the gradient, so a ringed button's box is taller
+  /// than its specified 50 by twice the ring.
+  double get _boxHeight => _ringed ? _height + _ringWidth * 2 : _height;
 
   bool get _enabled => onPressed != null && !loading;
 
@@ -64,9 +73,11 @@ class AppButton extends StatelessWidget {
       AppButtonVariant.primary => BoxDecoration(
         gradient: AppColors.buttonGradient,
         borderRadius: radius,
-        // Drawn inside the box, which is why the box is taller than the
-        // gradient by twice the ring: the gradient keeps its specified 50.
-        border: Border.all(color: AppColors.buttonRing, width: _ringWidth),
+        // Drawn inside the box, which is why a ringed button's box is taller
+        // than the gradient: the gradient keeps its specified 50.
+        border: _ringed
+            ? Border.all(color: AppColors.buttonRing, width: _ringWidth)
+            : null,
       ),
       AppButtonVariant.danger => BoxDecoration(
         color: AppColors.alertRed,
