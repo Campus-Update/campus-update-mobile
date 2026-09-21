@@ -107,5 +107,12 @@ void main() {
       find.text("We've sent a 6-digit verification code to user@example.com"),
       findsOneWidget,
     );
+
+    // Enter 6 digit OTP to navigate to Create New Password
+    await tester.enterText(find.byType(EditableText).first, '123456');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Create New Password'), findsOneWidget);
+    expect(find.text('Reset Password'), findsOneWidget);
   });
 }

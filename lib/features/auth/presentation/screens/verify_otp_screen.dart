@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/auth_page.dart';
 
@@ -48,9 +50,8 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
   };
 
   void _onCompleted(String code) {
-    // Nothing verifies a code yet — the API has no endpoint for it. Until it
-    // does, the screen only reports that six digits were entered.
     widget.onVerified?.call(code);
+    context.push(Routes.resetPassword);
   }
 
   @override
