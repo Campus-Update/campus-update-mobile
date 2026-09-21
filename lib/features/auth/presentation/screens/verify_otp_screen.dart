@@ -12,7 +12,7 @@ import '../widgets/auth_page.dart';
 class VerifyOtpScreen extends ConsumerStatefulWidget {
   const VerifyOtpScreen({
     super.key,
-    this.title = 'Verify OTP',
+    this.title = 'Check Your Email',
     this.email,
     this.onVerified,
     this.autofocus = true,
@@ -44,7 +44,7 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
     OtpStatus.correct => 'OTP Correct',
     OtpStatus.wrong => 'Wrong OTP',
     OtpStatus.neutral =>
-      'We have sent a 6 digit code to your mail. Enter the coder.',
+      'We have sent a 6 digit code to your mail. Enter the code.',
   };
 
   void _onCompleted(String code) {
@@ -53,8 +53,6 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
     widget.onVerified?.call(code);
   }
 
-  void _resend() {}
-
   @override
   Widget build(BuildContext context) {
     return AuthPage(
@@ -62,6 +60,7 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
       subtitle: widget.email == null
           ? null
           : "We've sent a 6-digit verification code to ${widget.email}",
+      subtitleMaxLines: 2,
       leading: SvgPicture.asset(
         _illustration,
         width: _illustrationWidth,
@@ -84,11 +83,6 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
               onCompleted: _onCompleted,
             ),
           ],
-        ),
-        const SizedBox(height: AuthGaps.toLink),
-        AppLinkText(
-          "Didn't receive any code? Resend",
-          links: {'Resend': _resend},
         ),
       ],
     );

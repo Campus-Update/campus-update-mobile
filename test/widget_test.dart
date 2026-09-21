@@ -71,4 +71,41 @@ void main() {
     expect(find.text('Home'), findsWidgets);
     expect(find.text('News'), findsOneWidget); // the tab label only
   });
+
+  testWidgets('forgot password flow navigates to OTP verification with email', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedOut();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Tap Forgot Password link on login screen
+    await tester.tap(find.text('Forgot Password?'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Forgot Password'), findsOneWidget);
+    expect(find.text('Send verification code'), findsOneWidget);
+
+    // Enter valid email and submit
+    await tester.enterText(find.byType(EditableText), 'user@example.com');
+    await tester.tap(find.text('Send verification code'));
+    await tester.pumpAndSettle();
+
+    // Verify it navigated to OTP screen with email
+    expect(find.text('Verify OTP'), findsOneWidget);
+    expect(
+      find.text("We've sent a 6-digit verification code to user@example.com"),
+      findsOneWidget,
+    );
+  });
 }
