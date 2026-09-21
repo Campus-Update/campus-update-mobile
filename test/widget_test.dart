@@ -114,5 +114,22 @@ void main() {
 
     expect(find.text('Create New Password'), findsOneWidget);
     expect(find.text('Reset Password'), findsOneWidget);
+
+    // Enter valid new password matching all criteria
+    await tester.enterText(find.byType(EditableText).at(0), 'Password123!');
+    await tester.enterText(find.byType(EditableText).at(1), 'Password123!');
+    await tester.ensureVisible(find.text('Reset Password'));
+    await tester.tap(find.text('Reset Password'));
+    await tester.pumpAndSettle();
+
+    // Verify it navigated to Password Reset success screen
+    expect(find.text('Password Reset!'), findsOneWidget);
+    expect(find.text('Back to Sign In'), findsOneWidget);
+
+    // Tap Back to Sign In and verify return to Login
+    await tester.tap(find.text('Back to Sign In'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sign in'), findsOneWidget);
   });
 }

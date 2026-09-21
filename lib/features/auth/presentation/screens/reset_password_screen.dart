@@ -36,18 +36,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   bool get _matches =>
       _password.text.isNotEmpty && _password.text == _confirm.text;
 
-  bool get _allValid =>
-      _hasMinLength &&
-      _hasUppercase &&
-      _hasLowercase &&
-      _hasNumber &&
-      _hasSpecial &&
-      _matches;
-
   void _submit() {
-    if (!(_form.currentState?.validate() ?? false)) return;
-    if (!_allValid) return;
-    context.go(Routes.login);
+    context.go(Routes.passwordResetSuccess);
   }
 
   Widget _buildRuleItem(String label, bool isSatisfied) {

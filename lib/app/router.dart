@@ -9,6 +9,7 @@ import '../features/announcements/presentation/screens/announcements_list_screen
 import '../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/onboarding_screen.dart';
+import '../features/auth/presentation/screens/password_reset_success_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
@@ -33,6 +34,7 @@ abstract final class Routes {
   static const verifyOtp = '/verify-otp';
   static const forgotPassword = '/forgot-password';
   static const resetPassword = '/reset-password';
+  static const passwordResetSuccess = '/password-reset-success';
 
   static const home = '/home';
   static const news = '/news';
@@ -55,6 +57,7 @@ abstract final class Routes {
     verifyOtp,
     forgotPassword,
     resetPassword,
+    passwordResetSuccess,
   };
 }
 
@@ -115,6 +118,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.resetPassword,
         builder: (_, __) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: Routes.passwordResetSuccess,
+        builder: (_, __) => const PasswordResetSuccessScreen(),
       ),
 
       // Above the shell: these cover the tab bar and pop back to the active tab.
