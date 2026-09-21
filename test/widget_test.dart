@@ -1,21 +1,40 @@
 import 'package:campus_update/app/app.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
+import 'package:campus_update/core/storage/storage_providers.dart';
+import 'package:campus_update/shared/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  late SharedPreferences prefs;
+
+  setUp(() async {
+    // Treat onboarding as already seen, so the router's signed-out target is
+    // login rather than the first-run screen.
+    SharedPreferences.setMockInitialValues({'onboarding_seen': true});
+    prefs = await SharedPreferences.getInstance();
+  });
+
   testWidgets('starts on the splash screen while the session is unknown', (
     tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: CampusUpdateApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        child: const CampusUpdateApp(),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.text('Campus Update'), findsOneWidget);
+    expect(find.byType(AppLogo), findsOneWidget);
   });
 
   testWidgets('a signed-out session lands on login', (tester) async {
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedOut();
 
@@ -33,7 +52,9 @@ void main() {
   testWidgets('a signed-in session lands on home with the tab bar', (
     tester,
   ) async {
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
 

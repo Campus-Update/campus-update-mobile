@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/auth/auth_state.dart';
+import '../core/storage/storage_providers.dart';
 import '../features/announcements/presentation/screens/announcement_detail_screen.dart';
 import '../features/announcements/presentation/screens/announcements_list_screen.dart';
 import '../features/auth/presentation/screens/forgot_password_screen.dart';
@@ -10,6 +11,7 @@ import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/onboarding_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
+import '../features/auth/presentation/screens/verify_otp_screen.dart';
 import '../features/calendar/presentation/screens/calendar_screen.dart';
 import '../features/events/presentation/screens/event_detail_screen.dart';
 import '../features/events/presentation/screens/events_list_screen.dart';
@@ -27,6 +29,7 @@ abstract final class Routes {
   static const onboarding = '/onboarding';
   static const login = '/login';
   static const register = '/register';
+  static const verifyOtp = '/verify-otp';
   static const forgotPassword = '/forgot-password';
 
   static const home = '/home';
@@ -47,6 +50,7 @@ abstract final class Routes {
     onboarding,
     login,
     register,
+    verifyOtp,
     forgotPassword,
   };
 }
@@ -74,10 +78,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       return switch (status) {
         // Session is still being restored; hold on the splash screen.
         AuthStatus.unknown => location == Routes.splash ? null : Routes.splash,
+        // First run lands on onboarding; after that, straight to login.
         AuthStatus.signedOut =>
           inUnauthenticatedZone && location != Routes.splash
               ? null
-              : Routes.login,
+              : (ref.read(prefsStorageProvider).onboardingSeen
+                    ? Routes.login
+                    : Routes.onboarding),
         AuthStatus.signedIn => inUnauthenticatedZone ? Routes.home : null,
       };
     },
@@ -91,6 +98,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.register,
         builder: (_, __) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: Routes.verifyOtp,
+        builder: (_, __) => const VerifyOtpScreen(),
       ),
       GoRoute(
         path: Routes.forgotPassword,
