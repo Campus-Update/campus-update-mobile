@@ -102,7 +102,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify it navigated to OTP screen with email
-    expect(find.text('Verify OTP'), findsOneWidget);
+    expect(find.text('Check Your Email'), findsOneWidget);
     expect(
       find.text("We've sent a 6-digit verification code to user@example.com"),
       findsOneWidget,
