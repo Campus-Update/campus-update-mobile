@@ -64,13 +64,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: AuthGaps.toButton),
-        AppButton(
-          label: 'Send verification code',
-          onPressed: _submit,
-        ),
+        AppButton(label: 'Send verification code', onPressed: _submit),
       ],
     );
   }
 }
-
-

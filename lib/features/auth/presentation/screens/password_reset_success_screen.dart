@@ -48,11 +48,7 @@ class _SuccessIllustration extends StatelessWidget {
             color: Color(0xFF4F46E5),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.check_rounded,
-            color: Colors.white,
-            size: 38,
-          ),
+          child: const Icon(Icons.check_rounded, color: Colors.white, size: 38),
         ),
       ),
     );

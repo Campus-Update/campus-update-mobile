@@ -107,9 +107,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: Routes.verifyOtp,
-        builder: (_, state) => VerifyOtpScreen(
-          email: state.extra as String?,
-        ),
+        builder: (_, state) => VerifyOtpScreen(email: state.extra as String?),
       ),
       GoRoute(
         path: Routes.forgotPassword,

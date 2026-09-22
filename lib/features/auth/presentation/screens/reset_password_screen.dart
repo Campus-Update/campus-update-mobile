@@ -32,7 +32,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   bool get _hasUppercase => RegExp(r'[A-Z]').hasMatch(_password.text);
   bool get _hasLowercase => RegExp(r'[a-z]').hasMatch(_password.text);
   bool get _hasNumber => RegExp(r'[0-9]').hasMatch(_password.text);
-  bool get _hasSpecial => RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(_password.text);
+  bool get _hasSpecial =>
+      RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(_password.text);
   bool get _matches =>
       _password.text.isNotEmpty && _password.text == _confirm.text;
 
@@ -49,10 +50,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           Container(
             width: 6,
             height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -104,14 +102,20 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               Text(
                 'Password must contain:',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.fieldLabel,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  color: AppColors.fieldLabel,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 8),
               _buildRuleItem('At least 8 characters', _hasMinLength),
-              _buildRuleItem('At least 1 uppercase letter (A–Z)', _hasUppercase),
-              _buildRuleItem('At least 1 lowercase letter (a–z)', _hasLowercase),
+              _buildRuleItem(
+                'At least 1 uppercase letter (A–Z)',
+                _hasUppercase,
+              ),
+              _buildRuleItem(
+                'At least 1 lowercase letter (a–z)',
+                _hasLowercase,
+              ),
               _buildRuleItem('At least 1 number (0–9)', _hasNumber),
               _buildRuleItem(
                 'At least 1 special character (! @ # \$ %)',
@@ -128,10 +132,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           ),
         ),
         const SizedBox(height: AuthGaps.toButton),
-        AppButton(
-          label: 'Reset Password',
-          onPressed: _submit,
-        ),
+        AppButton(label: 'Reset Password', onPressed: _submit),
       ],
     );
   }
