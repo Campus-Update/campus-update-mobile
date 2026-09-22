@@ -142,7 +142,10 @@ class _AppInputState extends State<AppInput> {
           autofillHints: widget.autofillHints,
           // Line height 1 rather than the scale's 1.5: the field's height is
           // fixed at 48 by the design, and a 1.5 line pushes it to 55.
-          style: theme.textTheme.bodyMedium?.copyWith(height: 1),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: Colors.black,
+            height: 1,
+          ),
           decoration: InputDecoration(
             // A password's placeholder is the dot row; everything else uses
             // the caller's text.

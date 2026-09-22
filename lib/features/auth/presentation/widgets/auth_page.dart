@@ -45,6 +45,7 @@ class AuthPage extends StatelessWidget {
     this.leading,
     this.leadingGap = 0,
     required this.children,
+    this.subtitleMaxLines = 1,
   });
 
   final String title;
@@ -58,6 +59,9 @@ class AuthPage extends StatelessWidget {
 
   /// Laid out below the title block, spaced by the caller using [AuthGaps].
   final List<Widget> children;
+
+  /// Maximum number of lines for subtitle text in ScreenTitle.
+  final int? subtitleMaxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +93,11 @@ class AuthPage extends StatelessWidget {
                     Center(child: leading),
                     SizedBox(height: leadingGap),
                   ],
-                  ScreenTitle(title: title, subtitle: subtitle),
+                  ScreenTitle(
+                    title: title,
+                    subtitle: subtitle,
+                    maxLines: subtitleMaxLines,
+                  ),
                   const SizedBox(height: AuthGaps.toPanel),
                   ...children,
                   const SizedBox(height: AuthGaps.bottom),

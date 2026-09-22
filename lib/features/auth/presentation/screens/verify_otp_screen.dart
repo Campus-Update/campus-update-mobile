@@ -44,12 +44,12 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
     OtpStatus.correct => 'OTP Correct',
     OtpStatus.wrong => 'Wrong OTP',
     OtpStatus.neutral =>
-      'We have sent a 6 digit code to your mail. Enter the coder.',
+      'We have sent a 6 digit code to your mail. Enter the code.',
   };
 
   void _onCompleted(String code) {
-    // Nothing verifies a code yet — the API has no endpoint for it. Until it
-    // does, the screen only reports that six digits were entered.
+    // Where a verified code leads is the opener's business, not this
+    // screen's — registration and password reset go to different places.
     widget.onVerified?.call(code);
   }
 
@@ -62,6 +62,7 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
       subtitle: widget.email == null
           ? null
           : "We've sent a 6-digit verification code to ${widget.email}",
+      subtitleMaxLines: 2,
       leading: SvgPicture.asset(
         _illustration,
         width: _illustrationWidth,
@@ -93,4 +94,17 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
       ],
     );
   }
+}
+
+/// What the opener hands the screen: whose code this is, what to call it, and
+/// where a correct one leads.
+class OtpArgs {
+  const OtpArgs({required this.title, required this.next, this.email});
+
+  final String title;
+
+  /// Route pushed once six digits are entered.
+  final String next;
+
+  final String? email;
 }

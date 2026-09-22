@@ -71,4 +71,65 @@ void main() {
     expect(find.text('Home'), findsWidgets);
     expect(find.text('News'), findsOneWidget); // the tab label only
   });
+
+  testWidgets('forgot password flow navigates to OTP verification with email', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedOut();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Tap Forgot Password link on login screen
+    await tester.tap(find.text('Forgot Password?'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Forgot Password'), findsOneWidget);
+    expect(find.text('Send verification code'), findsOneWidget);
+
+    // Enter valid email and submit
+    await tester.enterText(find.byType(EditableText), 'user@example.com');
+    await tester.tap(find.text('Send verification code'));
+    await tester.pumpAndSettle();
+
+    // Verify it navigated to OTP screen with email
+    expect(find.text('Check Your Email'), findsOneWidget);
+    expect(
+      find.text("We've sent a 6-digit verification code to user@example.com"),
+      findsOneWidget,
+    );
+
+    // Enter 6 digit OTP to navigate to Create New Password
+    await tester.enterText(find.byType(EditableText).first, '123456');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Create New Password'), findsOneWidget);
+    expect(find.text('Reset Password'), findsOneWidget);
+
+    // Enter valid new password matching all criteria
+    await tester.enterText(find.byType(EditableText).at(0), 'Password123!');
+    await tester.enterText(find.byType(EditableText).at(1), 'Password123!');
+    await tester.ensureVisible(find.text('Reset Password'));
+    await tester.tap(find.text('Reset Password'));
+    await tester.pumpAndSettle();
+
+    // Verify it navigated to Password Reset success screen
+    expect(find.text('Password Reset!'), findsOneWidget);
+    expect(find.text('Back to Sign In'), findsOneWidget);
+
+    // Tap Back to Sign In and verify return to Login
+    await tester.tap(find.text('Back to Sign In'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sign in'), findsOneWidget);
+  });
 }
