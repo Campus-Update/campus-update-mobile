@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/router.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/auth_page.dart';
 
@@ -14,7 +12,7 @@ import '../widgets/auth_page.dart';
 class VerifyOtpScreen extends ConsumerStatefulWidget {
   const VerifyOtpScreen({
     super.key,
-    this.title = 'Check Your Email',
+    this.title = 'Verify OTP',
     this.email,
     this.onVerified,
     this.autofocus = true,
@@ -50,9 +48,12 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
   };
 
   void _onCompleted(String code) {
+    // Where a verified code leads is the opener's business, not this
+    // screen's — registration and password reset go to different places.
     widget.onVerified?.call(code);
-    context.push(Routes.resetPassword);
   }
+
+  void _resend() {}
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +86,25 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
             ),
           ],
         ),
+        const SizedBox(height: AuthGaps.toLink),
+        AppLinkText(
+          "Didn't receive any code? Resend",
+          links: {'Resend': _resend},
+        ),
       ],
     );
   }
+}
+
+/// What the opener hands the screen: whose code this is, what to call it, and
+/// where a correct one leads.
+class OtpArgs {
+  const OtpArgs({required this.title, required this.next, this.email});
+
+  final String title;
+
+  /// Route pushed once six digits are entered.
+  final String next;
+
+  final String? email;
 }

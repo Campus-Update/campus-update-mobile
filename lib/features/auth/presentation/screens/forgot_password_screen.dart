@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
+import 'verify_otp_screen.dart';
 import '../../../../shared/utils/validators.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/auth_page.dart';
@@ -27,7 +28,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   void _submit() {
     if (!(_form.currentState?.validate() ?? false)) return;
-    context.push(Routes.verifyOtp, extra: _email.text.trim());
+    context.push(
+      Routes.verifyOtp,
+      extra: OtpArgs(
+        title: 'Check Your Email',
+        next: Routes.resetPassword,
+        email: _email.text.trim(),
+      ),
+    );
   }
 
   @override
