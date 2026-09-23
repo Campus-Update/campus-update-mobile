@@ -131,6 +131,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Above the shell: these cover the tab bar and pop back to the active tab.
       GoRoute(
+        path: Routes.calendar,
+        builder: (_, __) => const CalendarScreen(),
+      ),
+      GoRoute(
         path: Routes.notifications,
         builder: (_, __) => const NotificationsScreen(),
       ),
@@ -195,14 +199,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: Routes.calendar,
-                builder: (_, __) => const CalendarScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
                 path: Routes.profile,
                 builder: (_, __) => const ProfileScreen(),
                 routes: [
@@ -231,6 +227,7 @@ class _TabShell extends StatelessWidget {
   final StatefulNavigationShell shell;
 
   static const _tabs = [
+    (icon: Icons.home_outlined, selected: Icons.home, label: 'Home'),
     (icon: Icons.article_outlined, selected: Icons.article, label: 'News'),
     (
       icon: Icons.campaign_outlined,
@@ -238,11 +235,6 @@ class _TabShell extends StatelessWidget {
       label: 'Announcements',
     ),
     (icon: Icons.event_outlined, selected: Icons.event, label: 'Events'),
-    (
-      icon: Icons.calendar_month_outlined,
-      selected: Icons.calendar_month,
-      label: 'Calendar',
-    ),
     (icon: Icons.person_outline, selected: Icons.person, label: 'Profile'),
   ];
 
