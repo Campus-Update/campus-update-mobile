@@ -6,6 +6,7 @@
 library;
 
 export 'app_button.dart';
+export 'back_button_circle.dart';
 export 'app_checkbox.dart';
 export 'app_form_panel.dart';
 export 'app_input.dart';
