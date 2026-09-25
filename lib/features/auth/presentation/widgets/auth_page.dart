@@ -7,8 +7,12 @@ import '../../../../shared/widgets/widgets.dart';
 /// Sign in and Create Account frames. Both gave the same figures, so they are
 /// the flow's rhythm rather than one screen's.
 abstract final class AuthGaps {
-  /// Safe area to the title.
+  /// Safe area to the title, on a screen with no back button.
   static const top = 60.0;
+
+  /// Safe area to the back button, and from it to the title.
+  static const backTop = 16.0;
+  static const backGap = 24.0;
 
   /// Title block to the form panel.
   static const toPanel = 28.0;
@@ -46,6 +50,7 @@ class AuthPage extends StatelessWidget {
     this.leadingGap = 0,
     required this.children,
     this.subtitleMaxLines = 1,
+    this.showBack = true,
   });
 
   final String title;
@@ -56,6 +61,11 @@ class AuthPage extends StatelessWidget {
 
   /// Space between [leading] and the title.
   final double leadingGap;
+
+  /// The back button appears wherever there is somewhere to go back to. Set
+  /// false on a screen that must not be left by going back — a flow that has
+  /// already changed something behind it.
+  final bool showBack;
 
   /// Laid out below the title block, spaced by the caller using [AuthGaps].
   final List<Widget> children;
@@ -88,7 +98,16 @@ class AuthPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: AuthGaps.top),
+                  if (showBack) ...[
+                    const SizedBox(height: AuthGaps.backTop),
+                    // Left-aligned in a stretched column, so it needs its own
+                    // alignment rather than taking the full width.
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: BackButtonCircle(),
+                    ),
+                  ],
+                  SizedBox(height: showBack ? AuthGaps.backGap : AuthGaps.top),
                   if (leading != null) ...[
                     Center(child: leading),
                     SizedBox(height: leadingGap),

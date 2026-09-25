@@ -72,6 +72,62 @@ void main() {
     expect(find.text('News'), findsOneWidget); // the tab label only
   });
 
+  testWidgets(
+    'home screen allows backward navigation from calendar, notifications, and search',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+      container.read(authProvider.notifier).signedIn();
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const CampusUpdateApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap School calendar on Home screen
+      await tester.tap(find.text('School calendar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Academic calendar'), findsOneWidget);
+      // Verify back button is visible and tap it
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      // Returned to Home
+      expect(find.text('Home not built yet.'), findsOneWidget);
+
+      // Tap Notifications on Home screen
+      await tester.tap(find.text('Notifications'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Notifications'), findsWidgets);
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      // Returned to Home
+      expect(find.text('Home not built yet.'), findsOneWidget);
+
+      // Tap Search on Home screen
+      await tester.tap(find.text('Search'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Search'), findsWidgets);
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      // Returned to Home
+      expect(find.text('Home not built yet.'), findsOneWidget);
+    },
+  );
+
   testWidgets('forgot password flow navigates to OTP verification with email', (
     tester,
   ) async {

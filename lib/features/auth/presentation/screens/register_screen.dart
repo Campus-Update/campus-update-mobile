@@ -119,7 +119,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         const SizedBox(height: AuthGaps.toLink),
         AppLinkText(
           'Already have an Account? Login',
-          links: {'Login': () => context.go(Routes.login)},
+          links: {
+            // Usually reached by pushing from Sign in, so go back to the one
+            // already on the stack rather than laying another on top of it.
+            'Login': () =>
+                context.canPop() ? context.pop() : context.go(Routes.login),
+          },
         ),
         const SizedBox(height: AuthGaps.toDivider),
         const LabelledDivider(label: 'Or sign up with'),
