@@ -65,11 +65,11 @@ class KyuPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: _toBack),
+                  const BackButtonCircle(),
+                  const SizedBox(height: _toBack),
                   Center(
                     child: StepProgress(steps: steps, current: step),
                   ),
-                  const SizedBox(height: _toBack),
-                  const BackButtonCircle(),
                   const SizedBox(height: _toTitle),
                   Text(title, style: theme.textTheme.headlineMedium),
                   const SizedBox(height: _toSubtitle),
