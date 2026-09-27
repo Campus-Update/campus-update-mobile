@@ -37,10 +37,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _submit() {
     if (!(_form.currentState?.validate() ?? false)) return;
-    // Nothing registers the account yet — that call lands with the API, and
-    // it needs the institution, role and academic details the questions after
-    // this collect. For now the form only carries the flow forward.
-    context.push(Routes.verifyOtp);
+    // Nothing registers the account yet — that call lands with the API.
+    // The questions that follow collect the institution, role and academic
+    // details it needs; there is no code to verify in between, because the
+    // API has no endpoint for one and register returns a session outright.
+    context.push(Routes.selectSchool);
   }
 
   /// No provider on the backend yet. Left enabled so the screen matches the

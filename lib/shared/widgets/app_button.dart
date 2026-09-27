@@ -6,8 +6,8 @@ import '../../app/theme/app_spacing.dart';
 /// Which treatment the button takes.
 ///
 /// [primary] is specified by design: a 50px gradient pill, fully rounded, with
-/// 30px of horizontal padding. The others follow from the palette and should be
-/// confirmed as their screens arrive.
+/// 30px of horizontal padding. [secondary] is its Skip — the same pill in
+/// white behind a hairline. [ghost] and [danger] still await their screens.
 enum AppButtonVariant { primary, secondary, ghost, danger }
 
 /// The button used across the app.
@@ -64,7 +64,8 @@ class AppButton extends StatelessWidget {
 
   Color _foreground(ColorScheme scheme) => switch (variant) {
     AppButtonVariant.primary || AppButtonVariant.danger => Colors.white,
-    AppButtonVariant.secondary || AppButtonVariant.ghost => AppColors.indigo,
+    AppButtonVariant.secondary => AppColors.graphite,
+    AppButtonVariant.ghost => AppColors.indigo,
   };
 
   BoxDecoration _decoration(ColorScheme scheme) {
@@ -83,9 +84,12 @@ class AppButton extends StatelessWidget {
         color: AppColors.alertRed,
         borderRadius: radius,
       ),
+      // The design's Skip: white, with a hairline the same grey a field
+      // carries, so it reads as the quieter of a pair.
       AppButtonVariant.secondary => BoxDecoration(
+        color: Colors.white,
         borderRadius: radius,
-        border: Border.all(color: AppColors.indigo),
+        border: Border.all(color: AppColors.fieldBorder),
       ),
       AppButtonVariant.ghost => BoxDecoration(borderRadius: radius),
     };

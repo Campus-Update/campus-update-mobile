@@ -27,11 +27,15 @@ class OptionRow extends StatelessWidget {
   /// the rest, which looks like an oversight; on by default.
   final bool showChevron;
 
-  static const height = 74.0;
+  /// A minimum, not a fixed size: the institution rows sit exactly on it
+  /// with their one line, and the student and staff cards grow past it to
+  /// hold two.
+  static const minHeight = 74.0;
   static const radius = 10.0;
   static const gap = 16.0;
   static const _padLeft = 26.0;
   static const _padRight = 12.0;
+  static const _padY = 14.0;
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +48,15 @@ class OptionRow extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: SizedBox(
-          height: height,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: minHeight),
           child: Padding(
-            padding: const EdgeInsets.only(left: _padLeft, right: _padRight),
+            padding: const EdgeInsets.fromLTRB(
+              _padLeft,
+              _padY,
+              _padRight,
+              _padY,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -66,6 +75,7 @@ class OptionRow extends StatelessWidget {
                       if (subtitle != null)
                         Text(
                           subtitle!,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: selected
