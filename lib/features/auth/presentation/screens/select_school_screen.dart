@@ -82,8 +82,6 @@ class _SelectSchoolScreenState extends ConsumerState<SelectSchoolScreen> {
     context.push(Routes.selectRole);
   }
 
-  void _skip() => context.push(Routes.selectRole);
-
   @override
   Widget build(BuildContext context) {
     final picked = _picked;
@@ -135,21 +133,12 @@ class _SelectSchoolScreenState extends ConsumerState<SelectSchoolScreen> {
           ],
         ],
       ),
-      footer: picked == null
-          ? Row(
-              children: [
-                Expanded(
-                  child: AppButton(
-                    label: 'Skip',
-                    variant: AppButtonVariant.secondary,
-                    onPressed: _skip,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(child: AppButton(label: 'Next', onPressed: null)),
-              ],
-            )
-          : AppButton(label: 'Continue', onPressed: _continue),
+      // No Skip: registration cannot go through without an institutionId,
+      // so there is no outcome for skipping this to produce.
+      footer: AppButton(
+        label: 'Continue',
+        onPressed: picked == null ? null : _continue,
+      ),
     );
   }
 }

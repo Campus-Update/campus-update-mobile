@@ -35,7 +35,12 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
     super.dispose();
   }
 
-  void _finish() => context.go(Routes.home);
+  bool get _hasName => _name.text.trim().isNotEmpty;
+
+  void _finish() {
+    if (!_hasName) return;
+    context.go(Routes.home);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +63,7 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
                   label: 'Full Name',
                   hint: 'Enter Name',
                   controller: _name,
+                  onChanged: (_) => setState(() {}),
                   textInputAction: TextInputAction.done,
                   autofillHints: const [AutofillHints.name],
                 ),
@@ -108,20 +114,12 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
           ],
         ),
       ),
-      footer: Row(
-        children: [
-          Expanded(
-            child: AppButton(
-              label: 'Skip',
-              variant: AppButtonVariant.secondary,
-              onPressed: _finish,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: AppButton(label: 'Continue', onPressed: _finish),
-          ),
-        ],
+      // No Skip: the name is where firstName and lastName come from, and
+      // registration requires both. The four selects below it stay optional,
+      // which is what the API's nullable ids allow for.
+      footer: AppButton(
+        label: 'Continue',
+        onPressed: _hasName ? _finish : null,
       ),
     );
   }
