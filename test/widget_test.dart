@@ -174,6 +174,9 @@ void main() {
     // Enter valid new password matching all criteria
     await tester.enterText(find.byType(EditableText).at(0), 'Password123!');
     await tester.enterText(find.byType(EditableText).at(1), 'Password123!');
+    // The button is disabled until every rule passes, so let the rebuild
+    // settle before tapping it.
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Reset Password'));
     await tester.tap(find.text('Reset Password'));
     await tester.pumpAndSettle();
