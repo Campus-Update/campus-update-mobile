@@ -17,4 +17,11 @@ class PrefsStorage {
   String get feedScope => _prefs.getString(_feedScope) ?? 'personalised';
   Future<void> setFeedScope(String value) =>
       _prefs.setString(_feedScope, value);
+
+  static const _hasPendingProfile = 'has_pending_profile';
+
+  /// Whether the user has a pending profile to complete. Defaults to true.
+  bool get hasPendingProfile => _prefs.getBool(_hasPendingProfile) ?? true;
+  Future<void> setHasPendingProfile(bool value) =>
+      _prefs.setBool(_hasPendingProfile, value);
 }

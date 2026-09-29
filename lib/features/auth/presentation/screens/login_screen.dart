@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
+import '../../../../core/auth/auth_state.dart';
 import '../../../../shared/utils/validators.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/auth_page.dart';
@@ -28,9 +29,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _submit() {
-    // Validation runs and reports; there is nothing to call yet. The auth
-    // repository lands with the API wiring, and this is where it goes.
     if (!(_form.currentState?.validate() ?? false)) return;
+    ref.read(authProvider.notifier).signedIn();
   }
 
   /// No provider on the backend yet. Left enabled so the screen matches the

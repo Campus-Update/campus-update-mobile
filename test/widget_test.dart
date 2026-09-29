@@ -1,6 +1,7 @@
 import 'package:campus_update/app/app.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
+import 'package:campus_update/features/home/presentation/screens/home_screen.dart';
 import 'package:campus_update/shared/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,6 +50,40 @@ void main() {
     expect(find.text('Sign in'), findsOneWidget);
   });
 
+  testWidgets('signing in with valid credentials navigates to the home page', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedOut();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Enter email and password
+    await tester.enterText(find.byType(EditableText).at(0), 'user@example.com');
+    await tester.enterText(find.byType(EditableText).at(1), 'Password123!');
+    await tester.pumpAndSettle();
+
+    // Tap Sign in
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+
+    // Navigated to Home Screen
+    expect(find.text('Welcome, Jeremiah!'), findsOneWidget);
+    expect(
+      find.text('Complete your profile to sharpen your feed'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('a signed-in session lands on home with the tab bar', (
     tester,
   ) async {
@@ -73,7 +108,7 @@ void main() {
   });
 
   testWidgets(
-    'home screen allows backward navigation from calendar, notifications, and search',
+    'home screen allows backward navigation from notifications and detail screens',
     (tester) async {
       final container = ProviderContainer(
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
@@ -89,21 +124,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Tap School calendar on Home screen
-      await tester.tap(find.text('School calendar'));
-      await tester.pumpAndSettle();
+      // Verify Home Screen elements
+      expect(find.text('Welcome, Jeremiah!'), findsOneWidget);
+      expect(find.text('Complete your profile to sharpen your feed'), findsOneWidget);
 
-      expect(find.text('Academic calendar'), findsOneWidget);
-      // Verify back button is visible and tap it
-      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.arrow_back));
-      await tester.pumpAndSettle();
-
-      // Returned to Home
-      expect(find.text('Home not built yet.'), findsOneWidget);
-
-      // Tap Notifications on Home screen
-      await tester.tap(find.text('Notifications'));
+      // Tap Notifications icon on Home screen
+      await tester.tap(find.byIcon(Icons.notifications_none_rounded));
       await tester.pumpAndSettle();
 
       expect(find.text('Notifications'), findsWidgets);
@@ -112,19 +138,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Returned to Home
-      expect(find.text('Home not built yet.'), findsOneWidget);
-
-      // Tap Search on Home screen
-      await tester.tap(find.text('Search'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Search'), findsWidgets);
-      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.arrow_back));
-      await tester.pumpAndSettle();
-
-      // Returned to Home
-      expect(find.text('Home not built yet.'), findsOneWidget);
+      expect(find.text('Welcome, Jeremiah!'), findsOneWidget);
     },
   );
 
@@ -188,4 +202,84 @@ void main() {
 
     expect(find.text('Sign in'), findsOneWidget);
   });
+
+  testWidgets(
+    'home screen without pending profile hides profile card and renders feed directly',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+      container.read(authProvider.notifier).signedIn();
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: HomeScreen(hasPendingProfile: false),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Profile completion card must NOT be present
+      expect(
+        find.text('Complete your profile to sharpen your feed'),
+        findsNothing,
+      );
+
+      // Header, Breaking news, Latest news, and Upcoming events must be visible
+      expect(find.text('Welcome, Jeremiah!'), findsOneWidget);
+      expect(find.text('Breaking'), findsOneWidget);
+      expect(find.text('Latest News'), findsOneWidget);
+      expect(
+        find.text('FOCIT introduces machine learning elective for 400 level students'),
+        findsOneWidget,
+      );
+      expect(find.text('Upcoming Events'), findsOneWidget);
+      expect(
+        find.text('Matriculation ceremony for the 2025/2026 session'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'tapping Not now on profile completion card dismisses it from home screen',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+      container.read(authProvider.notifier).signedIn();
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            home: HomeScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Card is initially visible
+      expect(
+        find.text('Complete your profile to sharpen your feed'),
+        findsOneWidget,
+      );
+
+      // Tap 'Not now'
+      await tester.tap(find.text('Not now'));
+      await tester.pumpAndSettle();
+
+      // Card is dismissed
+      expect(
+        find.text('Complete your profile to sharpen your feed'),
+        findsNothing,
+      );
+      expect(find.text('Breaking'), findsOneWidget);
+    },
+  );
 }
+
