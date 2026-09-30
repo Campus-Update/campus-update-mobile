@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../app/theme/app_colors.dart';
 import '../core/auth/auth_state.dart';
 import '../core/storage/storage_providers.dart';
 import '../features/announcements/presentation/screens/announcement_detail_screen.dart';
@@ -28,6 +29,7 @@ import '../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../features/profile/presentation/screens/preferences_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/search/presentation/screens/search_screen.dart';
+import '../shared/widgets/nav_icons.dart';
 
 abstract final class Routes {
   static const splash = '/splash';
@@ -123,7 +125,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           return VerifyOtpScreen(
             title: args?.title ?? 'Verify OTP',
             email: args?.email,
-            onVerified: args == null ? null : (_) => context.push(args.next),
+            onVerified: args == null
+                ? null
+                : (_) {
+                    if (args.next == Routes.home) {
+                      ref
+                          .read(authProvider.notifier)
+                          .signedIn(email: args.email);
+                    } else {
+                      context.push(args.next);
+                    }
+                  },
           );
         },
       ),
@@ -155,8 +167,15 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Above the shell: these cover the tab bar and pop back to the active tab.
       GoRoute(
-        path: Routes.calendar,
-        builder: (_, __) => const CalendarScreen(),
+        path: Routes.announcements,
+        builder: (_, __) => const AnnouncementsListScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, s) =>
+                AnnouncementDetailScreen(id: s.pathParameters['id']!),
+          ),
+        ],
       ),
       GoRoute(
         path: Routes.notifications,
@@ -171,7 +190,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: Routes.home,
-                builder: (_, __) => const HomeScreen(),
+                builder: (_, state) {
+                  final pendingParam =
+                      state.uri.queryParameters['pendingProfile'];
+                  final bool? hasPending = pendingParam != null
+                      ? pendingParam == 'true'
+                      : null;
+                  return HomeScreen(hasPendingProfile: hasPending);
+                },
               ),
             ],
           ),
@@ -193,21 +219,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: Routes.announcements,
-                builder: (_, __) => const AnnouncementsListScreen(),
-                routes: [
-                  GoRoute(
-                    path: ':id',
-                    builder: (_, s) =>
-                        AnnouncementDetailScreen(id: s.pathParameters['id']!),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
                 path: Routes.events,
                 builder: (_, __) => const EventsListScreen(),
                 routes: [
@@ -217,6 +228,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                         EventDetailScreen(id: s.pathParameters['id']!),
                   ),
                 ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.calendar,
+                builder: (_, __) => const CalendarScreen(),
               ),
             ],
           ),
@@ -250,35 +269,63 @@ class _TabShell extends StatelessWidget {
 
   final StatefulNavigationShell shell;
 
-  static const _tabs = [
-    (icon: Icons.home_outlined, selected: Icons.home, label: 'Home'),
-    (icon: Icons.article_outlined, selected: Icons.article, label: 'News'),
-    (
-      icon: Icons.campaign_outlined,
-      selected: Icons.campaign,
-      label: 'Announcements',
-    ),
-    (icon: Icons.event_outlined, selected: Icons.event, label: 'Events'),
-    (icon: Icons.person_outline, selected: Icons.person, label: 'Profile'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    const inactive = AppColors.textMuted;
+    const active = AppColors.indigo;
+
     return Scaffold(
       body: shell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: shell.currentIndex,
-        // `initialLocation: true` resets a tab to its root when re-tapped.
-        onDestinationSelected: (index) =>
-            shell.goBranch(index, initialLocation: index == shell.currentIndex),
-        destinations: [
-          for (final tab in _tabs)
-            NavigationDestination(
-              icon: Icon(tab.icon),
-              selectedIcon: Icon(tab.selected),
-              label: tab.label,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
             ),
-        ],
+          ],
+        ),
+        child: NavigationBar(
+          selectedIndex: shell.currentIndex,
+          elevation: 0,
+          backgroundColor: Colors.white,
+          indicatorColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          // `initialLocation: true` resets a tab to its root when re-tapped.
+          onDestinationSelected: (index) => shell.goBranch(
+            index,
+            initialLocation: index == shell.currentIndex,
+          ),
+          destinations: const [
+            NavigationDestination(
+              icon: NavHomeIcon(color: inactive),
+              selectedIcon: NavHomeIcon(color: active),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: NavNewsIcon(color: inactive),
+              selectedIcon: NavNewsIcon(color: active),
+              label: 'News',
+            ),
+            NavigationDestination(
+              icon: NavEventsIcon(color: inactive),
+              selectedIcon: NavEventsIcon(color: active),
+              label: 'Events',
+            ),
+            NavigationDestination(
+              icon: NavCalendarIcon(color: inactive),
+              selectedIcon: NavCalendarIcon(color: active),
+              label: 'Calendar',
+            ),
+            NavigationDestination(
+              icon: NavProfileIcon(color: inactive),
+              selectedIcon: NavProfileIcon(color: active),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }

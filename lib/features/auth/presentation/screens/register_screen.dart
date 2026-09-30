@@ -16,6 +16,8 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _form = GlobalKey<FormState>();
+  final _firstName = TextEditingController();
+  final _lastName = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
@@ -23,6 +25,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   void dispose() {
+    _firstName.dispose();
+    _lastName.dispose();
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
@@ -60,8 +64,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           child: AppFormPanel(
             children: [
               AppInput(
-                label: 'Email Address',
+                label: 'First Name',
                 hint: 'Enter First Name',
+                controller: _firstName,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.givenName],
+                validator: (v) => Validators.required(v, 'First name'),
+              ),
+              AppInput(
+                label: 'Last Name',
+                hint: 'Enter Last Name',
+                controller: _lastName,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.familyName],
+                validator: (v) => Validators.required(v, 'Last name'),
+              ),
+              AppInput(
+                label: 'Email Address',
+                hint: 'Enter Email Address',
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
