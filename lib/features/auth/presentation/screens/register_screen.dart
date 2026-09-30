@@ -5,9 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router.dart';
 import '../../../../shared/utils/validators.dart';
 import '../../../../shared/widgets/widgets.dart';
-import '../../../profile/data/profile_providers.dart';
 import '../widgets/auth_page.dart';
-import 'verify_otp_screen.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});

@@ -49,7 +49,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final lastName = _lastName.text.trim();
     final idNumber = _idNumber.text.trim();
 
-    await ref.read(userProfileProvider.notifier).updateProfile(
+    await ref
+        .read(userProfileProvider.notifier)
+        .updateProfile(
           firstName: firstName,
           lastName: lastName,
           matriculationOrStaffNumber: idNumber.isNotEmpty ? idNumber : null,
@@ -115,10 +117,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ],
               ),
               const SizedBox(height: AppSpacing.xl),
-              AppButton(
-                label: 'Save profile',
-                onPressed: _save,
-              ),
+              AppButton(label: 'Save profile', onPressed: _save),
             ],
           ),
         ),

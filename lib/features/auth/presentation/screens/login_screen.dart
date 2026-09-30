@@ -30,9 +30,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _submit() {
     if (!(_form.currentState?.validate() ?? false)) return;
-    ref.read(authProvider.notifier).signedIn(
-          email: _email.text.trim(),
-        );
+    ref.read(authProvider.notifier).signedIn(email: _email.text.trim());
   }
 
   /// No provider on the backend yet. Left enabled so the screen matches the

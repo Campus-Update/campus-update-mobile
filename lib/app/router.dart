@@ -193,8 +193,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (_, state) {
                   final pendingParam =
                       state.uri.queryParameters['pendingProfile'];
-                  final bool? hasPending =
-                      pendingParam != null ? pendingParam == 'true' : null;
+                  final bool? hasPending = pendingParam != null
+                      ? pendingParam == 'true'
+                      : null;
                   return HomeScreen(hasPendingProfile: hasPending);
                 },
               ),

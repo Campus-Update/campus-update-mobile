@@ -9,11 +9,7 @@ import '../../../profile/data/profile_providers.dart';
 
 /// The central landing screen matching the UI design specification.
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({
-    super.key,
-    this.hasPendingProfile,
-    this.userName,
-  });
+  const HomeScreen({super.key, this.hasPendingProfile, this.userName});
 
   /// Explicit override for whether the user has a pending profile to complete.
   /// If null, reads from [pendingProfileProvider].
@@ -198,9 +194,7 @@ class _ProfileCompletionCard extends ConsumerWidget {
                 ),
               ],
             ),
-            child: const Center(
-              child: _SparkleFeedIcon(),
-            ),
+            child: const Center(child: _SparkleFeedIcon()),
           ),
           const SizedBox(height: 18),
           const Text(
@@ -296,9 +290,7 @@ class _SparkleFeedIcon extends StatelessWidget {
     return SizedBox(
       width: 32,
       height: 32,
-      child: CustomPaint(
-        painter: _FeedIconPainter(),
-      ),
+      child: CustomPaint(painter: _FeedIconPainter()),
     );
   }
 }
@@ -404,9 +396,7 @@ class _BreakingNewsSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           child: Container(
             width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Color(0xFF1E293B),
-            ),
+            decoration: const BoxDecoration(color: Color(0xFF1E293B)),
             child: AspectRatio(
               aspectRatio: 350 / 184,
               child: Image.asset(
@@ -468,16 +458,11 @@ class _LatestNewsSection extends StatelessWidget {
   static const _newsItems = [
     (
       category: 'Campus',
-      title: 'FOCIT introduces machine learning elective for 400 level students',
+      title:
+          'FOCIT introduces machine learning elective for 400 level students',
     ),
-    (
-      category: 'General',
-      title: 'New Library Wing Opens Ahead of Schedule',
-    ),
-    (
-      category: 'Technology',
-      title: 'New Library Wing Opens Ahead of Schedule',
-    ),
+    (category: 'General', title: 'New Library Wing Opens Ahead of Schedule'),
+    (category: 'Technology', title: 'New Library Wing Opens Ahead of Schedule'),
   ];
 
   @override

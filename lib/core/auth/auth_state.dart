@@ -36,11 +36,9 @@ class AuthNotifier extends Notifier<AuthStatus> {
 
   void signedIn({String? email, String? firstName, String? lastName}) {
     if (email != null && email.isNotEmpty) {
-      ref.read(userProfileProvider.notifier).signIn(
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-      );
+      ref
+          .read(userProfileProvider.notifier)
+          .signIn(email: email, firstName: firstName, lastName: lastName);
     }
     state = AuthStatus.signedIn;
   }

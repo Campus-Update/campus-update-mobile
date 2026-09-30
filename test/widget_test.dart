@@ -131,7 +131,10 @@ void main() {
 
       // Verify Home Screen elements
       expect(find.text('Welcome, Jeremiah!'), findsOneWidget);
-      expect(find.text('Complete your profile to sharpen your feed'), findsOneWidget);
+      expect(
+        find.text('Complete your profile to sharpen your feed'),
+        findsOneWidget,
+      );
 
       // Tap Notifications icon on Home screen
       await tester.tap(find.byIcon(Icons.notifications_none_rounded));
@@ -224,10 +227,7 @@ void main() {
         UncontrolledProviderScope(
           container: container,
           child: const MaterialApp(
-            home: HomeScreen(
-              hasPendingProfile: false,
-              userName: 'Jeremiah',
-            ),
+            home: HomeScreen(hasPendingProfile: false, userName: 'Jeremiah'),
           ),
         ),
       );
@@ -244,7 +244,9 @@ void main() {
       expect(find.text('Breaking'), findsOneWidget);
       expect(find.text('Latest News'), findsOneWidget);
       expect(
-        find.text('FOCIT introduces machine learning elective for 400 level students'),
+        find.text(
+          'FOCIT introduces machine learning elective for 400 level students',
+        ),
         findsOneWidget,
       );
       expect(find.text('Upcoming Events'), findsOneWidget);
@@ -267,9 +269,7 @@ void main() {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
-          child: const MaterialApp(
-            home: HomeScreen(),
-          ),
+          child: const MaterialApp(home: HomeScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -333,9 +333,7 @@ void main() {
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
-      container
-          .read(authProvider.notifier)
-          .signedIn(email: 'user@example.com');
+      container.read(authProvider.notifier).signedIn(email: 'user@example.com');
 
       await tester.pumpWidget(
         UncontrolledProviderScope(
@@ -374,5 +372,3 @@ void main() {
     },
   );
 }
-
-

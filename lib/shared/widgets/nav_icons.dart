@@ -104,17 +104,9 @@ class _NewsIconPainter extends CustomPainter {
     );
 
     // Document lines
-    canvas.drawLine(
-      Offset(8 * s, 12 * s),
-      Offset(16 * s, 12 * s),
-      paint,
-    );
+    canvas.drawLine(Offset(8 * s, 12 * s), Offset(16 * s, 12 * s), paint);
 
-    canvas.drawLine(
-      Offset(8 * s, 16 * s),
-      Offset(14 * s, 16 * s),
-      paint,
-    );
+    canvas.drawLine(Offset(8 * s, 16 * s), Offset(14 * s, 16 * s), paint);
   }
 
   @override
@@ -165,16 +157,8 @@ class _EventsIconPainter extends CustomPainter {
     );
 
     // Top binder rings
-    canvas.drawLine(
-      Offset(8.5 * s, 3 * s),
-      Offset(8.5 * s, 6.5 * s),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(15.5 * s, 3 * s),
-      Offset(15.5 * s, 6.5 * s),
-      paint,
-    );
+    canvas.drawLine(Offset(8.5 * s, 3 * s), Offset(8.5 * s, 6.5 * s), paint);
+    canvas.drawLine(Offset(15.5 * s, 3 * s), Offset(15.5 * s, 6.5 * s), paint);
 
     // Center-bottom event dot
     final fillPaint = Paint()
@@ -233,23 +217,11 @@ class _CalendarIconPainter extends CustomPainter {
     canvas.drawRRect(frontRect, paint);
 
     // Front header line
-    canvas.drawLine(
-      Offset(7.5 * s, 10 * s),
-      Offset(20.5 * s, 10 * s),
-      paint,
-    );
+    canvas.drawLine(Offset(7.5 * s, 10 * s), Offset(20.5 * s, 10 * s), paint);
 
     // Top binder rings on front card
-    canvas.drawLine(
-      Offset(11 * s, 3.2 * s),
-      Offset(11 * s, 6.5 * s),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(17 * s, 3.2 * s),
-      Offset(17 * s, 6.5 * s),
-      paint,
-    );
+    canvas.drawLine(Offset(11 * s, 3.2 * s), Offset(11 * s, 6.5 * s), paint);
+    canvas.drawLine(Offset(17 * s, 3.2 * s), Offset(17 * s, 6.5 * s), paint);
   }
 
   @override

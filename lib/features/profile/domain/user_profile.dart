@@ -116,10 +116,9 @@ class UserProfile {
       lastName: json['lastName'] as String?,
       role: json['role'] != null
           ? UserRole.values.where((e) => e.name == json['role']).firstOrNull ??
-              UserRole.student
+                UserRole.student
           : UserRole.student,
-      matriculationOrStaffNumber:
-          json['matriculationOrStaffNumber'] as String?,
+      matriculationOrStaffNumber: json['matriculationOrStaffNumber'] as String?,
       institutionId: json['institutionId'] as String?,
       facultyId: json['facultyId'] as String?,
       departmentId: json['departmentId'] as String?,
