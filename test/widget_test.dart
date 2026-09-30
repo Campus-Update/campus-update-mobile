@@ -49,6 +49,38 @@ void main() {
     expect(find.text('Sign in'), findsOneWidget);
   });
 
+  testWidgets('submitting valid credentials on login screen signs in to home', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedOut();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Fill in valid email and password
+    final textFields = find.byType(TextField);
+    await tester.enterText(textFields.first, 'student@campus.edu');
+    await tester.enterText(textFields.last, 'password123');
+    await tester.pump();
+
+    // Tap Sign in button
+    await tester.tap(find.widgetWithText(AppButton, 'Sign in'));
+    await tester.pumpAndSettle();
+
+    // Verify user is signed in and lands on Home screen with bottom tabs
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.text('Home'), findsWidgets);
+  });
+
   testWidgets('a signed-in session lands on home with the tab bar', (
     tester,
   ) async {

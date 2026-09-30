@@ -84,14 +84,17 @@ class AuthPage extends StatelessWidget {
       ),
       child: Scaffold(
         backgroundColor: Colors.white,
+        resizeToAvoidBottomInset: true,
         body: SafeArea(
           child: GestureDetector(
-            // Tapping anywhere off a field puts the keyboard away. Opaque so
-            // taps landing on blank page are caught; fields and buttons are
-            // below this in the tree and still get theirs first.
+            // Tapping anywhere off a field puts the keyboard away. Translucent
+            // so taps landing on blank space are caught without interfering
+            // with buttons or form inputs.
             onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-            behavior: HitTestBehavior.opaque,
+            behavior: HitTestBehavior.translucent,
             child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(
                 horizontal: AppFormPanel.gutter,
               ),

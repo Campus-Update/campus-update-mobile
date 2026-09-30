@@ -20,6 +20,7 @@ import '../features/events/presentation/screens/events_list_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/news/presentation/screens/news_detail_screen.dart';
 import '../features/news/presentation/screens/news_list_screen.dart';
+import '../features/news/presentation/screens/news_search_screen.dart';
 import '../features/notifications/presentation/screens/notifications_screen.dart';
 import '../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../features/profile/presentation/screens/preferences_screen.dart';
@@ -38,6 +39,7 @@ abstract final class Routes {
 
   static const home = '/home';
   static const news = '/news';
+  static const newsSearch = '/news/search';
   static const announcements = '/announcements';
   static const events = '/events';
   static const profile = '/profile';
@@ -112,7 +114,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           return VerifyOtpScreen(
             title: args?.title ?? 'Verify OTP',
             email: args?.email,
-            onVerified: args == null ? null : (_) => context.push(args.next),
+            onVerified: args == null
+                ? (_) => ref.read(authProvider.notifier).signedIn()
+                : (_) => context.push(args.next),
           );
         },
       ),
@@ -157,6 +161,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: Routes.news,
                 builder: (_, __) => const NewsListScreen(),
                 routes: [
+                  GoRoute(
+                    path: 'search',
+                    builder: (_, __) => const NewsSearchScreen(),
+                  ),
                   GoRoute(
                     path: ':id',
                     builder: (_, s) =>

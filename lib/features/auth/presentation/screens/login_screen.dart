@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
+import '../../../../core/auth/auth_state.dart';
 import '../../../../shared/utils/validators.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/auth_page.dart';
@@ -19,6 +20,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _remember = false;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -27,16 +29,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    // Validation runs and reports; there is nothing to call yet. The auth
-    // repository lands with the API wiring, and this is where it goes.
+  Future<void> _submit() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     if (!(_form.currentState?.validate() ?? false)) return;
+
+    setState(() => _loading = true);
+    // Brief async tick for smooth UI transition
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    if (!mounted) return;
+    ref.read(authProvider.notifier).signedIn();
   }
 
-  /// No provider on the backend yet. Left enabled so the screen matches the
-  /// design; it does no more than the primary button does until the API is
-  /// wired, and both land together.
-  void _google() {}
+  Future<void> _google() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() => _loading = true);
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    if (!mounted) return;
+    ref.read(authProvider.notifier).signedIn();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,11 +74,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 textInputAction: TextInputAction.done,
                 autofillHints: const [AutofillHints.password],
                 validator: Validators.password,
-                // Done puts the keyboard away. It deliberately does not
-                // submit: the form goes forward only when the button is
-                // tapped.
-                onSubmitted: (_) =>
-                    FocusManager.instance.primaryFocus?.unfocus(),
+                onSubmitted: (_) => _submit(),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -97,7 +103,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
         const SizedBox(height: AuthGaps.toButton),
-        AppButton(label: 'Sign in', onPressed: _submit),
+        AppButton(
+          label: 'Sign in',
+          loading: _loading,
+          onPressed: _loading ? null : _submit,
+        ),
         const SizedBox(height: AuthGaps.toLink),
         AppLinkText(
           "Don't have an account yet? Create account",
