@@ -114,7 +114,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           return VerifyOtpScreen(
             title: args?.title ?? 'Verify OTP',
             email: args?.email,
-            onVerified: args == null ? null : (_) => context.push(args.next),
+            onVerified: args == null
+                ? null
+                : (_) {
+                    if (args.next == Routes.home) {
+                      ref
+                          .read(authProvider.notifier)
+                          .signedIn(email: args.email);
+                    } else {
+                      context.push(args.next);
+                    }
+                  },
           );
         },
       ),

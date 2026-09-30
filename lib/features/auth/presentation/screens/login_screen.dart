@@ -30,7 +30,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _submit() {
     if (!(_form.currentState?.validate() ?? false)) return;
-    ref.read(authProvider.notifier).signedIn();
+    ref.read(authProvider.notifier).signedIn(
+          email: _email.text.trim(),
+        );
   }
 
   /// No provider on the backend yet. Left enabled so the screen matches the
@@ -50,7 +52,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               AppInput(
                 label: 'Email Address',
-                hint: 'Enter First Name',
+                hint: 'Enter email address',
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,

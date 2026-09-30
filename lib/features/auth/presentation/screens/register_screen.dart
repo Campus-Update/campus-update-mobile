@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router.dart';
 import '../../../../shared/utils/validators.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../../../profile/data/profile_providers.dart';
 import '../widgets/auth_page.dart';
+import 'verify_otp_screen.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -16,6 +18,8 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _form = GlobalKey<FormState>();
+  final _firstName = TextEditingController();
+  final _lastName = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
@@ -23,6 +27,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   void dispose() {
+    _firstName.dispose();
+    _lastName.dispose();
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
@@ -37,10 +43,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _submit() {
     if (!(_form.currentState?.validate() ?? false)) return;
-    // Nothing registers the account yet — that call lands with the API, and
-    // it needs the institution, role and academic details the questions after
-    // this collect. For now the form only carries the flow forward.
-    context.push(Routes.verifyOtp);
+    final email = _email.text.trim();
+    final firstName = _firstName.text.trim();
+    final lastName = _lastName.text.trim();
+
+    ref.read(userProfileProvider.notifier).signIn(
+          email: email,
+          firstName: firstName,
+          lastName: lastName,
+        );
+
+    context.push(
+      Routes.verifyOtp,
+      extra: OtpArgs(
+        title: 'Verify OTP',
+        email: email,
+        next: Routes.home,
+      ),
+    );
   }
 
   /// No provider on the backend yet. Left enabled so the screen matches the
@@ -59,8 +79,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           child: AppFormPanel(
             children: [
               AppInput(
-                label: 'Email Address',
+                label: 'First Name',
                 hint: 'Enter First Name',
+                controller: _firstName,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.givenName],
+                validator: (v) => Validators.required(v, 'First name'),
+              ),
+              AppInput(
+                label: 'Last Name',
+                hint: 'Enter Last Name',
+                controller: _lastName,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.familyName],
+                validator: (v) => Validators.required(v, 'Last name'),
+              ),
+              AppInput(
+                label: 'Email Address',
+                hint: 'Enter Email Address',
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,

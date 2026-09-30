@@ -68,7 +68,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // Enter email and password
-    await tester.enterText(find.byType(EditableText).at(0), 'user@example.com');
+    await tester.enterText(
+      find.byType(EditableText).at(0),
+      'jeremiah@example.com',
+    );
     await tester.enterText(find.byType(EditableText).at(1), 'Password123!');
     await tester.pumpAndSettle();
 
@@ -114,7 +117,9 @@ void main() {
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
-      container.read(authProvider.notifier).signedIn();
+      container
+          .read(authProvider.notifier)
+          .signedIn(email: 'jeremiah@example.com');
 
       await tester.pumpWidget(
         UncontrolledProviderScope(
@@ -216,7 +221,10 @@ void main() {
         UncontrolledProviderScope(
           container: container,
           child: const MaterialApp(
-            home: HomeScreen(hasPendingProfile: false),
+            home: HomeScreen(
+              hasPendingProfile: false,
+              userName: 'Jeremiah',
+            ),
           ),
         ),
       );
@@ -281,5 +289,87 @@ void main() {
       expect(find.text('Breaking'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'displays dynamic greeting for different signed-in users rather than hardcoding',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+      container.read(authProvider.notifier).signedOut();
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const CampusUpdateApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Sign in as Emmanuel
+      await tester.enterText(
+        find.byType(EditableText).at(0),
+        'emmanuel@campus.edu',
+      );
+      await tester.enterText(find.byType(EditableText).at(1), 'Password123!');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sign in'));
+      await tester.pumpAndSettle();
+
+      // Home Screen greets Emmanuel, NOT Jeremiah
+      expect(find.text('Welcome, Emmanuel!'), findsOneWidget);
+      expect(find.text('Welcome, Jeremiah!'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'editing profile name updates greeting on home screen and marks profile complete',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+      container
+          .read(authProvider.notifier)
+          .signedIn(email: 'user@example.com');
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const CampusUpdateApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Initially greeted with email-derived name
+      expect(find.text('Welcome, User!'), findsOneWidget);
+
+      // Tap 'Add details' button on profile card
+      await tester.tap(find.text('Add details'));
+      await tester.pumpAndSettle();
+
+      // Now on Edit Profile screen
+      expect(find.text('Edit profile'), findsOneWidget);
+
+      // Enter First Name as 'Amara' and Last Name as 'Okafor'
+      await tester.enterText(find.byType(EditableText).at(0), 'Amara');
+      await tester.enterText(find.byType(EditableText).at(1), 'Okafor');
+      await tester.pumpAndSettle();
+
+      // Tap 'Save profile'
+      await tester.tap(find.text('Save profile'));
+      await tester.pumpAndSettle();
+
+      // Returned to Home Screen, greeted with new name
+      expect(find.text('Welcome, Amara!'), findsOneWidget);
+      // Profile completion card should now be marked complete
+      expect(
+        find.text('Complete your profile to sharpen your feed'),
+        findsNothing,
+      );
+    },
+  );
 }
+
 

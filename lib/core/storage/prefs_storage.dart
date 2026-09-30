@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../features/profile/domain/user_profile.dart';
 
 /// Non-sensitive local settings.
 class PrefsStorage {
@@ -24,4 +28,48 @@ class PrefsStorage {
   bool get hasPendingProfile => _prefs.getBool(_hasPendingProfile) ?? true;
   Future<void> setHasPendingProfile(bool value) =>
       _prefs.setBool(_hasPendingProfile, value);
+
+  static const _currentUserEmail = 'current_user_email';
+
+  String? get currentUserEmail => _prefs.getString(_currentUserEmail);
+
+  Future<void> setCurrentUserEmail(String? email) async {
+    if (email == null || email.isEmpty) {
+      await _prefs.remove(_currentUserEmail);
+    } else {
+      await _prefs.setString(_currentUserEmail, email.toLowerCase().trim());
+    }
+  }
+
+  static String _profileKeyFor(String email) =>
+      'user_profile_${email.toLowerCase().trim()}';
+
+  UserProfile? getUserProfile(String email) {
+    final raw = _prefs.getString(_profileKeyFor(email));
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      return UserProfile.fromJson(map);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> saveUserProfile(UserProfile profile) async {
+    final email = profile.email?.toLowerCase().trim();
+    if (email != null && email.isNotEmpty) {
+      final jsonStr = jsonEncode(profile.toJson());
+      await _prefs.setString(_profileKeyFor(email), jsonStr);
+    }
+  }
+
+  UserProfile? getCurrentUserProfile() {
+    final email = currentUserEmail;
+    if (email == null || email.isEmpty) return null;
+    return getUserProfile(email);
+  }
+
+  Future<void> clearCurrentUser() async {
+    await _prefs.remove(_currentUserEmail);
+  }
 }

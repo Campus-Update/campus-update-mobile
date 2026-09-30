@@ -9,11 +9,19 @@ import '../../../profile/data/profile_providers.dart';
 
 /// The central landing screen matching the UI design specification.
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key, this.hasPendingProfile});
+  const HomeScreen({
+    super.key,
+    this.hasPendingProfile,
+    this.userName,
+  });
 
   /// Explicit override for whether the user has a pending profile to complete.
   /// If null, reads from [pendingProfileProvider].
   final bool? hasPendingProfile;
+
+  /// Optional explicit override for the displayed user name.
+  /// If null, reads from [userProfileProvider].
+  final String? userName;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,7 +40,7 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _HomeHeader(),
+              _HomeHeader(userName: userName),
               if (showProfileCard) ...[
                 const SizedBox(height: AppSpacing.md),
                 const _ProfileCompletionCard(),
@@ -55,11 +63,19 @@ class HomeScreen extends ConsumerWidget {
 }
 
 /// Top header containing the Campus Update badge, greeting, and action buttons.
-class _HomeHeader extends StatelessWidget {
-  const _HomeHeader();
+class _HomeHeader extends ConsumerWidget {
+  const _HomeHeader({this.userName});
+
+  final String? userName;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(userProfileProvider);
+    final name = userName ?? profile?.displayName;
+    final greeting = (name != null && name.trim().isNotEmpty)
+        ? 'Welcome, ${name.trim()}!'
+        : 'Welcome!';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -85,9 +101,9 @@ class _HomeHeader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
-              'Welcome, Jeremiah!',
-              style: TextStyle(
+            Text(
+              greeting,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF111827),
