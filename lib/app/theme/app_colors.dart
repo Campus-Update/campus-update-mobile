@@ -63,6 +63,13 @@ abstract final class AppColors {
   static const otpCorrect = emerald;
   static const otpWrong = alertRed;
 
+  /// A chosen option's ground — the institution row, the student or staff
+  /// card. Flat, not the button's gradient. Sampled off the design.
+  static const optionSelected = Color(0xFF5D15ED);
+
+  /// An unchosen one, the same lavender the form panel uses.
+  static const optionRest = formPanel;
+
   /// Muted text under a screen title.
   static const textMuted = Color(0xFF8C8994);
 

@@ -16,7 +16,8 @@ import '../../app/theme/app_colors.dart';
 class AppInput extends StatefulWidget {
   const AppInput({
     super.key,
-    required this.label,
+    this.label,
+    this.suffix,
     this.controller,
     this.hint,
     this.obscure = false,
@@ -30,7 +31,12 @@ class AppInput extends StatefulWidget {
     this.autofillHints,
   });
 
-  final String label;
+  /// Omit it for a field that stands on its own, like a search box.
+  final String? label;
+
+  /// Replaces the eye on a password field — a magnifier, say.
+  final Widget? suffix;
+
   final TextEditingController? controller;
   final String? hint;
 
@@ -122,13 +128,15 @@ class _AppInputState extends State<AppInput> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          widget.label,
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: AppColors.fieldLabel,
+        if (widget.label != null) ...[
+          Text(
+            widget.label!,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: AppColors.fieldLabel,
+            ),
           ),
-        ),
-        const SizedBox(height: AppInput.labelGap),
+          const SizedBox(height: AppInput.labelGap),
+        ],
         TextFormField(
           controller: widget.controller,
           focusNode: widget.focusNode,
@@ -157,7 +165,7 @@ class _AppInputState extends State<AppInput> {
               maxHeight: 44,
               maxWidth: 48,
             ),
-            suffixIcon: widget.obscure ? _revealToggle() : null,
+            suffixIcon: widget.obscure ? _revealToggle() : widget.suffix,
           ),
         ),
       ],

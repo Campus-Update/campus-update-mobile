@@ -37,7 +37,18 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   bool get _matches =>
       _password.text.isNotEmpty && _password.text == _confirm.text;
 
+  /// Every rule the screen displays. The button is the only way forward, so
+  /// this is what makes the list mean something rather than describe it.
+  bool get _isValid =>
+      _hasMinLength &&
+      _hasUppercase &&
+      _hasLowercase &&
+      _hasNumber &&
+      _hasSpecial &&
+      _matches;
+
   void _submit() {
+    if (!_isValid) return;
     context.go(Routes.passwordResetSuccess);
   }
 
@@ -144,7 +155,12 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           ),
         ),
         const SizedBox(height: AuthGaps.toButton),
-        AppButton(label: 'Reset Password', onPressed: _submit),
+        // Disabled until the rules pass, so the list above explains why
+        // rather than the tap doing nothing.
+        AppButton(
+          label: 'Reset Password',
+          onPressed: _isValid ? _submit : null,
+        ),
       ],
     );
   }

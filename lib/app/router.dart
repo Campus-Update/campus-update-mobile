@@ -11,7 +11,10 @@ import '../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/onboarding_screen.dart';
 import '../features/auth/presentation/screens/password_reset_success_screen.dart';
+import '../features/auth/presentation/screens/academic_details_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
+import '../features/auth/presentation/screens/select_role_screen.dart';
+import '../features/auth/presentation/screens/select_school_screen.dart';
 import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/auth/presentation/screens/verify_otp_screen.dart';
@@ -35,6 +38,11 @@ abstract final class Routes {
   static const register = '/register';
   static const verifyOtp = '/verify-otp';
   static const forgotPassword = '/forgot-password';
+
+  // The know-your-user questions, asked once the account exists.
+  static const selectSchool = '/select-school';
+  static const selectRole = '/select-role';
+  static const academicDetails = '/academic-details';
   static const resetPassword = '/reset-password';
   static const passwordResetSuccess = '/password-reset-success';
 
@@ -58,6 +66,9 @@ abstract final class Routes {
     register,
     verifyOtp,
     forgotPassword,
+    selectSchool,
+    selectRole,
+    academicDetails,
     resetPassword,
     passwordResetSuccess,
   };
@@ -127,6 +138,19 @@ final routerProvider = Provider<GoRouter>((ref) {
                   },
           );
         },
+      ),
+      GoRoute(
+        path: Routes.selectSchool,
+        builder: (_, __) => const SelectSchoolScreen(),
+      ),
+      GoRoute(
+        path: Routes.selectRole,
+        builder: (_, __) => const SelectRoleScreen(),
+      ),
+      GoRoute(
+        path: Routes.academicDetails,
+        builder: (_, state) =>
+            AcademicDetailsScreen(isStudent: state.extra as bool? ?? true),
       ),
       GoRoute(
         path: Routes.forgotPassword,
