@@ -4,33 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../../data/school_repository.dart';
+import '../../domain/institution.dart';
 import '../widgets/kyu_page.dart';
-
-/// An institution the app can be tied to.
-///
-/// Stands in for what `GET /api/v1/schools` will return. The API gives id,
-/// name, slug, acronym and logo but neither a location nor whether it is
-/// live, both of which the design shows — worth raising before this is wired.
-class Institution {
-  const Institution({
-    required this.id,
-    required this.name,
-    required this.where,
-    this.available = false,
-  });
-
-  final String id;
-  final String name;
-
-  /// "Osogbo, Osun" — the line under the name.
-  final String where;
-
-  /// The others are drawn "coming soon" and cannot be picked.
-  final bool available;
-
-  String get subtitle => available ? where : '$where · coming soon';
-}
 
 /// Step one: which school the account belongs to.
 class SelectSchoolScreen extends ConsumerStatefulWidget {
@@ -41,27 +19,6 @@ class SelectSchoolScreen extends ConsumerStatefulWidget {
 }
 
 class _SelectSchoolScreenState extends ConsumerState<SelectSchoolScreen> {
-  // Placeholder until the schools endpoint is wired.
-  static const _all = [
-    Institution(
-      id: 'osun',
-      name: 'Osun State University',
-      where: 'Osogbo, Osun',
-      available: true,
-    ),
-    Institution(id: 'ui', name: 'University of Ibadan', where: 'Ibadan, Oyo'),
-    Institution(
-      id: 'illesha',
-      name: 'University of Illesha',
-      where: 'Osogbo, Osun',
-    ),
-    Institution(
-      id: 'oau',
-      name: 'Obafemi Awolowo University',
-      where: 'Ibadan, Oyo',
-    ),
-  ];
-
   final _search = TextEditingController();
   Institution? _picked;
 
@@ -71,10 +28,10 @@ class _SelectSchoolScreenState extends ConsumerState<SelectSchoolScreen> {
     super.dispose();
   }
 
-  List<Institution> get _shown {
+  List<Institution> _matching(List<Institution> all) {
     final q = _search.text.trim().toLowerCase();
-    if (q.isEmpty) return _all;
-    return _all.where((i) => i.name.toLowerCase().contains(q)).toList();
+    if (q.isEmpty) return all;
+    return all.where((i) => i.name.toLowerCase().contains(q)).toList();
   }
 
   void _continue() {
@@ -85,6 +42,7 @@ class _SelectSchoolScreenState extends ConsumerState<SelectSchoolScreen> {
   @override
   Widget build(BuildContext context) {
     final picked = _picked;
+    final schools = ref.watch(schoolsProvider);
 
     return KyuPage(
       step: 1,
@@ -106,20 +64,41 @@ class _SelectSchoolScreenState extends ConsumerState<SelectSchoolScreen> {
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ListView.separated(
-              padding: EdgeInsets.zero,
-              itemCount: _shown.length,
-              separatorBuilder: (_, __) =>
-                  const SizedBox(height: OptionRow.gap),
-              itemBuilder: (_, i) {
-                final it = _shown[i];
-                return OptionRow(
-                  title: it.name,
-                  subtitle: it.subtitle,
-                  selected: it.id == picked?.id,
-                  onTap: it.available
-                      ? () => setState(() => _picked = it)
-                      : null,
+            child: schools.when(
+              loading: () => const Loader(),
+              // The dev API is serverless and sleeps, so a first call after
+              // idle can take several seconds. Offer a retry rather than
+              // leaving someone stuck on a failure they can clear themselves.
+              error: (e, _) => ErrorState(
+                message: e is ApiException
+                    ? e.message
+                    : 'Could not load schools.',
+                onRetry: () => ref.invalidate(schoolsProvider),
+              ),
+              data: (all) {
+                final shown = _matching(all);
+                if (shown.isEmpty) {
+                  return const EmptyState(
+                    message: 'No school matches that search.',
+                    icon: Icons.search_off_outlined,
+                  );
+                }
+                return ListView.separated(
+                  padding: EdgeInsets.zero,
+                  itemCount: shown.length,
+                  separatorBuilder: (_, __) =>
+                      const SizedBox(height: OptionRow.gap),
+                  itemBuilder: (_, i) {
+                    final it = shown[i];
+                    return OptionRow(
+                      title: it.name,
+                      subtitle: it.subtitle.isEmpty ? null : it.subtitle,
+                      selected: it.id == picked?.id,
+                      onTap: it.isAvailable
+                          ? () => setState(() => _picked = it)
+                          : null,
+                    );
+                  },
                 );
               },
             ),
