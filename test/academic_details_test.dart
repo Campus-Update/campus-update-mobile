@@ -62,6 +62,38 @@ void main() {
     await t.pumpAndSettle();
   }
 
+  testWidgets('tapping a select opens a sheet from the bottom', (t) async {
+    await boot(t);
+    expect(find.byType(BottomSheet), findsNothing);
+
+    await t.tap(find.byType(AppSelect<Faculty>));
+    await t.pumpAndSettle();
+
+    expect(
+      find.byType(BottomSheet),
+      findsOneWidget,
+      reason: 'a phone picks from a sheet, not a menu pinned to the field',
+    );
+    // The sheet is titled by the field it belongs to, and lists the options.
+    expect(find.text('Faculty of Computing'), findsOneWidget);
+  });
+
+  testWidgets('choosing from the sheet sets the field and closes it', (
+    t,
+  ) async {
+    await boot(t);
+    await t.tap(find.byType(AppSelect<Faculty>));
+    await t.pumpAndSettle();
+    await t.tap(find.text('Faculty of Computing').last);
+    await t.pumpAndSettle();
+
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(
+      t.widget<AppSelect<Faculty>>(find.byType(AppSelect<Faculty>)).value,
+      isNotNull,
+    );
+  });
+
   testWidgets('faculty offers what the chosen school has', (t) async {
     await boot(t);
     final faculty = find.byType(AppSelect<Faculty>);
