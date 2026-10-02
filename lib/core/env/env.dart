@@ -11,13 +11,13 @@ abstract final class Env {
   static const Flavor _active = Flavor.dev;
   // ---------------------------------------------------------------------------
 
-  /// `10.0.2.2` is how the Android emulator reaches the host machine. On a
-  /// physical phone, replace it with the host's LAN address — the phone cannot
-  /// see the laptop's localhost.
-  static const _devUrl = 'http://10.0.2.2:5124';
+  /// The deployed development API. Running the backend on your own machine
+  /// instead needs a different host: `10.0.2.2` from the Android emulator, or
+  /// `adb reverse tcp:5124 tcp:5124` and `localhost` from a real phone, which
+  /// cannot see the laptop's loopback on its own.
+  static const _devUrl = 'https://campus-update-api.vercel.app';
 
-  // Neither environment exists yet; both are placeholders until the backend is
-  // deployed.
+  // Neither exists yet; placeholders until there is somewhere to point them.
   static const _stagingUrl = 'https://staging.campusupdate.example/';
   static const _prodUrl = 'https://api.campusupdate.example/';
 

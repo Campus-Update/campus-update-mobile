@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
+import '../../../../app/theme/app_colors.dart';
+import '../../../../core/auth/auth_repository.dart';
+import '../../../../core/auth/auth_state.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/utils/validators.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/auth_page.dart';
@@ -19,6 +23,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _remember = false;
+  bool _busy = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -27,10 +33,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    // Validation runs and reports; there is nothing to call yet. The auth
-    // repository lands with the API wiring, and this is where it goes.
+  Future<void> _submit() async {
+    if (_busy) return;
     if (!(_form.currentState?.validate() ?? false)) return;
+
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .login(email: _email.text.trim(), password: _password.text);
+      // The tokens are stored by now; telling the notifier is what moves the
+      // router out of the signed-out zone.
+      ref.read(authProvider.notifier).signedIn();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        // 401 here means the credentials are wrong, not that a session
+        // lapsed — the default message would tell them to sign in again,
+        // which is what they are already doing.
+        _error = e.isUnauthorized
+            ? 'That email and password do not match.'
+            : e.message;
+      });
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   /// No provider on the backend yet. Left enabled so the screen matches the
@@ -50,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               AppInput(
                 label: 'Email Address',
-                hint: 'Enter First Name',
+                hint: 'Enter Email Address',
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
@@ -96,8 +127,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ],
           ),
         ),
+        if (_error != null) ...[
+          const SizedBox(height: AuthGaps.toLink),
+          Text(
+            _error!,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.labelMedium?.copyWith(color: AppColors.alertRed),
+          ),
+        ],
         const SizedBox(height: AuthGaps.toButton),
-        AppButton(label: 'Sign in', onPressed: _submit),
+        AppButton(label: 'Sign in', loading: _busy, onPressed: _submit),
         const SizedBox(height: AuthGaps.toLink),
         AppLinkText(
           "Don't have an account yet? Create account",

@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../env/env.dart';
 import '../storage/secure_storage.dart';
 import 'auth_interceptor.dart';
+import 'logging_interceptor.dart';
 
 /// Builds the app's HTTP clients.
 ///
@@ -19,8 +20,15 @@ abstract final class DioClient {
     validateStatus: (status) => status != null && status < 400,
   );
 
-  /// No interceptors: used for refresh and for retrying a request after one.
-  static Dio bare() => Dio(_options());
+  /// No auth interceptor: used for refresh, for retrying after one, and for
+  /// the calls made before a session exists. It still logs in development —
+  /// signing in and registering happen here, and they are the calls most
+  /// worth seeing.
+  static Dio bare() {
+    final dio = Dio(_options());
+    if (Env.isDev) dio.interceptors.add(const LoggingInterceptor());
+    return dio;
+  }
 
   static Dio create({
     required SecureStorage storage,
@@ -34,11 +42,7 @@ abstract final class DioClient {
         onSessionExpired: onSessionExpired,
       ),
     );
-    if (Env.isDev) {
-      dio.interceptors.add(
-        LogInterceptor(requestBody: true, responseBody: true),
-      );
-    }
+    if (Env.isDev) dio.interceptors.add(const LoggingInterceptor());
     return dio;
   }
 }
