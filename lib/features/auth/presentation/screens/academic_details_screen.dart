@@ -40,12 +40,22 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
     super.dispose();
   }
 
-  bool get _hasName => _name.text.trim().isNotEmpty;
+  /// Every question this screen asks must be answered before the account is
+  /// created. The API would accept the academic ids as null, but an account
+  /// without them sees an unfiltered feed, which is the opposite of what the
+  /// questions are for. Staff are asked for less because they have no
+  /// programme or level.
+  bool get _isComplete {
+    if (_name.text.trim().isEmpty) return false;
+    if (_faculty == null || _department == null) return false;
+    if (!widget.isStudent) return true;
+    return _programme != null && _level != null;
+  }
 
   /// The end of the questions is where the account is finally created: this
   /// is the first moment every field register insists on exists.
   Future<void> _finish() async {
-    if (_busy || !_hasName) return;
+    if (_busy || !_isComplete) return;
 
     final drafts = ref.read(registrationDraftProvider.notifier)
       ..setDetails(
@@ -100,8 +110,7 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
       title: 'Tell us where you sit',
       subtitle:
           'This is what lets Campus Update put the right notices in front of '
-          'you. Only your name is required, the rest can wait, and all of it '
-          'is editable later.',
+          'you. All of it is editable later.',
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -199,7 +208,7 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
           AppButton(
             label: 'Continue',
             loading: _busy,
-            onPressed: _hasName ? _finish : null,
+            onPressed: _isComplete ? _finish : null,
           ),
         ],
       ),

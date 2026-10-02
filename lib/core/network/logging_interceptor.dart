@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Prints each call and what came back, for development only.
 ///
@@ -47,9 +47,12 @@ class LoggingInterceptor extends Interceptor {
     handler.next(err);
   }
 
+  /// debugPrint, not dart:developer's log: the latter goes to DevTools and
+  /// does not reliably reach the console `flutter run` is printing to, which
+  /// is where anyone debugging is actually looking.
   void _log(String headline, Object? body) {
-    final rendered = body == null ? '' : '\n${_render(body)}';
-    developer.log('$headline$rendered', name: 'api');
+    debugPrint('[api] $headline');
+    if (body != null) debugPrint(_render(body));
   }
 
   String _render(Object? body) {
