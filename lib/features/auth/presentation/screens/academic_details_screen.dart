@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/router.dart';
+import '../../../../core/auth/auth_repository.dart';
+import '../../../../core/auth/auth_state.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../domain/registration_draft.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/kyu_page.dart';
@@ -28,6 +30,8 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
   String? _department;
   String? _programme;
   String? _level;
+  bool _busy = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -37,9 +41,49 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
 
   bool get _hasName => _name.text.trim().isNotEmpty;
 
-  void _finish() {
-    if (!_hasName) return;
-    context.go(Routes.home);
+  /// The end of the questions is where the account is finally created: this
+  /// is the first moment every field register insists on exists.
+  Future<void> _finish() async {
+    if (_busy || !_hasName) return;
+
+    final drafts = ref.read(registrationDraftProvider.notifier)
+      ..setDetails(
+        fullName: _name.text.trim(),
+        facultyId: _faculty,
+        departmentId: _department,
+        programmeId: _programme,
+        academicLevelId: _level,
+      );
+    final request = ref.read(registrationDraftProvider).toRequest();
+    if (request == null) {
+      setState(
+        () => _error = 'Something is missing. Please go back and check.',
+      );
+      return;
+    }
+
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+
+    try {
+      await ref.read(authRepositoryProvider).register(request);
+      drafts.clear();
+      // Registering returns a session, so there is no separate sign-in.
+      ref.read(authProvider.notifier).signedIn();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        // The email is chosen four screens back, so say where to fix it.
+        _error = e.isConflict
+            ? 'That email is already registered. Go back and use another, '
+                  'or sign in instead.'
+            : e.message;
+      });
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
@@ -117,9 +161,25 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
       // No Skip: the name is where firstName and lastName come from, and
       // registration requires both. The four selects below it stay optional,
       // which is what the API's nullable ids allow for.
-      footer: AppButton(
-        label: 'Continue',
-        onPressed: _hasName ? _finish : null,
+      footer: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_error != null) ...[
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: AppColors.alertRed,
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          AppButton(
+            label: 'Continue',
+            loading: _busy,
+            onPressed: _hasName ? _finish : null,
+          ),
+        ],
       ),
     );
   }

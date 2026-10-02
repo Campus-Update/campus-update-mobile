@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
+import '../../../../core/auth/auth_repository.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../../domain/registration_draft.dart';
 import '../widgets/kyu_page.dart';
 
 /// Step two: student or staff.
@@ -23,6 +25,9 @@ class _SelectRoleScreenState extends ConsumerState<SelectRoleScreen> {
   void _continue() {
     final student = _isStudent;
     if (student == null) return;
+    ref
+        .read(registrationDraftProvider.notifier)
+        .setRole(student ? UserRole.student : UserRole.staff);
     context.push(Routes.academicDetails, extra: student);
   }
 

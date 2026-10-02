@@ -8,6 +8,7 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../data/school_repository.dart';
 import '../../domain/institution.dart';
+import '../../domain/registration_draft.dart';
 import '../widgets/kyu_page.dart';
 
 /// Step one: which school the account belongs to.
@@ -35,7 +36,9 @@ class _SelectSchoolScreenState extends ConsumerState<SelectSchoolScreen> {
   }
 
   void _continue() {
-    if (_picked == null) return;
+    final picked = _picked;
+    if (picked == null) return;
+    ref.read(registrationDraftProvider.notifier).setInstitution(picked);
     context.push(Routes.selectRole);
   }
 
