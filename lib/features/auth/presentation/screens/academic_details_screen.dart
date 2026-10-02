@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/auth/auth_repository.dart';
 import '../../../../core/auth/auth_state.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../domain/institution.dart';
 import '../../domain/registration_draft.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../shared/widgets/widgets.dart';
@@ -26,10 +27,10 @@ class AcademicDetailsScreen extends ConsumerStatefulWidget {
 
 class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
   final _name = TextEditingController();
-  String? _faculty;
-  String? _department;
-  String? _programme;
-  String? _level;
+  Faculty? _faculty;
+  Department? _department;
+  Programme? _programme;
+  AcademicLevel? _level;
   bool _busy = false;
   String? _error;
 
@@ -49,10 +50,10 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
     final drafts = ref.read(registrationDraftProvider.notifier)
       ..setDetails(
         fullName: _name.text.trim(),
-        facultyId: _faculty,
-        departmentId: _department,
-        programmeId: _programme,
-        academicLevelId: _level,
+        facultyId: _faculty?.id,
+        departmentId: _department?.id,
+        programmeId: _programme?.id,
+        academicLevelId: _level?.id,
       );
     final request = ref.read(registrationDraftProvider).toRequest();
     if (request == null) {
@@ -89,6 +90,10 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // The tree came back with the school picked two screens ago.
+    final faculties =
+        ref.watch(registrationDraftProvider).institution?.faculties ??
+        const <Faculty>[];
 
     return KyuPage(
       step: 3,
@@ -111,35 +116,52 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
                   textInputAction: TextInputAction.done,
                   autofillHints: const [AutofillHints.name],
                 ),
-                AppSelect(
+                // Each select offers only what the one above it allows, and
+                // choosing again clears everything below — otherwise a stale
+                // department could be sent against a different faculty.
+                AppSelect<Faculty>(
                   label: 'Faculty',
                   hint: 'Select Faculty',
                   value: _faculty,
-                  // Filled from GET /api/v1/schools once it is wired; the
-                  // institution picked in step one supplies the tree.
-                  options: const [],
-                  onChanged: (v) => setState(() => _faculty = v),
+                  options: faculties,
+                  labelOf: (f) => f.name,
+                  onChanged: (v) => setState(() {
+                    _faculty = v;
+                    _department = null;
+                    _programme = null;
+                    _level = null;
+                  }),
                 ),
-                AppSelect(
+                AppSelect<Department>(
                   label: 'Department',
                   hint: 'Select Department',
                   value: _department,
-                  options: const [],
-                  onChanged: (v) => setState(() => _department = v),
+                  options: _faculty?.departments ?? const [],
+                  labelOf: (d) => d.name,
+                  onChanged: (v) => setState(() {
+                    _department = v;
+                    _programme = null;
+                    _level = null;
+                  }),
                 ),
                 if (widget.isStudent) ...[
-                  AppSelect(
+                  AppSelect<Programme>(
                     label: 'Programme',
                     hint: 'Select Programme',
                     value: _programme,
-                    options: const [],
-                    onChanged: (v) => setState(() => _programme = v),
+                    options: _department?.programmes ?? const [],
+                    labelOf: (p) => p.name,
+                    onChanged: (v) => setState(() {
+                      _programme = v;
+                      _level = null;
+                    }),
                   ),
-                  AppSelect(
+                  AppSelect<AcademicLevel>(
                     label: 'Level',
                     hint: 'Select Level',
                     value: _level,
-                    options: const [],
+                    options: _programme?.levels ?? const [],
+                    labelOf: (l) => l.name,
                     onChanged: (v) => setState(() => _level = v),
                   ),
                 ],
