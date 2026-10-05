@@ -86,7 +86,18 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
       await ref.read(authRepositoryProvider).register(request);
       drafts.clear();
       // Registering returns a session, so there is no separate sign-in.
-      ref.read(authProvider.notifier).signedIn();
+      //
+      // The name goes with it. Register returns tokens only and there is no
+      // profile endpoint to read it back from, so this is the one moment the
+      // app knows who it just signed up; without it the home screen greets a
+      // brand new user with no name at all.
+      ref
+          .read(authProvider.notifier)
+          .signedIn(
+            email: request.email,
+            firstName: request.firstName,
+            lastName: request.lastName,
+          );
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {

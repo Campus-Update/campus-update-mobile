@@ -3,6 +3,7 @@ import 'package:campus_update/core/auth/auth_repository.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/network/api_exception.dart';
 import 'package:campus_update/features/auth/domain/institution.dart';
+import 'package:campus_update/features/profile/data/profile_providers.dart';
 import 'package:campus_update/features/auth/domain/registration_draft.dart';
 import 'package:campus_update/features/auth/presentation/screens/academic_details_screen.dart';
 import 'package:campus_update/shared/widgets/widgets.dart';
@@ -303,6 +304,14 @@ void _registrationTests() {
     expect(json['firstName'], 'Ada');
     expect(json['lastName'], 'Lovelace');
     expect(json['role'], 'Student');
+
+    // Register returns tokens only and there is no profile endpoint, so this
+    // is the one moment the name can be kept. Without it the home screen
+    // greets a brand new user with no name at all.
+    final profile = container.read(userProfileProvider);
+    expect(profile?.firstName, 'Ada');
+    expect(profile?.lastName, 'Lovelace');
+    expect(profile?.displayName, 'Ada');
     expect(json['institutionId'], 'inst');
     expect(json['facultyId'], 'f1');
     expect(json['departmentId'], 'd1');
