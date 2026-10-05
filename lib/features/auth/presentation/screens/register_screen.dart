@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
 import '../../../../shared/utils/validators.dart';
+import '../../domain/registration_draft.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/auth_page.dart';
 
@@ -16,8 +17,6 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _form = GlobalKey<FormState>();
-  final _firstName = TextEditingController();
-  final _lastName = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
@@ -25,8 +24,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   void dispose() {
-    _firstName.dispose();
-    _lastName.dispose();
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
@@ -41,10 +38,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _submit() {
     if (!(_form.currentState?.validate() ?? false)) return;
-    // Nothing registers the account yet — that call lands with the API.
-    // The questions that follow collect the institution, role and academic
-    // details it needs; there is no code to verify in between, because the
-    // API has no endpoint for one and register returns a session outright.
+    // The account is created at the end of the questions, because register
+    // also needs the institution, role and name they collect. These are kept
+    // until then rather than sent now.
+    ref
+        .read(registrationDraftProvider.notifier)
+        .setCredentials(email: _email.text.trim(), password: _password.text);
     context.push(Routes.selectSchool);
   }
 
@@ -63,22 +62,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           key: _form,
           child: AppFormPanel(
             children: [
-              AppInput(
-                label: 'First Name',
-                hint: 'Enter First Name',
-                controller: _firstName,
-                textInputAction: TextInputAction.next,
-                autofillHints: const [AutofillHints.givenName],
-                validator: (v) => Validators.required(v, 'First name'),
-              ),
-              AppInput(
-                label: 'Last Name',
-                hint: 'Enter Last Name',
-                controller: _lastName,
-                textInputAction: TextInputAction.next,
-                autofillHints: const [AutofillHints.familyName],
-                validator: (v) => Validators.required(v, 'Last name'),
-              ),
               AppInput(
                 label: 'Email Address',
                 hint: 'Enter Email Address',

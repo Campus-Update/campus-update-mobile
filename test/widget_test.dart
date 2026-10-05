@@ -1,4 +1,5 @@
 import 'package:campus_update/app/app.dart';
+import 'package:campus_update/core/auth/auth_repository.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
 import 'package:campus_update/features/home/presentation/screens/home_screen.dart';
@@ -7,6 +8,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// Stands in for the real repository so a test that drives the login screen
+/// does not reach the deployed API. Without it these tests make a live network
+/// call, which is slow, flaky, and fails against a server that has never heard
+/// of the credentials they type.
+class _FakeAuthRepository implements AuthRepository {
+  @override
+  Future<AuthSession> login({
+    required String email,
+    required String password,
+  }) async => AuthSession(
+    userId: 'test-user',
+    accessToken: 'access',
+    refreshToken: 'refresh',
+    expiresAt: DateTime.now().add(const Duration(hours: 1)),
+  );
+
+  @override
+  Future<AuthSession> register(RegistrationRequest request) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> signOut() async {}
+}
 
 void main() {
   late SharedPreferences prefs;
@@ -23,7 +48,10 @@ void main() {
   ) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        ],
         child: const CampusUpdateApp(),
       ),
     );
@@ -34,7 +62,10 @@ void main() {
 
   testWidgets('a signed-out session lands on login', (tester) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedOut();
@@ -54,7 +85,10 @@ void main() {
     tester,
   ) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedOut();
@@ -91,7 +125,10 @@ void main() {
     tester,
   ) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
@@ -114,7 +151,10 @@ void main() {
     'home screen allows backward navigation from notifications and detail screens',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        ],
       );
       addTearDown(container.dispose);
       container
@@ -154,7 +194,10 @@ void main() {
     tester,
   ) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedOut();
@@ -218,7 +261,10 @@ void main() {
     'home screen without pending profile hides profile card and renders feed directly',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        ],
       );
       addTearDown(container.dispose);
       container.read(authProvider.notifier).signedIn();
@@ -261,7 +307,10 @@ void main() {
     'tapping Not now on profile completion card dismisses it from home screen',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        ],
       );
       addTearDown(container.dispose);
       container.read(authProvider.notifier).signedIn();
@@ -297,7 +346,10 @@ void main() {
     'displays dynamic greeting for different signed-in users rather than hardcoding',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        ],
       );
       addTearDown(container.dispose);
       container.read(authProvider.notifier).signedOut();
@@ -330,7 +382,10 @@ void main() {
     'editing profile name updates greeting on home screen and marks profile complete',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        ],
       );
       addTearDown(container.dispose);
       container.read(authProvider.notifier).signedIn(email: 'user@example.com');
@@ -386,7 +441,10 @@ void main() {
     tester,
   ) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
@@ -410,7 +468,10 @@ void main() {
     tester,
   ) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
@@ -446,7 +507,10 @@ void main() {
     tester,
   ) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
@@ -469,7 +533,10 @@ void main() {
     tester,
   ) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
