@@ -241,7 +241,7 @@ void main() {
 
       // Header, Breaking news, Latest news, and Upcoming events must be visible
       expect(find.text('Welcome, Jeremiah!'), findsOneWidget);
-      expect(find.text('Breaking'), findsOneWidget);
+      expect(find.text('LIVE UPDATES'), findsOneWidget);
       expect(find.text('Latest News'), findsOneWidget);
       expect(
         find.text(
@@ -289,7 +289,7 @@ void main() {
         find.text('Complete your profile to sharpen your feed'),
         findsNothing,
       );
-      expect(find.text('Breaking'), findsOneWidget);
+      expect(find.text('LIVE UPDATES'), findsOneWidget);
     },
   );
 
@@ -371,4 +371,111 @@ void main() {
       );
     },
   );
+
+  Widget homeUnder(ProviderContainer container) => UncontrolledProviderScope(
+    container: container,
+    child: const MaterialApp(
+      home: HomeScreen(hasPendingProfile: false, userName: 'Jeremiah'),
+    ),
+  );
+
+  Finder categoryTab(String label) =>
+      find.byKey(ValueKey('category-tab-$label'));
+
+  testWidgets('home screen shows the six category tabs from the design', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(homeUnder(container));
+    await tester.pumpAndSettle();
+
+    for (final label in [
+      'All',
+      'For You',
+      'General',
+      'Campus',
+      'Technology',
+      'Health',
+    ]) {
+      expect(categoryTab(label), findsOneWidget, reason: 'missing tab: $label');
+    }
+  });
+
+  testWidgets('tapping a category tab moves the underline to it', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(homeUnder(container));
+    await tester.pumpAndSettle();
+
+    // Reads the bottom border of the box wrapping a given tab.
+    BorderSide underlineOf(String label) {
+      final box = tester.widget<DecoratedBox>(
+        find
+            .descendant(
+              of: categoryTab(label),
+              matching: find.byType(DecoratedBox),
+            )
+            .first,
+      );
+      return (box.decoration as BoxDecoration).border!.bottom;
+    }
+
+    // The design underlines 'For You' at rest.
+    expect(underlineOf('For You').color, isNot(Colors.transparent));
+    expect(underlineOf('Campus').color, Colors.transparent);
+
+    await tester.tap(categoryTab('Campus'));
+    await tester.pumpAndSettle();
+
+    expect(underlineOf('Campus').color, isNot(Colors.transparent));
+    expect(underlineOf('For You').color, Colors.transparent);
+  });
+
+  testWidgets('the breaking hero swipes and drops the hint on the last card', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(homeUnder(container));
+    await tester.pumpAndSettle();
+
+    expect(find.text('LIVE UPDATES'), findsOneWidget);
+    expect(find.text('Swipe'), findsOneWidget);
+
+    final hero = find.byType(PageView);
+    expect(hero, findsOneWidget);
+
+    // Second card: still swipeable, so the hint stays.
+    await tester.fling(hero, const Offset(-300, 0), 1000);
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Senate Approves Revised Academic Calendar for 2025/2026'),
+      findsOneWidget,
+    );
+    expect(find.text('Swipe'), findsOneWidget);
+
+    // Third and last card: nothing left to swipe to.
+    await tester.fling(hero, const Offset(-300, 0), 1000);
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Campus Clinic Extends Opening Hours Through Exam Week'),
+      findsOneWidget,
+    );
+    expect(find.text('Swipe'), findsNothing);
+  });
 }
