@@ -27,6 +27,7 @@ class AppButton extends StatelessWidget {
     this.trailingIcon,
     this.expand = true,
     this.onImage = false,
+    this.fontSize,
   });
 
   final String label;
@@ -45,6 +46,12 @@ class AppButton extends StatelessWidget {
   /// screens do not.
   final bool onImage;
 
+  /// Overrides the label size. Leave it null and the button stays on
+  /// [_labelStyle], which is what the design specifies; pass a size only for a
+  /// button the design genuinely draws differently, so that the default stays
+  /// the single source of truth rather than something each screen re-picks.
+  final double? fontSize;
+
   /// Height of the gradient itself. The primary variant then carries
   /// [_ringWidth] of ring outside that, so its box is taller by twice it.
   static const _height = 50.0;
@@ -53,6 +60,17 @@ class AppButton extends StatelessWidget {
 
   /// The pale ring around the primary button, measured off the design.
   static const _ringWidth = 2.0;
+
+  /// The label, straight off the design: Archivo Medium 14 on a 20 line box,
+  /// no letter spacing. Not [TextTheme.titleMedium] — that is 16, which
+  /// overruns a half-width button ("Add details" needs 82pt at 16 but only
+  /// 71 at 14, and a side-by-side pair leaves 78pt on a 360pt phone).
+  static const _labelStyle = TextStyle(
+    fontFamily: AppFonts.family,
+    fontSize: 14,
+    height: 20 / 14,
+    fontWeight: AppFonts.medium,
+  );
 
   bool get _ringed => onImage && variant == AppButtonVariant.primary;
 
@@ -117,9 +135,10 @@ class AppButton extends StatelessWidget {
                 child: Text(
                   label,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(color: foreground),
+                  style: _labelStyle.copyWith(
+                    color: foreground,
+                    fontSize: fontSize,
+                  ),
                 ),
               ),
               if (trailingIcon != null) ...[

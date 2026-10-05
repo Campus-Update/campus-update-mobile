@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../shared/widgets/widgets.dart';
 import '../../../profile/data/profile_providers.dart';
 
 /// The central landing screen matching the UI design specification.
@@ -218,59 +219,24 @@ class _ProfileCompletionCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
+          // The design draws the shared button here: the same top-to-bottom
+          // gradient (sampled #5913E5 down to #391394) at the same 50pt
+          // height, with its quieter white twin beside it.
           Row(
             children: [
               Expanded(
-                child: SizedBox(
-                  height: 46,
-                  child: ElevatedButton(
-                    onPressed: () => context.push(Routes.editProfile),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E2B88),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      padding: EdgeInsets.zero,
-                    ),
-                    child: const Text(
-                      'Add details',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                child: AppButton(
+                  label: 'Add details',
+                  onPressed: () => context.push(Routes.editProfile),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: SizedBox(
-                  height: 46,
-                  child: OutlinedButton(
-                    onPressed: () =>
-                        ref.read(pendingProfileProvider.notifier).dismiss(),
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF1F2937),
-                      side: const BorderSide(
-                        color: Color(0xFFD1D5DB),
-                        width: 1,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      padding: EdgeInsets.zero,
-                    ),
-                    child: const Text(
-                      'Not now',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                child: AppButton(
+                  label: 'Not now',
+                  variant: AppButtonVariant.secondary,
+                  onPressed: () =>
+                      ref.read(pendingProfileProvider.notifier).dismiss(),
                 ),
               ),
             ],
