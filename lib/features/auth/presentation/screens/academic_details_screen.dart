@@ -26,7 +26,8 @@ class AcademicDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
-  final _name = TextEditingController();
+  final _firstName = TextEditingController();
+  final _lastName = TextEditingController();
   Faculty? _faculty;
   Department? _department;
   Programme? _programme;
@@ -36,7 +37,8 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
 
   @override
   void dispose() {
-    _name.dispose();
+    _firstName.dispose();
+    _lastName.dispose();
     super.dispose();
   }
 
@@ -46,7 +48,8 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
   /// questions are for. Staff are asked for less because they have no
   /// programme or level.
   bool get _isComplete {
-    if (_name.text.trim().isEmpty) return false;
+    if (_firstName.text.trim().isEmpty) return false;
+    if (_lastName.text.trim().isEmpty) return false;
     if (_faculty == null || _department == null) return false;
     if (!widget.isStudent) return true;
     return _programme != null && _level != null;
@@ -59,7 +62,8 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
 
     final drafts = ref.read(registrationDraftProvider.notifier)
       ..setDetails(
-        fullName: _name.text.trim(),
+        firstName: _firstName.text.trim(),
+        lastName: _lastName.text.trim(),
         facultyId: _faculty?.id,
         departmentId: _department?.id,
         programmeId: _programme?.id,
@@ -82,7 +86,18 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
       await ref.read(authRepositoryProvider).register(request);
       drafts.clear();
       // Registering returns a session, so there is no separate sign-in.
-      ref.read(authProvider.notifier).signedIn();
+      //
+      // The name goes with it. Register returns tokens only and there is no
+      // profile endpoint to read it back from, so this is the one moment the
+      // app knows who it just signed up; without it the home screen greets a
+      // brand new user with no name at all.
+      ref
+          .read(authProvider.notifier)
+          .signedIn(
+            email: request.email,
+            firstName: request.firstName,
+            lastName: request.lastName,
+          );
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -117,13 +132,26 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
           children: [
             AppFormPanel(
               children: [
+                // Two fields rather than one, because register takes
+                // firstName and lastName separately. Asking for a single name
+                // and splitting it on the first space guesses at where the
+                // surname starts, and guesses wrong for anyone with two given
+                // names or a compound surname.
                 AppInput(
-                  label: 'Full Name',
-                  hint: 'Enter Name',
-                  controller: _name,
+                  label: 'First Name',
+                  hint: 'Enter First Name',
+                  controller: _firstName,
+                  onChanged: (_) => setState(() {}),
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.givenName],
+                ),
+                AppInput(
+                  label: 'Last Name',
+                  hint: 'Enter Last Name',
+                  controller: _lastName,
                   onChanged: (_) => setState(() {}),
                   textInputAction: TextInputAction.done,
-                  autofillHints: const [AutofillHints.name],
+                  autofillHints: const [AutofillHints.familyName],
                 ),
                 // Each select offers only what the one above it allows, and
                 // choosing again clears everything below — otherwise a stale

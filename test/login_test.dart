@@ -5,6 +5,8 @@ import 'package:campus_update/core/auth/auth_repository.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/network/api_exception.dart';
 import 'package:campus_update/features/auth/presentation/screens/login_screen.dart';
+import 'package:campus_update/features/profile/data/profile_repository.dart';
+import 'package:campus_update/features/profile/domain/user_profile.dart';
 import 'package:campus_update/shared/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,12 +43,40 @@ class _FakeRepo implements AuthRepository {
   Future<void> signOut() async {}
 }
 
-Future<ProviderContainer> boot(WidgetTester t, AuthRepository repo) async {
+/// Signing in now also reads GET /auth/profile, so the screen needs one of
+/// these or it reaches the live API.
+class _FakeProfileRepo implements ProfileRepository {
+  _FakeProfileRepo([this.profile]);
+
+  final UserProfile? profile;
+  int calls = 0;
+
+  @override
+  Future<UserProfile> fetch() async {
+    calls++;
+    final p = profile;
+    if (p == null) {
+      throw const ApiException(statusCode: 500, message: 'no profile');
+    }
+    return p;
+  }
+}
+
+Future<ProviderContainer> boot(
+  WidgetTester t,
+  AuthRepository repo, {
+  ProfileRepository? profileRepo,
+}) async {
   t.view.physicalSize = const Size(393, 852);
   t.view.devicePixelRatio = 1.0;
   addTearDown(t.view.reset);
   final container = ProviderContainer(
-    overrides: [authRepositoryProvider.overrideWithValue(repo)],
+    overrides: [
+      authRepositoryProvider.overrideWithValue(repo),
+      profileRepositoryProvider.overrideWithValue(
+        profileRepo ?? _FakeProfileRepo(),
+      ),
+    ],
   );
   addTearDown(container.dispose);
   await t.pumpWidget(
@@ -89,6 +119,30 @@ void main() {
     expect(repo.calls, 1);
     expect(repo.sawEmail, 'user@example.com');
     expect(container.read(authProvider), AuthStatus.signedIn);
+  });
+
+  testWidgets('signing in reads the profile, and a failure does not block it', (
+    t,
+  ) async {
+    final profileRepo = _FakeProfileRepo(
+      const UserProfile(id: 'u1', firstName: 'Daniel', lastName: 'Isiyemi'),
+    );
+    final container = await boot(t, _FakeRepo(), profileRepo: profileRepo);
+
+    await fillIn(t);
+    await t.tap(find.widgetWithText(AppButton, 'Sign in'));
+    await t.pumpAndSettle();
+
+    expect(profileRepo.calls, 1, reason: 'login must fetch who signed in');
+    expect(container.read(authProvider), AuthStatus.signedIn);
+
+    // The credentials were accepted and the tokens are stored, so a profile
+    // that cannot be read must not strand the user on the login screen.
+    final failing = await boot(t, _FakeRepo());
+    await fillIn(t);
+    await t.tap(find.widgetWithText(AppButton, 'Sign in'));
+    await t.pumpAndSettle();
+    expect(failing.read(authProvider), AuthStatus.signedIn);
   });
 
   testWidgets('wrong credentials explain themselves', (t) async {

@@ -7,6 +7,8 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../core/auth/auth_repository.dart';
 import '../../../../core/auth/auth_state.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../../features/profile/data/profile_providers.dart';
+import '../../../../features/profile/data/profile_repository.dart';
 import '../../../../shared/utils/validators.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/auth_page.dart';
@@ -46,9 +48,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref
           .read(authRepositoryProvider)
           .login(email: _email.text.trim(), password: _password.text);
-      // The tokens are stored by now; telling the notifier is what moves the
-      // router out of the signed-out zone.
-      ref.read(authProvider.notifier).signedIn();
+
+      // Login hands back tokens and nothing else, so who the session belongs
+      // to has to be fetched. On a device the user did not register on there
+      // is nothing stored locally, and without this the home screen greets
+      // them by the front of their email address.
+      //
+      // A failure here must not block the sign-in: the credentials were
+      // accepted and the tokens are stored. The email still gives the
+      // greeting something to fall back on.
+      await _loadProfile();
+
+      // Telling the notifier is what moves the router out of the signed-out
+      // zone.
+      ref.read(authProvider.notifier).signedIn(email: _email.text.trim());
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -68,6 +81,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   /// design; it does no more than the primary button does until the API is
   /// wired, and both land together.
   void _google() {}
+
+  Future<void> _loadProfile() async {
+    try {
+      final profile = await ref.read(profileRepositoryProvider).fetch();
+      await ref.read(userProfileProvider.notifier).setProfile(profile);
+    } on ApiException {
+      // Signed in regardless; the greeting falls back to the email.
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

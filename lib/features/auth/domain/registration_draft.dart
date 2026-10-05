@@ -14,7 +14,8 @@ class RegistrationDraft {
     this.password = '',
     this.institution,
     this.role,
-    this.fullName = '',
+    this.firstName = '',
+    this.lastName = '',
     this.facultyId,
     this.departmentId,
     this.programmeId,
@@ -25,7 +26,8 @@ class RegistrationDraft {
   final String password;
   final Institution? institution;
   final UserRole? role;
-  final String fullName;
+  final String firstName;
+  final String lastName;
   final String? facultyId;
   final String? departmentId;
   final String? programmeId;
@@ -36,7 +38,8 @@ class RegistrationDraft {
     String? password,
     Institution? institution,
     UserRole? role,
-    String? fullName,
+    String? firstName,
+    String? lastName,
     String? facultyId,
     String? departmentId,
     String? programmeId,
@@ -46,32 +49,26 @@ class RegistrationDraft {
     password: password ?? this.password,
     institution: institution ?? this.institution,
     role: role ?? this.role,
-    fullName: fullName ?? this.fullName,
+    firstName: firstName ?? this.firstName,
+    lastName: lastName ?? this.lastName,
     facultyId: facultyId ?? this.facultyId,
     departmentId: departmentId ?? this.departmentId,
     programmeId: programmeId ?? this.programmeId,
     academicLevelId: academicLevelId ?? this.academicLevelId,
   );
 
-  /// The API wants a first and last name; the screen asks for one field.
-  /// Everything after the first space is the surname, and someone with a
-  /// single name gets it in both — the API rejects an empty one.
-  (String first, String last) get _names {
-    final parts = fullName.trim().split(RegExp(r'\s+'));
-    if (parts.length < 2) return (fullName.trim(), fullName.trim());
-    return (parts.first, parts.sublist(1).join(' '));
-  }
-
   /// Null until every field register insists on has been answered.
   RegistrationRequest? toRequest() {
     final institutionId = institution?.id;
     final role = this.role;
-    final (first, last) = _names;
+    final first = firstName.trim();
+    final last = lastName.trim();
     if (institutionId == null ||
         role == null ||
         email.isEmpty ||
         password.isEmpty ||
-        first.isEmpty) {
+        first.isEmpty ||
+        last.isEmpty) {
       return null;
     }
     return RegistrationRequest(
@@ -102,13 +99,15 @@ class RegistrationDraftNotifier extends Notifier<RegistrationDraft> {
   void setRole(UserRole role) => state = state.copyWith(role: role);
 
   void setDetails({
-    String? fullName,
+    String? firstName,
+    String? lastName,
     String? facultyId,
     String? departmentId,
     String? programmeId,
     String? academicLevelId,
   }) => state = state.copyWith(
-    fullName: fullName,
+    firstName: firstName,
+    lastName: lastName,
     facultyId: facultyId,
     departmentId: departmentId,
     programmeId: programmeId,

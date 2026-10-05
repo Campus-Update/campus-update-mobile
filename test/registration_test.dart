@@ -20,7 +20,8 @@ void main() {
     const partial = RegistrationDraft(
       email: 'a@b.com',
       password: 'Passw0rd!',
-      fullName: 'Ada Lovelace',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
       role: UserRole.student,
     );
     expect(partial.toRequest(), isNull);
@@ -30,7 +31,8 @@ void main() {
     final draft = const RegistrationDraft(
       email: 'a@b.com',
       password: 'Passw0rd!',
-      fullName: 'Ada Lovelace',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
       role: UserRole.student,
       facultyId: 'f1',
       departmentId: 'd1',
@@ -52,29 +54,32 @@ void main() {
     final draft = const RegistrationDraft(
       email: 'a@b.com',
       password: 'Passw0rd!',
-      fullName: 'Grace Hopper',
+      firstName: 'Grace',
+      lastName: 'Hopper',
       role: UserRole.staff,
     ).copyWith(institution: osun);
     expect(draft.toRequest()!.toJson()['role'], 'Staff');
   });
 
-  test('a single name fills both halves, since neither may be empty', () {
+  test('a missing surname produces no request', () {
+    // Register rejects an empty lastName, and the screen now asks for it
+    // outright rather than splitting one field and guessing where the
+    // surname starts.
     final draft = const RegistrationDraft(
       email: 'a@b.com',
       password: 'Passw0rd!',
-      fullName: 'Prince',
+      firstName: 'Prince',
       role: UserRole.student,
     ).copyWith(institution: osun);
-    final json = draft.toRequest()!.toJson();
-    expect(json['firstName'], 'Prince');
-    expect(json['lastName'], 'Prince');
+    expect(draft.toRequest(), isNull);
   });
 
-  test('a three-part name keeps everything after the first as the surname', () {
+  test('names are trimmed before they are sent', () {
     final draft = const RegistrationDraft(
       email: 'a@b.com',
       password: 'Passw0rd!',
-      fullName: '  Ada  King Lovelace ',
+      firstName: '  Ada  ',
+      lastName: ' King Lovelace ',
       role: UserRole.student,
     ).copyWith(institution: osun);
     final json = draft.toRequest()!.toJson();
@@ -86,7 +91,8 @@ void main() {
     final draft = const RegistrationDraft(
       email: 'a@b.com',
       password: 'Passw0rd!',
-      fullName: 'Ada Lovelace',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
       role: UserRole.student,
     ).copyWith(institution: osun);
     final json = draft.toRequest()!.toJson();

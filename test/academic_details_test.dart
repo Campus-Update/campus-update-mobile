@@ -3,6 +3,7 @@ import 'package:campus_update/core/auth/auth_repository.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/network/api_exception.dart';
 import 'package:campus_update/features/auth/domain/institution.dart';
+import 'package:campus_update/features/profile/data/profile_providers.dart';
 import 'package:campus_update/features/auth/domain/registration_draft.dart';
 import 'package:campus_update/features/auth/presentation/screens/academic_details_screen.dart';
 import 'package:campus_update/shared/widgets/widgets.dart';
@@ -200,7 +201,8 @@ void main() {
     await boot(t);
     expect(buttonOf(t).onPressed, isNull, reason: 'nothing answered yet');
 
-    await t.enterText(find.byType(EditableText).first, 'Ada Lovelace');
+    await t.enterText(find.byType(EditableText).at(0), 'Ada');
+    await t.enterText(find.byType(EditableText).at(1), 'Lovelace');
     await t.pumpAndSettle();
     expect(buttonOf(t).onPressed, isNull, reason: 'a name alone is not enough');
 
@@ -221,7 +223,8 @@ void main() {
 
   testWidgets('staff finish without a programme or level', (t) async {
     await boot(t, student: false);
-    await t.enterText(find.byType(EditableText).first, 'Grace Hopper');
+    await t.enterText(find.byType(EditableText).at(0), 'Grace');
+    await t.enterText(find.byType(EditableText).at(1), 'Hopper');
     await t.pumpAndSettle();
     await choose(t, find.byType(AppSelect<Faculty>), 'Faculty of Computing');
     expect(buttonOf(t).onPressed, isNull);
@@ -231,7 +234,8 @@ void main() {
 
   testWidgets('clearing a parent disables the button again', (t) async {
     await boot(t, student: false);
-    await t.enterText(find.byType(EditableText).first, 'Grace Hopper');
+    await t.enterText(find.byType(EditableText).at(0), 'Grace');
+    await t.enterText(find.byType(EditableText).at(1), 'Hopper');
     await t.pumpAndSettle();
     await choose(t, find.byType(AppSelect<Faculty>), 'Faculty of Computing');
     await choose(t, find.byType(AppSelect<Department>), 'Computer Science');
@@ -277,7 +281,8 @@ void _registrationTests() {
     );
     await t.pumpAndSettle();
 
-    await t.enterText(find.byType(EditableText).first, 'Ada Lovelace');
+    await t.enterText(find.byType(EditableText).at(0), 'Ada');
+    await t.enterText(find.byType(EditableText).at(1), 'Lovelace');
     await t.pumpAndSettle();
     await choose(t, find.byType(AppSelect<Faculty>), 'Faculty of Computing');
     await choose(t, find.byType(AppSelect<Department>), 'Computer Science');
@@ -299,6 +304,14 @@ void _registrationTests() {
     expect(json['firstName'], 'Ada');
     expect(json['lastName'], 'Lovelace');
     expect(json['role'], 'Student');
+
+    // Register returns tokens only and there is no profile endpoint, so this
+    // is the one moment the name can be kept. Without it the home screen
+    // greets a brand new user with no name at all.
+    final profile = container.read(userProfileProvider);
+    expect(profile?.firstName, 'Ada');
+    expect(profile?.lastName, 'Lovelace');
+    expect(profile?.displayName, 'Ada');
     expect(json['institutionId'], 'inst');
     expect(json['facultyId'], 'f1');
     expect(json['departmentId'], 'd1');
@@ -333,7 +346,8 @@ void _registrationTests() {
     );
     await t.pumpAndSettle();
 
-    await t.enterText(find.byType(EditableText).first, 'Grace Hopper');
+    await t.enterText(find.byType(EditableText).at(0), 'Grace');
+    await t.enterText(find.byType(EditableText).at(1), 'Hopper');
     await t.pumpAndSettle();
     await choose(t, find.byType(AppSelect<Faculty>), 'Faculty of Computing');
     await choose(t, find.byType(AppSelect<Department>), 'Computer Science');
