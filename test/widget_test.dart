@@ -442,6 +442,29 @@ void main() {
     expect(underlineOf('For You').color, Colors.transparent);
   });
 
+  testWidgets('the feed lists are built from the shared ContentCard', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(homeUnder(container));
+    await tester.pumpAndSettle();
+
+    // Three news items and two events, all through the one component rather
+    // than hand-rolled rows.
+    expect(find.byType(ContentCard), findsNWidgets(5));
+    expect(find.byType(ContentCardAction), findsNWidgets(3));
+    expect(find.byType(ContentCardMeta), findsNWidgets(2));
+
+    // Both section headings come from the shared widget too.
+    expect(find.byType(SectionHeader), findsNWidgets(2));
+    expect(find.text('See all'), findsNWidgets(2));
+  });
+
   testWidgets('the breaking hero swipes and drops the hint on the last card', (
     tester,
   ) async {

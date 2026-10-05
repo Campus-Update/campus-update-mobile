@@ -704,31 +704,9 @@ class _LatestNewsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text(
-              'Latest News',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF111827),
-                letterSpacing: -0.2,
-              ),
-            ),
-            GestureDetector(
-              onTap: () => context.push(Routes.news),
-              child: const Text(
-                'See all',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF3730A3),
-                ),
-              ),
-            ),
-          ],
+        SectionHeader(
+          title: 'Latest News',
+          onAction: () => context.push(Routes.news),
         ),
         const SizedBox(height: 14),
         ListView.separated(
@@ -738,57 +716,10 @@ class _LatestNewsSection extends StatelessWidget {
           separatorBuilder: (_, __) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
             final item = _newsItems[index];
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Soft lavender placeholder thumbnail
-                Container(
-                  width: 120,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEDE9FE),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.category,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF6B7280),
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        item.title,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                          height: 1.25,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'READ MORE',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            return ContentCard(
+              label: item.category,
+              title: item.title,
+              footer: const ContentCardAction('READ MORE'),
             );
           },
         ),
@@ -819,31 +750,9 @@ class _UpcomingEventsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text(
-              'Upcoming Events',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF111827),
-                letterSpacing: -0.2,
-              ),
-            ),
-            GestureDetector(
-              onTap: () => context.push(Routes.events),
-              child: const Text(
-                'See all',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF3730A3),
-                ),
-              ),
-            ),
-          ],
+        SectionHeader(
+          title: 'Upcoming Events',
+          onAction: () => context.push(Routes.events),
         ),
         const SizedBox(height: 14),
         ListView.separated(
@@ -853,58 +762,13 @@ class _UpcomingEventsSection extends StatelessWidget {
           separatorBuilder: (_, __) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
             final event = _events[index];
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Soft lavender placeholder thumbnail
-                Container(
-                  width: 120,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEDE9FE),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        event.tag,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF6B7280),
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        event.title,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                          height: 1.25,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        event.meta,
-                        style: const TextStyle(
-                          fontSize: 11.5,
-                          color: Color(0xFF6B7280),
-                          fontWeight: FontWeight.w400,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            return ContentCard(
+              label: event.tag,
+              title: event.title,
+              // Shipped with 4 here and 6 on Latest News; kept so the
+              // extraction is pixel-for-pixel.
+              footerGap: 4,
+              footer: ContentCardMeta(event.meta),
             );
           },
         ),
