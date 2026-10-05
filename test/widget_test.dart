@@ -1,8 +1,11 @@
 import 'package:campus_update/app/app.dart';
 import 'package:campus_update/core/auth/auth_repository.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
+import 'package:campus_update/core/network/api_exception.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
 import 'package:campus_update/features/home/presentation/screens/home_screen.dart';
+import 'package:campus_update/features/profile/data/profile_repository.dart';
+import 'package:campus_update/features/profile/domain/user_profile.dart';
 import 'package:campus_update/shared/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,6 +36,26 @@ class _FakeAuthRepository implements AuthRepository {
   Future<void> signOut() async {}
 }
 
+/// Stands in for GET /auth/profile.
+///
+/// Default is to fail, which is the case the greeting has to survive: the
+/// sign-in still goes through and the name falls back to the email. Pass a
+/// [profile] for the case where the API does say who the user is.
+class _FakeProfileRepository implements ProfileRepository {
+  _FakeProfileRepository([this.profile]);
+
+  final UserProfile? profile;
+
+  @override
+  Future<UserProfile> fetch() async {
+    final p = profile;
+    if (p == null) {
+      throw const ApiException(statusCode: 500, message: 'no profile');
+    }
+    return p;
+  }
+}
+
 void main() {
   late SharedPreferences prefs;
 
@@ -51,6 +74,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+          profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
         child: const CampusUpdateApp(),
       ),
@@ -65,6 +89,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
     );
     addTearDown(container.dispose);
@@ -88,6 +113,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
     );
     addTearDown(container.dispose);
@@ -128,6 +154,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
     );
     addTearDown(container.dispose);
@@ -154,6 +181,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+          profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
       );
       addTearDown(container.dispose);
@@ -197,6 +225,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
     );
     addTearDown(container.dispose);
@@ -264,6 +293,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+          profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
       );
       addTearDown(container.dispose);
@@ -310,6 +340,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+          profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
       );
       addTearDown(container.dispose);
@@ -349,6 +380,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+          profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
       );
       addTearDown(container.dispose);
@@ -385,6 +417,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+          profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
       );
       addTearDown(container.dispose);
@@ -437,6 +470,52 @@ void main() {
   Finder categoryTab(String label) =>
       find.byKey(ValueKey('category-tab-$label'));
 
+  testWidgets('the name from GET /auth/profile wins over the email', (
+    tester,
+  ) async {
+    // The case this whole call exists for: signing in on a device the user
+    // never registered on. Nothing is stored locally, so without the profile
+    // fetch the greeting falls back to the front of the email address.
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(
+          _FakeProfileRepository(
+            const UserProfile(
+              id: 'u1',
+              email: 'daanny214@example.com',
+              firstName: 'Daniel',
+              lastName: 'Isiyemi',
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedOut();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byType(EditableText).at(0),
+      'daanny214@example.com',
+    );
+    await tester.enterText(find.byType(EditableText).at(1), 'Password123!');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Welcome, Daniel!'), findsOneWidget);
+    expect(find.text('Welcome, Daanny214!'), findsNothing);
+  });
+
   testWidgets('home screen shows the six category tabs from the design', (
     tester,
   ) async {
@@ -444,6 +523,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
     );
     addTearDown(container.dispose);
@@ -471,6 +551,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
     );
     addTearDown(container.dispose);
@@ -510,6 +591,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
     );
     addTearDown(container.dispose);
@@ -536,6 +618,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
     );
     addTearDown(container.dispose);

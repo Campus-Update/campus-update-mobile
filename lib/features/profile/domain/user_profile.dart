@@ -114,10 +114,16 @@ class UserProfile {
       email: json['email'] as String?,
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
-      role: json['role'] != null
-          ? UserRole.values.where((e) => e.name == json['role']).firstOrNull ??
-                UserRole.student
-          : UserRole.student,
+      // Two spellings reach this: the API sends 'Student' and 'SchoolAdmin',
+      // while toJson writes the enum's own lowercase name for local storage.
+      // Reading only one of them silently turned every staff member into a
+      // student on the way back in.
+      role: switch (json['role']) {
+        final String r when r.isNotEmpty =>
+          UserRole.values.where((e) => e.name == r).firstOrNull ??
+              UserRole.fromApi(r),
+        _ => UserRole.student,
+      },
       matriculationOrStaffNumber: json['matriculationOrStaffNumber'] as String?,
       institutionId: json['institutionId'] as String?,
       facultyId: json['facultyId'] as String?,
