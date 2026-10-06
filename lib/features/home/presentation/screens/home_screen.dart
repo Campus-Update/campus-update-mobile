@@ -585,7 +585,22 @@ class _BreakingNewsCard extends StatelessWidget {
             Image.asset(image, fit: BoxFit.cover, errorBuilder: _fallback)
           else
             _fallback(context, null, null),
-          if (image == null) _Caption(item: item),
+          // Subtle gradient scrim to keep headline text crisp and legible over image
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  Color(0x66000000),
+                  Color(0xCC000000),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0.3, 0.65, 1.0],
+              ),
+            ),
+          ),
+          _Caption(item: item),
           if (showSwipeHint)
             const Positioned(
               top: _swipeInset,
