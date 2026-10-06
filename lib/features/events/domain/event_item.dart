@@ -10,7 +10,6 @@ class EventItem {
     this.isFeatured = false,
     this.isRegistered = false,
     this.isAddedToCalendar = false,
-    this.section = 'This month',
     this.category = 'Summit',
   });
 
@@ -24,7 +23,6 @@ class EventItem {
   final bool isFeatured;
   final bool isRegistered;
   final bool isAddedToCalendar;
-  final String section;
   final String category;
 
   EventItem copyWith({
@@ -38,7 +36,6 @@ class EventItem {
     bool? isFeatured,
     bool? isRegistered,
     bool? isAddedToCalendar,
-    String? section,
     String? category,
   }) {
     return EventItem(
@@ -52,7 +49,6 @@ class EventItem {
       isFeatured: isFeatured ?? this.isFeatured,
       isRegistered: isRegistered ?? this.isRegistered,
       isAddedToCalendar: isAddedToCalendar ?? this.isAddedToCalendar,
-      section: section ?? this.section,
       category: category ?? this.category,
     );
   }

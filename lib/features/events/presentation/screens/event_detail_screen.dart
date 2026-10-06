@@ -6,6 +6,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../data/events_repository.dart';
+import '../widgets/event_image.dart';
 
 class EventDetailScreen extends ConsumerWidget {
   const EventDetailScreen({super.key, required this.id});
@@ -46,8 +47,7 @@ class EventDetailScreen extends ConsumerWidget {
         title: Text(
           'Event Details',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontFamily: AppFonts.family,
-            fontWeight: FontWeight.w700,
+            fontWeight: AppFonts.medium,
             color: AppColors.graphite,
           ),
         ),
@@ -63,7 +63,7 @@ class EventDetailScreen extends ConsumerWidget {
               );
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
         ],
       ),
       body: SingleChildScrollView(
@@ -72,37 +72,24 @@ class EventDetailScreen extends ConsumerWidget {
           children: [
             // Banner Image
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.gutter,
+              ),
+              child: EventImage(
+                imageUrl: event.imageUrl,
                 width: double.infinity,
                 height: 200,
-                decoration: BoxDecoration(
-                  color: AppColors.indigoSurface,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: event.imageUrl != null && event.imageUrl!.isNotEmpty
-                    ? (event.imageUrl!.startsWith('assets/')
-                          ? Image.asset(
-                              event.imageUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _buildImagePlaceholder(),
-                            )
-                          : Image.network(
-                              event.imageUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  _buildImagePlaceholder(),
-                            ))
-                    : _buildImagePlaceholder(),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                iconSize: 56,
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.gutter,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -123,7 +110,7 @@ class EventDetailScreen extends ConsumerWidget {
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
                                 color: AppColors.indigo,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: AppFonts.medium,
                               ),
                         ),
                       ),
@@ -133,16 +120,16 @@ class EventDetailScreen extends ConsumerWidget {
                           const Icon(
                             Icons.access_time_rounded,
                             size: 14,
-                            color: Color(0xFF6B7280),
+                            color: AppColors.sourceSponsored,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             event.dateFormatted,
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: const Color(0xFF6B7280),
+                                  color: AppColors.sourceSponsored,
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: AppFonts.medium,
                                 ),
                           ),
                         ],
@@ -156,15 +143,14 @@ class EventDetailScreen extends ConsumerWidget {
                   Text(
                     event.title,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontFamily: AppFonts.family,
                       fontSize: 22,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: AppFonts.medium,
                       color: AppColors.graphite,
                       height: 1.3,
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.md),
 
                   // Location & Time Information Card
                   Container(
@@ -172,7 +158,7 @@ class EventDetailScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: const Color(0xFFF9FAFB),
                       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                      border: Border.all(color: AppColors.fieldBorder),
                     ),
                     child: Column(
                       children: [
@@ -189,7 +175,7 @@ class EventDetailScreen extends ConsumerWidget {
                                 event.location,
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: AppFonts.medium,
                                       color: AppColors.graphite,
                                     ),
                               ),
@@ -210,7 +196,7 @@ class EventDetailScreen extends ConsumerWidget {
                                 event.time,
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: AppFonts.medium,
                                       color: AppColors.graphite,
                                     ),
                               ),
@@ -227,14 +213,13 @@ class EventDetailScreen extends ConsumerWidget {
                   Text(
                     'About this Event',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontFamily: AppFonts.family,
                       fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: AppFonts.medium,
                       color: AppColors.graphite,
                     ),
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
 
                   // Event Description Body
                   Text(
@@ -242,11 +227,11 @@ class EventDetailScreen extends ConsumerWidget {
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontSize: 14.5,
                       height: 1.6,
-                      color: const Color(0xFF374151),
+                      color: AppColors.sourcePromotedEvent,
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // Registration & Calendar Actions
                   Row(
@@ -277,7 +262,7 @@ class EventDetailScreen extends ConsumerWidget {
                           color: AppColors.indigo,
                         ),
                         style: IconButton.styleFrom(
-                          backgroundColor: const Color(0xFFEDE9FE),
+                          backgroundColor: AppColors.indigoSurface,
                           padding: const EdgeInsets.all(14),
                         ),
                       ),
@@ -290,18 +275,6 @@ class EventDetailScreen extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildImagePlaceholder() {
-    return Container(
-      color: AppColors.indigoSurface,
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.event_outlined,
-        size: 56,
-        color: AppColors.indigo.withValues(alpha: 0.25),
       ),
     );
   }

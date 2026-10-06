@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../domain/event_item.dart';
+import 'event_image.dart';
 
 class FeaturedEventCard extends StatelessWidget {
   const FeaturedEventCard({
@@ -26,30 +28,14 @@ class FeaturedEventCard extends StatelessWidget {
         children: [
           // Banner Image with "Featured" pill badge
           ClipRRect(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             child: Stack(
               children: [
-                Container(
+                EventImage(
+                  imageUrl: event.imageUrl,
                   width: double.infinity,
                   height: 180,
-                  decoration: const BoxDecoration(
-                    color: AppColors.indigoSurface,
-                  ),
-                  child: event.imageUrl != null && event.imageUrl!.isNotEmpty
-                      ? (event.imageUrl!.startsWith('assets/')
-                            ? Image.asset(
-                                event.imageUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    _buildPlaceholder(),
-                              )
-                            : Image.network(
-                                event.imageUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    _buildPlaceholder(),
-                              ))
-                      : _buildPlaceholder(),
+                  iconSize: 48,
                 ),
                 Positioned(
                   top: 0,
@@ -62,16 +48,15 @@ class FeaturedEventCard extends StatelessWidget {
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        bottomRight: Radius.circular(8),
+                        topLeft: Radius.circular(AppSpacing.radiusLg),
+                        bottomRight: Radius.circular(AppSpacing.radiusSm),
                       ),
                     ),
                     child: Text(
                       'Featured',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontFamily: AppFonts.family,
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: AppFonts.medium,
                         color: AppColors.indigo,
                       ),
                     ),
@@ -89,16 +74,15 @@ class FeaturedEventCard extends StatelessWidget {
               const Icon(
                 Icons.access_time_rounded,
                 size: 14,
-                color: Color(0xFF6B7280),
+                color: AppColors.sourceSponsored,
               ),
               const SizedBox(width: 5),
               Text(
                 event.dateFormatted,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontFamily: AppFonts.family,
                   fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF6B7280),
+                  fontWeight: AppFonts.medium,
+                  color: AppColors.sourceSponsored,
                   letterSpacing: 0.2,
                 ),
               ),
@@ -111,9 +95,8 @@ class FeaturedEventCard extends StatelessWidget {
           Text(
             event.title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontFamily: AppFonts.family,
               fontSize: 17,
-              fontWeight: FontWeight.w700,
+              fontWeight: AppFonts.medium,
               color: AppColors.graphite,
               letterSpacing: -0.2,
             ),
@@ -127,9 +110,8 @@ class FeaturedEventCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontFamily: AppFonts.family,
               fontSize: 13,
-              color: const Color(0xFF6B7280),
+              color: AppColors.sourceSponsored,
               height: 1.35,
             ),
           ),
@@ -140,9 +122,9 @@ class FeaturedEventCard extends StatelessWidget {
           Row(
             children: [
               const Icon(
-                Icons.remove_circle_outline_rounded,
+                Icons.location_on_outlined,
                 size: 14,
-                color: Color(0xFF6B7280),
+                color: AppColors.sourceSponsored,
               ),
               const SizedBox(width: 5),
               Expanded(
@@ -151,9 +133,8 @@ class FeaturedEventCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontFamily: AppFonts.family,
                     fontSize: 12,
-                    color: const Color(0xFF6B7280),
+                    color: AppColors.sourceSponsored,
                   ),
                 ),
               ),
@@ -173,18 +154,6 @@ class FeaturedEventCard extends StatelessWidget {
             onPressed: onRegisterTap,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return Container(
-      color: AppColors.indigoSurface,
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.event_outlined,
-        size: 48,
-        color: AppColors.indigo.withValues(alpha: 0.3),
       ),
     );
   }

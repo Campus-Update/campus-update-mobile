@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_spacing.dart';
 import '../../data/events_repository.dart';
 import '../widgets/event_card.dart';
 import '../widgets/featured_event_card.dart';
@@ -26,7 +27,10 @@ class EventsListScreen extends ConsumerWidget {
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.gutter,
+              vertical: AppSpacing.md,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -34,36 +38,34 @@ class EventsListScreen extends ConsumerWidget {
                 Text(
                   'Upcoming Events',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontFamily: AppFonts.family,
                     fontSize: 28,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: AppFonts.medium,
                     color: AppColors.graphite,
                     letterSpacing: -0.5,
                   ),
                 ),
 
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
 
                 // Screen Subtitle
                 Text(
                   'Discover summits, panels, and town halls.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontFamily: AppFonts.family,
                     fontSize: 14.5,
-                    color: const Color(0xFF6B7280),
+                    color: AppColors.sourceSponsored,
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
 
                 // Subtle Divider
                 const Divider(
                   height: 1,
                   thickness: 1,
-                  color: Color(0xFFF3F4F6),
+                  color: AppColors.fieldBorder,
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
 
                 // Hero Featured Event Card
                 if (featuredEvent != null) ...[
@@ -95,9 +97,8 @@ class EventsListScreen extends ConsumerWidget {
                 Text(
                   'This month',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontFamily: AppFonts.family,
                     fontSize: 19,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: AppFonts.medium,
                     color: AppColors.graphite,
                   ),
                 ),
@@ -135,7 +136,7 @@ class EventsListScreen extends ConsumerWidget {
                   },
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.lg),
               ],
             ),
           ),

@@ -8,11 +8,7 @@ final eventsListProvider = NotifierProvider<EventsNotifier, List<EventItem>>(
 
 final featuredEventProvider = Provider<EventItem?>((ref) {
   final events = ref.watch(eventsListProvider);
-  try {
-    return events.firstWhere((e) => e.isFeatured);
-  } catch (_) {
-    return events.isNotEmpty ? events.first : null;
-  }
+  return events.where((e) => e.isFeatured).firstOrNull ?? events.firstOrNull;
 });
 
 final monthlyEventsProvider = Provider<List<EventItem>>((ref) {
@@ -22,11 +18,7 @@ final monthlyEventsProvider = Provider<List<EventItem>>((ref) {
 
 final eventByIdProvider = Provider.family<EventItem?, String>((ref, id) {
   final events = ref.watch(eventsListProvider);
-  try {
-    return events.firstWhere((e) => e.id == id);
-  } catch (_) {
-    return null;
-  }
+  return events.where((e) => e.id == id).firstOrNull;
 });
 
 class EventsNotifier extends Notifier<List<EventItem>> {
@@ -51,41 +43,37 @@ class EventsNotifier extends Notifier<List<EventItem>> {
       location: 'Metropolis Convention Center',
       dateFormatted: 'OCT 12, 2024',
       time: '10:00 AM - 02:00 PM',
-      section: 'This month',
       category: 'Campus',
     ),
     EventItem(
       id: 'event-2',
-      title: 'New Library Wing Opens Ahead of Schedule',
+      title: 'Annual Tech & AI Innovation Hackathon',
       description:
-          'Tour the newly expanded digital research archives and collaborative study spaces at the North Campus Library.',
-      location: 'Metropolis Convention Center',
-      dateFormatted: 'OCT 12, 2024',
-      time: '10:00 AM - 02:00 PM',
-      section: 'This month',
-      category: 'Campus',
+          '48-hour collaborative build sprint solving real-world campus sustainability challenges with mentorship from industry experts.',
+      location: 'Science & Engineering Complex',
+      dateFormatted: 'OCT 18, 2024',
+      time: '08:00 AM - 06:00 PM',
+      category: 'Hackathon',
     ),
     EventItem(
       id: 'event-3',
-      title: 'New Library Wing Opens Ahead of Schedule',
+      title: 'Fall Career & Internship Expo',
       description:
-          'Tour the newly expanded digital research archives and collaborative study spaces at the North Campus Library.',
-      location: 'Metropolis Convention Center',
-      dateFormatted: 'OCT 12, 2024',
-      time: '10:00 AM - 02:00 PM',
-      section: 'This month',
-      category: 'Campus',
+          'Meet recruiters from top engineering, finance, and creative technology companies looking for graduating seniors and interns.',
+      location: 'University Grand Ballroom',
+      dateFormatted: 'OCT 24, 2024',
+      time: '11:00 AM - 04:00 PM',
+      category: 'Career',
     ),
     EventItem(
       id: 'event-4',
-      title: 'New Library Wing Opens Ahead of Schedule',
+      title: 'Student Government Presidential Debate',
       description:
-          'Tour the newly expanded digital research archives and collaborative study spaces at the North Campus Library.',
-      location: 'Metropolis Convention Center',
-      dateFormatted: 'OCT 12, 2024',
-      time: '10:00 AM - 02:00 PM',
-      section: 'This month',
-      category: 'Campus',
+          'Hear candidate platforms on campus housing, meal plan reform, and student activity funding ahead of upcoming elections.',
+      location: 'Student Union Auditorium',
+      dateFormatted: 'NOV 02, 2024',
+      time: '06:00 PM - 08:30 PM',
+      category: 'Town Hall',
     ),
   ];
 
@@ -99,8 +87,8 @@ class EventsNotifier extends Notifier<List<EventItem>> {
       for (final event in state)
         if (event.id == id)
           event.copyWith(isRegistered: !event.isRegistered)
-        else
-          event,
+      else
+        event,
     ];
   }
 
@@ -109,8 +97,8 @@ class EventsNotifier extends Notifier<List<EventItem>> {
       for (final event in state)
         if (event.id == id)
           event.copyWith(isAddedToCalendar: !event.isAddedToCalendar)
-        else
-          event,
+      else
+        event,
     ];
   }
 
