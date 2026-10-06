@@ -18,6 +18,7 @@ import '../features/auth/presentation/screens/select_school_screen.dart';
 import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/auth/presentation/screens/verify_otp_screen.dart';
+import '../features/calendar/presentation/screens/calendar_detail_screen.dart';
 import '../features/calendar/presentation/screens/calendar_screen.dart';
 import '../features/events/presentation/screens/event_detail_screen.dart';
 import '../features/events/presentation/screens/events_list_screen.dart';
@@ -236,6 +237,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: Routes.calendar,
                 builder: (_, __) => const CalendarScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (_, s) =>
+                        CalendarDetailScreen(id: s.pathParameters['id']!),
+                  ),
+                ],
               ),
             ],
           ),
