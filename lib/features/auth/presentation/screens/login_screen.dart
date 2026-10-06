@@ -3,7 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
+import '../../../../app/theme/app_colors.dart';
+import '../../../../core/auth/auth_repository.dart';
 import '../../../../core/auth/auth_state.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../../../features/profile/data/profile_providers.dart';
+import '../../../../features/profile/data/profile_repository.dart';
 import '../../../../shared/utils/validators.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/auth_page.dart';
@@ -20,7 +25,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _remember = false;
-  bool _loading = false;
+  bool _busy = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -30,14 +36,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _submit() async {
-    FocusManager.instance.primaryFocus?.unfocus();
+    if (_busy) return;
     if (!(_form.currentState?.validate() ?? false)) return;
 
-    setState(() => _loading = true);
-    // Brief async tick for smooth UI transition
-    await Future<void>.delayed(const Duration(milliseconds: 250));
-    if (!mounted) return;
-    ref.read(authProvider.notifier).signedIn();
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .login(email: _email.text.trim(), password: _password.text);
+
+      // Login hands back tokens and nothing else, so who the session belongs
+      // to has to be fetched. On a device the user did not register on there
+      // is nothing stored locally, and without this the home screen greets
+      // them by the front of their email address.
+      //
+      // A failure here must not block the sign-in: the credentials were
+      // accepted and the tokens are stored. The email still gives the
+      // greeting something to fall back on.
+      await _loadProfile();
+
+      // Telling the notifier is what moves the router out of the signed-out
+      // zone.
+      ref.read(authProvider.notifier).signedIn(email: _email.text.trim());
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        // 401 here means the credentials are wrong, not that a session
+        // lapsed — the default message would tell them to sign in again,
+        // which is what they are already doing.
+        _error = e.isUnauthorized
+            ? 'That email and password do not match.'
+            : e.message;
+      });
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _google() async {
@@ -46,6 +83,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     await Future<void>.delayed(const Duration(milliseconds: 250));
     if (!mounted) return;
     ref.read(authProvider.notifier).signedIn();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final profile = await ref.read(profileRepositoryProvider).fetch();
+      await ref.read(userProfileProvider.notifier).setProfile(profile);
+    } on ApiException {
+      // Signed in regardless; the greeting falls back to the email.
+    }
   }
 
   @override
@@ -60,7 +106,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               AppInput(
                 label: 'Email Address',
-                hint: 'Enter First Name',
+                hint: 'Enter Email Address',
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
@@ -102,12 +148,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ],
           ),
         ),
+        if (_error != null) ...[
+          const SizedBox(height: AuthGaps.toLink),
+          Text(
+            _error!,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.labelMedium?.copyWith(color: AppColors.alertRed),
+          ),
+        ],
         const SizedBox(height: AuthGaps.toButton),
-        AppButton(
-          label: 'Sign in',
-          loading: _loading,
-          onPressed: _loading ? null : _submit,
-        ),
+        AppButton(label: 'Sign in', loading: _busy, onPressed: _submit),
         const SizedBox(height: AuthGaps.toLink),
         AppLinkText(
           "Don't have an account yet? Create account",

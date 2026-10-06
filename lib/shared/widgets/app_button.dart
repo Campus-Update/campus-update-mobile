@@ -6,8 +6,8 @@ import '../../app/theme/app_spacing.dart';
 /// Which treatment the button takes.
 ///
 /// [primary] is specified by design: a 50px gradient pill, fully rounded, with
-/// 30px of horizontal padding. The others follow from the palette and should be
-/// confirmed as their screens arrive.
+/// 30px of horizontal padding. [secondary] is its Skip — the same pill in
+/// white behind a hairline. [ghost] and [danger] still await their screens.
 enum AppButtonVariant { primary, secondary, ghost, danger }
 
 /// The button used across the app.
@@ -27,6 +27,7 @@ class AppButton extends StatelessWidget {
     this.trailingIcon,
     this.expand = true,
     this.onImage = false,
+    this.fontSize,
   });
 
   final String label;
@@ -45,6 +46,12 @@ class AppButton extends StatelessWidget {
   /// screens do not.
   final bool onImage;
 
+  /// Overrides the label size. Leave it null and the button stays on
+  /// [_labelStyle], which is what the design specifies; pass a size only for a
+  /// button the design genuinely draws differently, so that the default stays
+  /// the single source of truth rather than something each screen re-picks.
+  final double? fontSize;
+
   /// Height of the gradient itself. The primary variant then carries
   /// [_ringWidth] of ring outside that, so its box is taller by twice it.
   static const _height = 50.0;
@@ -53,6 +60,17 @@ class AppButton extends StatelessWidget {
 
   /// The pale ring around the primary button, measured off the design.
   static const _ringWidth = 2.0;
+
+  /// The label, straight off the design: Archivo Medium 14 on a 20 line box,
+  /// no letter spacing. Not [TextTheme.titleMedium] — that is 16, which
+  /// overruns a half-width button ("Add details" needs 82pt at 16 but only
+  /// 71 at 14, and a side-by-side pair leaves 78pt on a 360pt phone).
+  static const _labelStyle = TextStyle(
+    fontFamily: AppFonts.family,
+    fontSize: 14,
+    height: 20 / 14,
+    fontWeight: AppFonts.medium,
+  );
 
   bool get _ringed => onImage && variant == AppButtonVariant.primary;
 
@@ -64,7 +82,8 @@ class AppButton extends StatelessWidget {
 
   Color _foreground(ColorScheme scheme) => switch (variant) {
     AppButtonVariant.primary || AppButtonVariant.danger => Colors.white,
-    AppButtonVariant.secondary || AppButtonVariant.ghost => AppColors.indigo,
+    AppButtonVariant.secondary => AppColors.graphite,
+    AppButtonVariant.ghost => AppColors.indigo,
   };
 
   BoxDecoration _decoration(ColorScheme scheme) {
@@ -83,9 +102,12 @@ class AppButton extends StatelessWidget {
         color: AppColors.alertRed,
         borderRadius: radius,
       ),
+      // The design's Skip: white, with a hairline the same grey a field
+      // carries, so it reads as the quieter of a pair.
       AppButtonVariant.secondary => BoxDecoration(
+        color: Colors.white,
         borderRadius: radius,
-        border: Border.all(color: AppColors.indigo),
+        border: Border.all(color: AppColors.fieldBorder),
       ),
       AppButtonVariant.ghost => BoxDecoration(borderRadius: radius),
     };
@@ -113,9 +135,10 @@ class AppButton extends StatelessWidget {
                 child: Text(
                   label,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(color: foreground),
+                  style: _labelStyle.copyWith(
+                    color: foreground,
+                    fontSize: fontSize,
+                  ),
                 ),
               ),
               if (trailingIcon != null) ...[

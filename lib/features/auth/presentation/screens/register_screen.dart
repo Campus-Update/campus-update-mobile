@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router.dart';
 import '../../../../core/auth/auth_state.dart';
 import '../../../../shared/utils/validators.dart';
+import '../../domain/registration_draft.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/auth_page.dart';
 
@@ -38,10 +39,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _submit() {
     if (!(_form.currentState?.validate() ?? false)) return;
-    // Nothing registers the account yet — that call lands with the API, and
-    // it needs the institution, role and academic details the questions after
-    // this collect. For now the form only carries the flow forward.
-    context.push(Routes.verifyOtp);
+    // The account is created at the end of the questions, because register
+    // also needs the institution, role and name they collect. These are kept
+    // until then rather than sent now.
+    ref
+        .read(registrationDraftProvider.notifier)
+        .setCredentials(email: _email.text.trim(), password: _password.text);
+    context.push(Routes.selectSchool);
   }
 
   /// No provider on the backend yet. Left enabled so the screen matches the
@@ -64,7 +68,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             children: [
               AppInput(
                 label: 'Email Address',
-                hint: 'Enter First Name',
+                hint: 'Enter Email Address',
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,

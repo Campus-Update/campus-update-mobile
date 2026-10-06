@@ -63,6 +63,13 @@ abstract final class AppColors {
   static const otpCorrect = emerald;
   static const otpWrong = alertRed;
 
+  /// A chosen option's ground — the institution row, the student or staff
+  /// card. Flat, not the button's gradient. Sampled off the design.
+  static const optionSelected = Color(0xFF5D15ED);
+
+  /// An unchosen one, the same lavender the form panel uses.
+  static const optionRest = formPanel;
+
   /// Muted text under a screen title.
   static const textMuted = Color(0xFF8C8994);
 
@@ -97,6 +104,22 @@ abstract final class AppColors {
   static const sourceCampusUpdate = indigo;
   static const sourceSponsored = Color(0xFF6B7280);
   static const sourcePromotedEvent = Color(0xFF374151);
+
+  // Feed tones carried over from the home screen implementation.
+  //
+  // These are Tailwind defaults rather than brand values, kept verbatim so the
+  // extraction into shared widgets changed nothing on screen. Design should
+  // confirm them against the palette: [feedTitle] is a hair off [graphite]
+  // (#111214) and [feedLink] is a deeper indigo than [indigo] (#4F46E5).
+  static const feedTitle = Color(0xFF111827);
+  static const feedLink = Color(0xFF3730A3);
+
+  /// The live/breaking marker on the home feed.
+  ///
+  /// Measured off the home design export as #ED0000 — brighter and more
+  /// saturated than [alertRed], which stays reserved for errors and
+  /// destructive actions so the two do not blur together.
+  static const liveBadge = Color(0xFFED0000);
 }
 
 /// Archivo is the sole typeface: Regular 400 for body and labels, Medium 500

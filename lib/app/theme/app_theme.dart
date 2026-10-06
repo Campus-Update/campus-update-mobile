@@ -84,22 +84,18 @@ abstract final class AppTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: scheme.surface,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         indicatorColor: Colors.transparent,
-        iconTheme: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? const IconThemeData(color: AppColors.indigo)
-              : const IconThemeData(color: Color(0xFF8C8994)),
-        ),
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
               // Medium 500 for active navigation, Regular 400 otherwise.
               ? AppTextStyles.textTheme.labelSmall?.copyWith(
                   color: AppColors.indigo,
-                  fontWeight: AppFonts.medium,
+                  fontWeight: FontWeight.w600,
                 )
               : AppTextStyles.textTheme.labelMedium?.copyWith(
-                  color: const Color(0xFF8C8994),
+                  color: AppColors.textMuted,
                 ),
         ),
       ),
