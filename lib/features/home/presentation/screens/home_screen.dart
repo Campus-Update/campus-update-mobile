@@ -128,35 +128,7 @@ class _HomeHeader extends ConsumerWidget {
                   padding: const EdgeInsets.all(6),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () => context.push(Routes.notifications),
-                  icon: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      const Icon(
-                        Icons.notifications_none_rounded,
-                        size: 25,
-                        color: Color(0xFF374151),
-                      ),
-                      Positioned(
-                        top: 0,
-                        right: 1,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 1.5),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  splashRadius: 20,
-                  constraints: const BoxConstraints(),
-                  padding: const EdgeInsets.all(6),
-                ),
+                const NotificationButton(color: Color(0xFF374151)),
               ],
             ),
           ],
