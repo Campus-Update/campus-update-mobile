@@ -83,11 +83,14 @@ class _AuthListenable extends ChangeNotifier {
   }
 }
 
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = _AuthListenable(ref);
   ref.onDispose(refresh.dispose);
 
   return GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: Routes.splash,
     refreshListenable: refresh,
     redirect: (context, state) {
@@ -210,6 +213,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: ':id',
+                    parentNavigatorKey: _rootNavigatorKey,
                     builder: (_, s) =>
                         NewsDetailScreen(id: s.pathParameters['id']!),
                   ),
@@ -225,6 +229,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: ':id',
+                    parentNavigatorKey: _rootNavigatorKey,
                     builder: (_, s) =>
                         EventDetailScreen(id: s.pathParameters['id']!),
                   ),
@@ -240,6 +245,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: ':id',
+                    parentNavigatorKey: _rootNavigatorKey,
                     builder: (_, s) =>
                         CalendarDetailScreen(id: s.pathParameters['id']!),
                   ),
