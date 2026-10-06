@@ -4,11 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
-import '../../../../shared/widgets/empty_state.dart';
-import '../../../../shared/widgets/error_state.dart';
-import '../../../../shared/widgets/loader.dart';
+import '../../../../shared/widgets/widgets.dart';
 import '../../data/news_repository.dart';
-import '../widgets/category_chips.dart';
 import '../widgets/news_card.dart';
 
 class NewsListScreen extends ConsumerWidget {
@@ -44,12 +41,12 @@ class NewsListScreen extends ConsumerWidget {
                   Text(
                     'News',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontFamily: AppFonts.family,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.graphite,
-                          letterSpacing: -0.5,
-                        ),
+                      fontFamily: AppFonts.family,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.graphite,
+                      letterSpacing: -0.5,
+                    ),
                   ),
                   Row(
                     children: [
@@ -64,34 +61,7 @@ class NewsListScreen extends ConsumerWidget {
                         tooltip: 'Search',
                         onPressed: () => context.push(Routes.newsSearch),
                       ),
-                      // Notifications Button with Alert Dot
-                      IconButton(
-                        icon: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            const Icon(
-                              Icons.notifications_none_rounded,
-                              size: 26,
-                              color: AppColors.graphite,
-                            ),
-                            Positioned(
-                              top: 1,
-                              right: 2,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFEA580C), // Orange-red badge
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        splashRadius: 22,
-                        tooltip: 'Notifications',
-                        onPressed: () => context.push(Routes.notifications),
-                      ),
+                      const NotificationButton(),
                     ],
                   ),
                 ],
@@ -110,11 +80,7 @@ class NewsListScreen extends ConsumerWidget {
             const SizedBox(height: 12),
 
             // Subtle Divider
-            const Divider(
-              height: 1,
-              thickness: 1,
-              color: Color(0xFFF3F4F6),
-            ),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFF3F4F6)),
 
             // News List Content
             Expanded(

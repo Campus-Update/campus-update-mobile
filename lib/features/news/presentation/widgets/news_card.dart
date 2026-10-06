@@ -61,9 +61,7 @@ class NewsCard extends StatelessWidget {
                         children: [
                           Text(
                             item.category,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelMedium
+                            style: Theme.of(context).textTheme.labelMedium
                                 ?.copyWith(
                                   fontFamily: AppFonts.family,
                                   fontSize: 12,
@@ -75,7 +73,10 @@ class NewsCard extends StatelessWidget {
                             behavior: HitTestBehavior.opaque,
                             onTap: onBookmarkTap,
                             child: Padding(
-                              padding: const EdgeInsets.only(left: 8, bottom: 2),
+                              padding: const EdgeInsets.only(
+                                left: 8,
+                                bottom: 2,
+                              ),
                               child: Icon(
                                 item.isBookmarked
                                     ? Icons.bookmark
@@ -95,9 +96,7 @@ class NewsCard extends StatelessWidget {
                         item.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
+                        style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
                               fontFamily: AppFonts.family,
                               fontSize: 15,
@@ -118,9 +117,7 @@ class NewsCard extends StatelessWidget {
                           const SizedBox(width: 5),
                           Text(
                             item.timeAgo,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                            style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   fontFamily: AppFonts.family,
                                   fontSize: 12,

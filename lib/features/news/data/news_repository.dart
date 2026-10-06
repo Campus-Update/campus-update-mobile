@@ -14,7 +14,8 @@ class MockNewsRepository implements NewsRepository {
     _items = [
       const NewsItem(
         id: 'news-1',
-        title: 'New Library Wing Opens with 24/7 Study Lounges and Modern Research Facilities',
+        title:
+            'New Library Wing Opens with 24/7 Study Lounges and Modern Research Facilities',
         category: 'Campus',
         timeAgo: 'Recent update',
         summary:
@@ -27,7 +28,8 @@ class MockNewsRepository implements NewsRepository {
       ),
       const NewsItem(
         id: 'news-2',
-        title: 'City Council Approves New Campus Bus Line and Subsidized Student Transit Passes',
+        title:
+            'City Council Approves New Campus Bus Line and Subsidized Student Transit Passes',
         category: 'General',
         timeAgo: 'Updated recently',
         summary:
@@ -40,7 +42,8 @@ class MockNewsRepository implements NewsRepository {
       ),
       const NewsItem(
         id: 'news-3',
-        title: 'Engineering Department Unveils Cutting-Edge AI and Robotics Laboratory',
+        title:
+            'Engineering Department Unveils Cutting-Edge AI and Robotics Laboratory',
         category: 'Technology',
         timeAgo: 'Updated recently',
         summary:
@@ -53,7 +56,8 @@ class MockNewsRepository implements NewsRepository {
       ),
       const NewsItem(
         id: 'news-4',
-        title: 'Major Security Update Required for Campus WiFi and Single Sign-On Access',
+        title:
+            'Major Security Update Required for Campus WiFi and Single Sign-On Access',
         category: 'Tech',
         timeAgo: 'Updated recently',
         summary:
@@ -66,7 +70,8 @@ class MockNewsRepository implements NewsRepository {
       ),
       const NewsItem(
         id: 'news-5',
-        title: 'Severe Thunderstorm Warning: Evening Outdoor Campus Events Rescheduled',
+        title:
+            'Severe Thunderstorm Warning: Evening Outdoor Campus Events Rescheduled',
         category: 'Weather',
         timeAgo: 'Updated recently',
         summary:
@@ -79,7 +84,8 @@ class MockNewsRepository implements NewsRepository {
       ),
       const NewsItem(
         id: 'news-6',
-        title: 'Major Security Update Released for Departmental Workstations and Lab Devices',
+        title:
+            'Major Security Update Released for Departmental Workstations and Lab Devices',
         category: 'Tech',
         timeAgo: 'Updated recently',
         summary:
@@ -92,7 +98,8 @@ class MockNewsRepository implements NewsRepository {
       ),
       const NewsItem(
         id: 'news-7',
-        title: 'Annual Inter-Faculty Sports Festival Registration Officially Commences',
+        title:
+            'Annual Inter-Faculty Sports Festival Registration Officially Commences',
         category: 'General',
         timeAgo: 'Updated recently',
         summary:
@@ -118,7 +125,8 @@ class MockNewsRepository implements NewsRepository {
       ),
       const NewsItem(
         id: 'news-9',
-        title: 'Severe Heatwave Advisory: Hydration Stations Deployed Across Campus Grounds',
+        title:
+            'Severe Heatwave Advisory: Hydration Stations Deployed Across Campus Grounds',
         category: 'Weather',
         timeAgo: 'Updated recently',
         summary:
@@ -139,7 +147,9 @@ class MockNewsRepository implements NewsRepository {
     await Future<void>.delayed(const Duration(milliseconds: 150));
     var result = List<NewsItem>.from(_items);
 
-    if (category != null && category.isNotEmpty && category.toLowerCase() != 'all') {
+    if (category != null &&
+        category.isNotEmpty &&
+        category.toLowerCase() != 'all') {
       result = result.where((item) {
         final cat = item.category.toLowerCase();
         final filter = category.toLowerCase();
@@ -153,10 +163,12 @@ class MockNewsRepository implements NewsRepository {
     if (query != null && query.trim().isNotEmpty) {
       final q = query.toLowerCase().trim();
       result = result
-          .where((item) =>
-              item.title.toLowerCase().contains(q) ||
-              item.summary.toLowerCase().contains(q) ||
-              item.category.toLowerCase().contains(q))
+          .where(
+            (item) =>
+                item.title.toLowerCase().contains(q) ||
+                item.summary.toLowerCase().contains(q) ||
+                item.category.toLowerCase().contains(q),
+          )
           .toList();
     }
 
@@ -198,8 +210,8 @@ class SelectedNewsCategoryNotifier extends Notifier<String> {
 
 final selectedNewsCategoryProvider =
     NotifierProvider<SelectedNewsCategoryNotifier, String>(
-  SelectedNewsCategoryNotifier.new,
-);
+      SelectedNewsCategoryNotifier.new,
+    );
 
 /// State notifier managing news search query filter.
 class NewsSearchQueryNotifier extends Notifier<String> {
@@ -212,8 +224,8 @@ class NewsSearchQueryNotifier extends Notifier<String> {
 
 final newsSearchQueryProvider =
     NotifierProvider<NewsSearchQueryNotifier, String>(
-  NewsSearchQueryNotifier.new,
-);
+      NewsSearchQueryNotifier.new,
+    );
 
 /// State notifier managing the news list state.
 class NewsListNotifier extends Notifier<AsyncValue<List<NewsItem>>> {
@@ -257,8 +269,8 @@ class NewsListNotifier extends Notifier<AsyncValue<List<NewsItem>>> {
 
 final newsListProvider =
     NotifierProvider<NewsListNotifier, AsyncValue<List<NewsItem>>>(
-  NewsListNotifier.new,
-);
+      NewsListNotifier.new,
+    );
 
 /// Provider for filtered news based on selected category and search query.
 final filteredNewsListProvider = Provider<AsyncValue<List<NewsItem>>>((ref) {
@@ -296,7 +308,7 @@ final filteredNewsListProvider = Provider<AsyncValue<List<NewsItem>>>((ref) {
 final newsItemByIdProvider = Provider.family<NewsItem?, String>((ref, id) {
   final newsState = ref.watch(newsListProvider);
   return newsState.value?.cast<NewsItem?>().firstWhere(
-        (item) => item?.id == id,
-        orElse: () => null,
-      );
+    (item) => item?.id == id,
+    orElse: () => null,
+  );
 });

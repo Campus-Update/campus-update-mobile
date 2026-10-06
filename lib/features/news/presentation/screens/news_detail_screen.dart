@@ -118,9 +118,7 @@ class NewsDetailScreen extends ConsumerWidget {
                         ),
                         child: Text(
                           article.category,
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelSmall
+                          style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
                                 color: AppColors.alertRed,
                                 fontWeight: FontWeight.w600,
@@ -140,9 +138,7 @@ class NewsDetailScreen extends ConsumerWidget {
                           const SizedBox(width: 4),
                           Text(
                             article.readTime,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                            style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   color: AppColors.textMuted,
                                   fontSize: 12,
@@ -159,12 +155,12 @@ class NewsDetailScreen extends ConsumerWidget {
                   Text(
                     article.title,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontFamily: AppFonts.family,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.graphite,
-                          height: 1.3,
-                        ),
+                      fontFamily: AppFonts.family,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.graphite,
+                      height: 1.3,
+                    ),
                   ),
 
                   const SizedBox(height: 12),
@@ -174,8 +170,9 @@ class NewsDetailScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         radius: 14,
-                        backgroundColor:
-                            AppColors.indigo.withValues(alpha: 0.15),
+                        backgroundColor: AppColors.indigo.withValues(
+                          alpha: 0.15,
+                        ),
                         child: Text(
                           article.author.isNotEmpty
                               ? article.author[0].toUpperCase()
@@ -194,9 +191,7 @@ class NewsDetailScreen extends ConsumerWidget {
                           children: [
                             Text(
                               article.author,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium
+                              style: Theme.of(context).textTheme.labelMedium
                                   ?.copyWith(
                                     fontWeight: AppFonts.medium,
                                     color: AppColors.graphite,
@@ -204,9 +199,7 @@ class NewsDetailScreen extends ConsumerWidget {
                             ),
                             Text(
                               article.timeAgo,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
+                              style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
                                     color: AppColors.textMuted,
                                     fontSize: 11,
@@ -234,10 +227,10 @@ class NewsDetailScreen extends ConsumerWidget {
                     child: Text(
                       article.summary,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontStyle: FontStyle.italic,
-                            color: AppColors.graphite,
-                            height: 1.5,
-                          ),
+                        fontStyle: FontStyle.italic,
+                        color: AppColors.graphite,
+                        height: 1.5,
+                      ),
                     ),
                   ),
 
@@ -247,10 +240,10 @@ class NewsDetailScreen extends ConsumerWidget {
                   Text(
                     article.body ?? article.summary,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontSize: 15,
-                          height: 1.6,
-                          color: const Color(0xFF374151),
-                        ),
+                      fontSize: 15,
+                      height: 1.6,
+                      color: const Color(0xFF374151),
+                    ),
                   ),
 
                   const SizedBox(height: 40),

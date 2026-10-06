@@ -19,52 +19,63 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  testWidgets('navigating to news section displays the News screen matching design', (
-    tester,
-  ) async {
-    final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-    );
-    addTearDown(container.dispose);
-    container.read(authProvider.notifier).signedIn();
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: const CampusUpdateApp(),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    // Tap on the News tab in the bottom bar
-    await tester.tap(find.text('News'));
-    await tester.pumpAndSettle();
-
-    // Verify NewsListScreen is displayed
-    expect(find.byType(NewsListScreen), findsOneWidget);
-
-    // Verify Header elements
-    expect(find.text('News'), findsWidgets); // header title and bottom nav tab
-    expect(find.byIcon(Icons.search), findsOneWidget);
-    expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
-
-    // Verify Category chips
-    expect(find.byType(CategoryChips), findsOneWidget);
-    for (final cat in ['All', 'General', 'Campus', 'Weather', 'Tech', 'Technology']) {
-      expect(
-        find.descendant(
-          of: find.byType(CategoryChips),
-          matching: find.text(cat),
-        ),
-        findsOneWidget,
+  testWidgets(
+    'navigating to news section displays the News screen matching design',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
-    }
+      addTearDown(container.dispose);
+      container.read(authProvider.notifier).signedIn();
 
-    // Verify News cards
-    expect(find.byType(NewsCard), findsWidgets);
-    expect(find.textContaining('New Library Wing Opens'), findsOneWidget);
-    expect(find.textContaining('City Council Approves'), findsOneWidget);
-  });
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const CampusUpdateApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap on the News tab in the bottom bar
+      await tester.tap(find.text('News'));
+      await tester.pumpAndSettle();
+
+      // Verify NewsListScreen is displayed
+      expect(find.byType(NewsListScreen), findsOneWidget);
+
+      // Verify Header elements
+      expect(
+        find.text('News'),
+        findsWidgets,
+      ); // header title and bottom nav tab
+      expect(find.byIcon(Icons.search), findsOneWidget);
+      expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
+
+      // Verify Category chips
+      expect(find.byType(CategoryChips), findsOneWidget);
+      for (final cat in [
+        'All',
+        'General',
+        'Campus',
+        'Weather',
+        'Tech',
+        'Technology',
+      ]) {
+        expect(
+          find.descendant(
+            of: find.byType(CategoryChips),
+            matching: find.text(cat),
+          ),
+          findsOneWidget,
+        );
+      }
+
+      // Verify News cards
+      expect(find.byType(NewsCard), findsWidgets);
+      expect(find.textContaining('New Library Wing Opens'), findsOneWidget);
+      expect(find.textContaining('City Council Approves'), findsOneWidget);
+    },
+  );
 
   testWidgets('filtering news by category updates news list', (tester) async {
     final container = ProviderContainer(
@@ -162,61 +173,62 @@ void main() {
   });
 
   testWidgets(
-      'toggling search, typing unmatched query shows empty state, and clear restores list',
-      (tester) async {
-    final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-    );
-    addTearDown(container.dispose);
-    container.read(authProvider.notifier).signedIn();
+    'toggling search, typing unmatched query shows empty state, and clear restores list',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+      container.read(authProvider.notifier).signedIn();
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: const CampusUpdateApp(),
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const CampusUpdateApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    // Navigate to News
-    await tester.tap(find.text('News'));
-    await tester.pumpAndSettle();
+      // Navigate to News
+      await tester.tap(find.text('News'));
+      await tester.pumpAndSettle();
 
-    // Tap search icon in header to navigate to NewsSearchScreen
-    await tester.tap(find.byIcon(Icons.search));
-    await tester.pumpAndSettle();
+      // Tap search icon in header to navigate to NewsSearchScreen
+      await tester.tap(find.byIcon(Icons.search));
+      await tester.pumpAndSettle();
 
-    // Verify NewsSearchScreen is opened with search text field
-    expect(find.byType(NewsSearchScreen), findsOneWidget);
-    expect(find.byType(TextField), findsOneWidget);
-    expect(find.text('Clear'), findsOneWidget);
+      // Verify NewsSearchScreen is opened with search text field
+      expect(find.byType(NewsSearchScreen), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('Clear'), findsOneWidget);
 
-    // Enter query 'nsn' matching the design screenshot
-    await tester.enterText(find.byType(TextField), 'nsn');
-    await tester.pumpAndSettle();
+      // Enter query 'nsn' matching the design screenshot
+      await tester.enterText(find.byType(TextField), 'nsn');
+      await tester.pumpAndSettle();
 
-    // Verify exact empty state from design
-    expect(find.text('No news articles found'), findsOneWidget);
-    expect(
-      find.text('Try adjusting your search query or selected category.'),
-      findsOneWidget,
-    );
-    expect(find.byType(NewsCard), findsNothing);
+      // Verify exact empty state from design
+      expect(find.text('No news articles found'), findsOneWidget);
+      expect(
+        find.text('Try adjusting your search query or selected category.'),
+        findsOneWidget,
+      );
+      expect(find.byType(NewsCard), findsNothing);
 
-    // Tap 'Clear' button to clear text
-    await tester.tap(find.text('Clear'));
-    await tester.pumpAndSettle();
+      // Tap 'Clear' button to clear text
+      await tester.tap(find.text('Clear'));
+      await tester.pumpAndSettle();
 
-    // Verify articles are restored on NewsSearchScreen
-    expect(find.byType(NewsCard), findsWidgets);
-    expect(find.text('No news articles found'), findsNothing);
+      // Verify articles are restored on NewsSearchScreen
+      expect(find.byType(NewsCard), findsWidgets);
+      expect(find.text('No news articles found'), findsNothing);
 
-    // Tap 'Clear' again (when empty) to pop back to NewsListScreen
-    await tester.tap(find.text('Clear'));
-    await tester.pumpAndSettle();
+      // Tap 'Clear' again (when empty) to pop back to NewsListScreen
+      await tester.tap(find.text('Clear'));
+      await tester.pumpAndSettle();
 
-    // Verify returned to NewsListScreen
-    expect(find.byType(NewsListScreen), findsOneWidget);
-    expect(find.byType(NewsSearchScreen), findsNothing);
-  });
+      // Verify returned to NewsListScreen
+      expect(find.byType(NewsListScreen), findsOneWidget);
+      expect(find.byType(NewsSearchScreen), findsNothing);
+    },
+  );
 }

@@ -79,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _google() async {
     FocusManager.instance.primaryFocus?.unfocus();
-    setState(() => _loading = true);
+    setState(() => _busy = true);
     await Future<void>.delayed(const Duration(milliseconds: 250));
     if (!mounted) return;
     ref.read(authProvider.notifier).signedIn();
