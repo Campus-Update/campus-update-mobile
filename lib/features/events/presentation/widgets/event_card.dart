@@ -79,9 +79,7 @@ class EventCard extends StatelessWidget {
                                   event.location,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         fontSize: 11.5,
                                         color: AppColors.sourceSponsored,
@@ -101,9 +99,7 @@ class EventCard extends StatelessWidget {
                               const SizedBox(width: 4),
                               Text(
                                 event.dateFormatted,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
+                                style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
                                       fontSize: 11.5,
                                       fontWeight: AppFonts.medium,

@@ -48,19 +48,11 @@ class EventImage extends StatelessWidget {
     if (borderRadius != null) {
       return ClipRRect(
         borderRadius: borderRadius!,
-        child: SizedBox(
-          width: width,
-          height: height,
-          child: content,
-        ),
+        child: SizedBox(width: width, height: height, child: content),
       );
     }
 
-    return SizedBox(
-      width: width,
-      height: height,
-      child: content,
-    );
+    return SizedBox(width: width, height: height, child: content);
   }
 
   Widget _buildPlaceholder() {

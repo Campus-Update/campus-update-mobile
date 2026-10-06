@@ -87,8 +87,8 @@ class EventsNotifier extends Notifier<List<EventItem>> {
       for (final event in state)
         if (event.id == id)
           event.copyWith(isRegistered: !event.isRegistered)
-      else
-        event,
+        else
+          event,
     ];
   }
 
@@ -97,8 +97,8 @@ class EventsNotifier extends Notifier<List<EventItem>> {
       for (final event in state)
         if (event.id == id)
           event.copyWith(isAddedToCalendar: !event.isAddedToCalendar)
-      else
-        event,
+        else
+          event,
     ];
   }
 
