@@ -87,7 +87,7 @@ class CalendarGrid extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: AppFonts.regular,
-                          color: Color(0xFFD1D5DB),
+                          color: AppColors.fieldHintDot,
                         ),
                       ),
                     ),
