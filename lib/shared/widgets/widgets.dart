@@ -30,3 +30,4 @@ export 'step_progress.dart';
 export 'source_badge.dart';
 export 'urgency_badge.dart';
 export 'nav_icons.dart';
+export 'event_image.dart';
