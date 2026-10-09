@@ -75,7 +75,8 @@ class CalendarDetailScreen extends ConsumerWidget {
 
               // Banner Image
               EventImage(
-                imageUrl: event.imageUrl,
+                imageUrl:
+                    event.imageUrl ?? 'assets/images/calendar_event_banner.png',
                 width: double.infinity,
                 height: 190,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),

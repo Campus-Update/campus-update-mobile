@@ -11,7 +11,7 @@ class CalendarEvent {
     this.organiser,
     this.audience,
     this.description,
-    this.imageUrl,
+    this.imageUrl = 'assets/images/calendar_event_banner.png',
     this.sourceLabel = 'Official event',
     this.isSaved = false,
   });
