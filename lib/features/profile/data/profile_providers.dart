@@ -64,6 +64,13 @@ class UserProfileNotifier extends Notifier<UserProfile?> {
     String? departmentId,
     String? programmeId,
     String? academicLevelId,
+    String? institutionName,
+    String? facultyName,
+    String? departmentName,
+    String? programmeName,
+    String? academicLevelName,
+    String? avatarPath,
+    bool clearAvatar = false,
   }) async {
     final current = state ?? const UserProfile();
     final updated = current.copyWith(
@@ -76,6 +83,13 @@ class UserProfileNotifier extends Notifier<UserProfile?> {
       departmentId: departmentId ?? current.departmentId,
       programmeId: programmeId ?? current.programmeId,
       academicLevelId: academicLevelId ?? current.academicLevelId,
+      institutionName: institutionName ?? current.institutionName,
+      facultyName: facultyName ?? current.facultyName,
+      departmentName: departmentName ?? current.departmentName,
+      programmeName: programmeName ?? current.programmeName,
+      academicLevelName: academicLevelName ?? current.academicLevelName,
+      avatarPath: clearAvatar ? null : (avatarPath ?? current.avatarPath),
+      clearAvatar: clearAvatar,
     );
     await setProfile(updated);
   }

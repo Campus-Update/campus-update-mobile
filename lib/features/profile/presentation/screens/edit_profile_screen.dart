@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/app_spacing.dart';
-import '../../../../shared/utils/validators.dart';
-import '../../../../shared/widgets/widgets.dart';
+import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/widgets/app_form_panel.dart';
+import '../../../../shared/widgets/app_input.dart';
+import '../../../../shared/widgets/app_select.dart';
+import '../../../auth/domain/default_institution.dart';
+import '../../../auth/domain/institution.dart';
 import '../../data/profile_providers.dart';
+import '../widgets/profile_screen_header.dart';
 
+/// Screen allowing the user to edit their profile details and academic settings.
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
 
@@ -15,111 +20,207 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
-  final _form = GlobalKey<FormState>();
-  late final TextEditingController _firstName;
-  late final TextEditingController _lastName;
-  late final TextEditingController _email;
-  late final TextEditingController _idNumber;
+  late final TextEditingController _fullNameController;
+  Faculty? _selectedFaculty;
+  Department? _selectedDepartment;
+  Programme? _selectedProgramme;
+  AcademicLevel? _selectedLevel;
+  bool _busy = false;
 
   @override
   void initState() {
     super.initState();
     final profile = ref.read(userProfileProvider);
-    _firstName = TextEditingController(text: profile?.firstName ?? '');
-    _lastName = TextEditingController(text: profile?.lastName ?? '');
-    _email = TextEditingController(text: profile?.email ?? '');
-    _idNumber = TextEditingController(
-      text: profile?.matriculationOrStaffNumber ?? '',
-    );
+    final initialName = profile?.fullName ?? '';
+    _fullNameController = TextEditingController(text: initialName);
+
+    // Attempt to pre-populate selected academic options if already saved
+    final inst = defaultLeadCityUniversity;
+
+    if (profile?.facultyId != null || profile?.facultyName != null) {
+      _selectedFaculty = inst.faculties.where(
+        (f) =>
+            f.id == profile?.facultyId ||
+            f.name == profile?.facultyName,
+      ).firstOrNull;
+    }
+
+    if (_selectedFaculty != null &&
+        (profile?.departmentId != null || profile?.departmentName != null)) {
+      _selectedDepartment = _selectedFaculty!.departments.where(
+        (d) =>
+            d.id == profile?.departmentId ||
+            d.name == profile?.departmentName,
+      ).firstOrNull;
+    }
+
+    if (_selectedDepartment != null &&
+        (profile?.programmeId != null || profile?.programmeName != null)) {
+      _selectedProgramme = _selectedDepartment!.programmes.where(
+        (p) =>
+            p.id == profile?.programmeId ||
+            p.name == profile?.programmeName,
+      ).firstOrNull;
+    }
+
+    if (_selectedProgramme != null &&
+        (profile?.academicLevelId != null || profile?.academicLevelName != null)) {
+      _selectedLevel = _selectedProgramme!.levels.where(
+        (l) =>
+            l.id == profile?.academicLevelId ||
+            l.name == profile?.academicLevelName,
+      ).firstOrNull;
+    }
   }
 
   @override
   void dispose() {
-    _firstName.dispose();
-    _lastName.dispose();
-    _email.dispose();
-    _idNumber.dispose();
+    _fullNameController.dispose();
     super.dispose();
   }
 
-  Future<void> _save() async {
-    if (!(_form.currentState?.validate() ?? false)) return;
+  Institution _resolveInstitution() {
+    return defaultLeadCityUniversity;
+  }
 
-    final firstName = _firstName.text.trim();
-    final lastName = _lastName.text.trim();
-    final idNumber = _idNumber.text.trim();
+  Future<void> _saveChanges() async {
+    if (_busy) return;
+    setState(() => _busy = true);
 
-    await ref
-        .read(userProfileProvider.notifier)
-        .updateProfile(
+    final rawName = _fullNameController.text.trim();
+    String? firstName;
+    String? lastName;
+
+    if (rawName.isNotEmpty) {
+      final parts = rawName.split(RegExp(r'\s+'));
+      firstName = parts.first;
+      lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+    }
+
+    final institution = _resolveInstitution();
+
+    await ref.read(userProfileProvider.notifier).updateProfile(
           firstName: firstName,
           lastName: lastName,
-          matriculationOrStaffNumber: idNumber.isNotEmpty ? idNumber : null,
+          institutionId: institution.id,
+          institutionName: institution.name,
+          facultyId: _selectedFaculty?.id,
+          facultyName: _selectedFaculty?.name,
+          departmentId: _selectedDepartment?.id,
+          departmentName: _selectedDepartment?.name,
+          programmeId: _selectedProgramme?.id,
+          programmeName: _selectedProgramme?.name,
+          academicLevelId: _selectedLevel?.id,
+          academicLevelName: _selectedLevel?.name,
         );
 
-    if (firstName.isNotEmpty) {
+    if (rawName.isNotEmpty) {
       ref.read(pendingProfileProvider.notifier).complete();
     }
 
     if (mounted) {
+      setState(() => _busy = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully')),
+        const SnackBar(content: Text('Details updated successfully')),
       );
-      if (context.canPop()) {
-        context.pop();
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      title: 'Edit profile',
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-        child: Form(
-          key: _form,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AppFormPanel(
-                children: [
-                  AppInput(
-                    label: 'First Name',
-                    hint: 'Enter your first name',
-                    controller: _firstName,
-                    textInputAction: TextInputAction.next,
-                    autofillHints: const [AutofillHints.givenName],
-                    validator: (v) => Validators.required(v, 'First name'),
-                  ),
-                  AppInput(
-                    label: 'Last Name',
-                    hint: 'Enter your last name',
-                    controller: _lastName,
-                    textInputAction: TextInputAction.next,
-                    autofillHints: const [AutofillHints.familyName],
-                  ),
-                  AppInput(
-                    label: 'Email Address',
-                    hint: 'Enter your email address',
-                    controller: _email,
-                    enabled: false,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                  ),
-                  AppInput(
-                    label: 'Matriculation / Staff Number',
-                    hint: 'e.g. 2026/12345',
-                    controller: _idNumber,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _save(),
-                  ),
-                ],
+    final institution = _resolveInstitution();
+    final faculties = institution.faculties;
+    final departments = _selectedFaculty?.departments ?? const <Department>[];
+    final programmes = _selectedDepartment?.programmes ?? const <Programme>[];
+    final levels = _selectedProgramme?.levels ?? const <AcademicLevel>[];
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const ProfileScreenHeader(title: 'Edit details'),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.gutter,
+                  vertical: 12,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppFormPanel(
+                      children: [
+                        AppInput(
+                          label: 'Full name',
+                          hint: 'Enter First Name',
+                          controller: _fullNameController,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.name],
+                        ),
+                        AppSelect<Faculty>(
+                          label: 'Faculty',
+                          hint: 'Select Faculty',
+                          value: _selectedFaculty,
+                          options: faculties,
+                          labelOf: (f) => f.name,
+                          onChanged: (v) => setState(() {
+                            _selectedFaculty = v;
+                            _selectedDepartment = null;
+                            _selectedProgramme = null;
+                            _selectedLevel = null;
+                          }),
+                        ),
+                        AppSelect<Department>(
+                          label: 'Department',
+                          hint: 'Select Department',
+                          value: _selectedDepartment,
+                          options: departments,
+                          labelOf: (d) => d.name,
+                          onChanged: (v) => setState(() {
+                            _selectedDepartment = v;
+                            _selectedProgramme = null;
+                            _selectedLevel = null;
+                          }),
+                        ),
+                        AppSelect<Programme>(
+                          label: 'Programme',
+                          hint: 'Select Programme',
+                          value: _selectedProgramme,
+                          options: programmes,
+                          labelOf: (p) => p.name,
+                          onChanged: (v) => setState(() {
+                            _selectedProgramme = v;
+                            _selectedLevel = null;
+                          }),
+                        ),
+                        AppSelect<AcademicLevel>(
+                          label: 'Level',
+                          hint: 'Select Level',
+                          value: _selectedLevel,
+                          options: levels,
+                          labelOf: (l) => l.name,
+                          onChanged: (v) => setState(() {
+                            _selectedLevel = v;
+                          }),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    AppButton(
+                      label: 'Save changes',
+                      loading: _busy,
+                      onPressed: _saveChanges,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
-              const SizedBox(height: AppSpacing.xl),
-              AppButton(label: 'Save profile', onPressed: _save),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

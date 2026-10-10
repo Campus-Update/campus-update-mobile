@@ -438,16 +438,17 @@ void main() {
       await tester.tap(find.text('Add details'));
       await tester.pumpAndSettle();
 
-      // Now on Edit Profile screen
-      expect(find.text('Edit profile'), findsOneWidget);
+      // Now on Edit details screen
+      expect(find.text('Edit details'), findsOneWidget);
 
-      // Enter First Name as 'Amara' and Last Name as 'Okafor'
-      await tester.enterText(find.byType(EditableText).at(0), 'Amara');
-      await tester.enterText(find.byType(EditableText).at(1), 'Okafor');
+      // Enter Full Name as 'Amara Okafor'
+      await tester.enterText(find.byType(EditableText).first, 'Amara Okafor');
       await tester.pumpAndSettle();
 
-      // Tap 'Save profile'
-      await tester.tap(find.text('Save profile'));
+      // Tap 'Save changes'
+      await tester.ensureVisible(find.text('Save changes'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save changes'));
       await tester.pumpAndSettle();
 
       // Returned to Home Screen, greeted with new name

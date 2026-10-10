@@ -25,9 +25,13 @@ import '../features/home/presentation/screens/home_screen.dart';
 import '../features/news/presentation/screens/news_detail_screen.dart';
 import '../features/news/presentation/screens/news_list_screen.dart';
 import '../features/notifications/presentation/screens/notifications_screen.dart';
+import '../features/profile/presentation/screens/account_info_screen.dart';
+import '../features/profile/presentation/screens/change_password_screen.dart';
 import '../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../features/profile/presentation/screens/preferences_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
+import '../features/profile/presentation/screens/settings_screen.dart';
+import '../features/profile/presentation/screens/support_screen.dart';
 import '../features/search/presentation/screens/search_screen.dart';
 import '../shared/widgets/nav_icons.dart';
 
@@ -56,7 +60,11 @@ abstract final class Routes {
   static const notifications = '/notifications';
   static const search = '/search';
   static const editProfile = '/profile/edit';
+  static const accountInformation = '/profile/account';
   static const preferences = '/profile/preferences';
+  static const settings = '/profile/settings';
+  static const changePassword = '/profile/change-password';
+  static const support = '/profile/support';
 
   /// Routes reachable without a session.
   static const unauthenticated = {
@@ -182,6 +190,30 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const NotificationsScreen(),
       ),
       GoRoute(path: Routes.search, builder: (_, __) => const SearchScreen()),
+      GoRoute(
+        path: Routes.editProfile,
+        builder: (_, __) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: Routes.accountInformation,
+        builder: (_, __) => const AccountInformationScreen(),
+      ),
+      GoRoute(
+        path: Routes.preferences,
+        builder: (_, __) => const PreferencesScreen(),
+      ),
+      GoRoute(
+        path: Routes.settings,
+        builder: (_, __) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: Routes.changePassword,
+        builder: (_, __) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: Routes.support,
+        builder: (_, __) => const SupportScreen(),
+      ),
 
       StatefulShellRoute.indexedStack(
         builder: (_, __, shell) => _TabShell(shell: shell),
@@ -244,16 +276,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: Routes.profile,
                 builder: (_, __) => const ProfileScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'edit',
-                    builder: (_, __) => const EditProfileScreen(),
-                  ),
-                  GoRoute(
-                    path: 'preferences',
-                    builder: (_, __) => const PreferencesScreen(),
-                  ),
-                ],
               ),
             ],
           ),

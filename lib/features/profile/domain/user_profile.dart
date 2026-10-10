@@ -14,6 +14,12 @@ class UserProfile {
     this.departmentId,
     this.programmeId,
     this.academicLevelId,
+    this.institutionName,
+    this.facultyName,
+    this.departmentName,
+    this.programmeName,
+    this.academicLevelName,
+    this.avatarPath,
   });
 
   final String? id;
@@ -27,6 +33,12 @@ class UserProfile {
   final String? departmentId;
   final String? programmeId;
   final String? academicLevelId;
+  final String? institutionName;
+  final String? facultyName;
+  final String? departmentName;
+  final String? programmeName;
+  final String? academicLevelName;
+  final String? avatarPath;
 
   /// Friendly display name for greetings and headers.
   ///
@@ -54,6 +66,20 @@ class UserProfile {
     return '';
   }
 
+  /// Monogram initials for the avatar when no photo has been selected.
+  String get initials {
+    final first = firstName?.trim() ?? '';
+    final last = lastName?.trim() ?? '';
+    if (first.isNotEmpty && last.isNotEmpty) {
+      return '${first[0]}${last[0]}'.toUpperCase();
+    }
+    if (first.isNotEmpty) return first[0].toUpperCase();
+    if (last.isNotEmpty) return last[0].toUpperCase();
+    final d = displayName;
+    if (d.isNotEmpty) return d[0].toUpperCase();
+    return '';
+  }
+
   /// Full name (First + Last) or display name fallback.
   String get fullName {
     final first = firstName?.trim() ?? '';
@@ -76,6 +102,13 @@ class UserProfile {
     String? departmentId,
     String? programmeId,
     String? academicLevelId,
+    String? institutionName,
+    String? facultyName,
+    String? departmentName,
+    String? programmeName,
+    String? academicLevelName,
+    String? avatarPath,
+    bool clearAvatar = false,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -90,6 +123,12 @@ class UserProfile {
       departmentId: departmentId ?? this.departmentId,
       programmeId: programmeId ?? this.programmeId,
       academicLevelId: academicLevelId ?? this.academicLevelId,
+      institutionName: institutionName ?? this.institutionName,
+      facultyName: facultyName ?? this.facultyName,
+      departmentName: departmentName ?? this.departmentName,
+      programmeName: programmeName ?? this.programmeName,
+      academicLevelName: academicLevelName ?? this.academicLevelName,
+      avatarPath: clearAvatar ? null : (avatarPath ?? this.avatarPath),
     );
   }
 
@@ -106,6 +145,12 @@ class UserProfile {
     if (departmentId != null) 'departmentId': departmentId,
     if (programmeId != null) 'programmeId': programmeId,
     if (academicLevelId != null) 'academicLevelId': academicLevelId,
+    if (institutionName != null) 'institutionName': institutionName,
+    if (facultyName != null) 'facultyName': facultyName,
+    if (departmentName != null) 'departmentName': departmentName,
+    if (programmeName != null) 'programmeName': programmeName,
+    if (academicLevelName != null) 'academicLevelName': academicLevelName,
+    if (avatarPath != null) 'avatarPath': avatarPath,
   };
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -130,6 +175,24 @@ class UserProfile {
       departmentId: json['departmentId'] as String?,
       programmeId: json['programmeId'] as String?,
       academicLevelId: json['academicLevelId'] as String?,
+      institutionName: json['institutionName'] as String?,
+      facultyName: json['facultyName'] as String?,
+      departmentName: json['departmentName'] as String?,
+      programmeName: json['programmeName'] as String?,
+      academicLevelName: json['academicLevelName'] as String?,
+      avatarPath: json['avatarPath'] as String?,
     );
   }
 }
+
+/// Default mock user profile data matching the design specification.
+const defaultMockUserProfile = UserProfile(
+  firstName: 'Jeremiah',
+  lastName: 'Alalade',
+  email: 'ajeremiahfig@gmail.com',
+  institutionName: 'Lead City University',
+  facultyName: 'Faculty of Computting Information Technology (FOCIT)',
+  departmentName: 'Software Engineering',
+  programmeName: 'Software Engineering',
+  academicLevelName: 'Software Engineering',
+);
