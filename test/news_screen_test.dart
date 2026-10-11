@@ -4,8 +4,7 @@ import 'package:campus_update/core/storage/storage_providers.dart';
 import 'package:campus_update/features/news/presentation/screens/news_detail_screen.dart';
 import 'package:campus_update/features/news/presentation/screens/news_list_screen.dart';
 import 'package:campus_update/features/news/presentation/screens/news_search_screen.dart';
-import 'package:campus_update/features/news/presentation/widgets/category_chips.dart';
-import 'package:campus_update/features/news/presentation/widgets/news_card.dart';
+import 'package:campus_update/shared/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -71,7 +70,7 @@ void main() {
       }
 
       // Verify News cards
-      expect(find.byType(NewsCard), findsWidgets);
+      expect(find.byType(ContentCard), findsWidgets);
       expect(find.textContaining('New Library Wing Opens'), findsOneWidget);
       expect(find.textContaining('City Council Approves'), findsOneWidget);
     },
@@ -212,14 +211,14 @@ void main() {
         find.text('Try adjusting your search query or selected category.'),
         findsOneWidget,
       );
-      expect(find.byType(NewsCard), findsNothing);
+      expect(find.byType(ContentCard), findsNothing);
 
       // Tap 'Clear' button to clear text
       await tester.tap(find.text('Clear'));
       await tester.pumpAndSettle();
 
       // Verify articles are restored on NewsSearchScreen
-      expect(find.byType(NewsCard), findsWidgets);
+      expect(find.byType(ContentCard), findsWidgets);
       expect(find.text('No news articles found'), findsNothing);
 
       // Tap 'Clear' again (when empty) to pop back to NewsListScreen

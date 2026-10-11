@@ -4,9 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../data/news_repository.dart';
-import '../widgets/news_card.dart';
+import '../widgets/bookmark_button.dart';
 
 class NewsSearchScreen extends ConsumerStatefulWidget {
   const NewsSearchScreen({super.key});
@@ -270,20 +271,29 @@ class _NewsSearchScreenState extends ConsumerState<NewsSearchScreen> {
                     onRefresh: () =>
                         ref.read(newsListProvider.notifier).refresh(),
                     child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.gutter,
+                        vertical: AppSpacing.md,
+                      ),
                       itemCount: articles.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 6),
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
                       itemBuilder: (context, index) {
                         final article = articles[index];
-                        return NewsCard(
-                          item: article,
+                        return ContentCard(
+                          label: article.category,
+                          title: article.title,
+                          imageUrl: article.imageUrl,
+                          footer: ContentCardMeta(article.timeAgo),
+                          trailing: BookmarkButton(
+                            isBookmarked: article.isBookmarked,
+                            onTap: () {
+                              ref
+                                  .read(newsListProvider.notifier)
+                                  .toggleBookmark(article.id);
+                            },
+                          ),
                           onTap: () =>
                               context.push('${Routes.news}/${article.id}'),
-                          onBookmarkTap: () {
-                            ref
-                                .read(newsListProvider.notifier)
-                                .toggleBookmark(article.id);
-                          },
                         );
                       },
                     ),
