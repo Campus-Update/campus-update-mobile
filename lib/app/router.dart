@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -280,57 +281,66 @@ class _TabShell extends StatelessWidget {
     const inactive = AppColors.textMuted;
     const active = AppColors.indigo;
 
-    return Scaffold(
-      body: shell,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: NavigationBar(
-          selectedIndex: shell.currentIndex,
-          elevation: 0,
-          backgroundColor: Colors.white,
-          indicatorColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          // `initialLocation: true` resets a tab to its root when re-tapped.
-          onDestinationSelected: (index) => shell.goBranch(
-            index,
-            initialLocation: index == shell.currentIndex,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // Every tab is a white page, so the status bar needs dark icons — the
+      // default draws them white and they vanish. Same treatment as AuthPage.
+      value: SystemUiOverlayStyle.dark.copyWith(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+      child: Scaffold(
+        body: shell,
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
           ),
-          destinations: const [
-            NavigationDestination(
-              icon: NavHomeIcon(color: inactive),
-              selectedIcon: NavHomeIcon(color: active),
-              label: 'Home',
+          child: NavigationBar(
+            selectedIndex: shell.currentIndex,
+            elevation: 0,
+            backgroundColor: Colors.white,
+            indicatorColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            // `initialLocation: true` resets a tab to its root when re-tapped.
+            onDestinationSelected: (index) => shell.goBranch(
+              index,
+              initialLocation: index == shell.currentIndex,
             ),
-            NavigationDestination(
-              icon: NavNewsIcon(color: inactive),
-              selectedIcon: NavNewsIcon(color: active),
-              label: 'News',
-            ),
-            NavigationDestination(
-              icon: NavEventsIcon(color: inactive),
-              selectedIcon: NavEventsIcon(color: active),
-              label: 'Events',
-            ),
-            NavigationDestination(
-              icon: NavCalendarIcon(color: inactive),
-              selectedIcon: NavCalendarIcon(color: active),
-              label: 'Calendar',
-            ),
-            NavigationDestination(
-              icon: NavProfileIcon(color: inactive),
-              selectedIcon: NavProfileIcon(color: active),
-              label: 'Profile',
-            ),
-          ],
+            destinations: const [
+              NavigationDestination(
+                icon: NavHomeIcon(color: inactive),
+                selectedIcon: NavHomeIcon(color: active),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: NavNewsIcon(color: inactive),
+                selectedIcon: NavNewsIcon(color: active),
+                label: 'News',
+              ),
+              NavigationDestination(
+                icon: NavEventsIcon(color: inactive),
+                selectedIcon: NavEventsIcon(color: active),
+                label: 'Events',
+              ),
+              NavigationDestination(
+                icon: NavCalendarIcon(color: inactive),
+                selectedIcon: NavCalendarIcon(color: active),
+                label: 'Calendar',
+              ),
+              NavigationDestination(
+                icon: NavProfileIcon(color: inactive),
+                selectedIcon: NavProfileIcon(color: active),
+                label: 'Profile',
+              ),
+            ],
+          ),
         ),
       ),
     );
