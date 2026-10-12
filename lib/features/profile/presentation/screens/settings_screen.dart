@@ -82,7 +82,7 @@ class SettingsScreen extends ConsumerWidget {
                           const SizedBox(height: 16),
                           AppButton(
                             label: 'Change Password',
-                            variant: AppButtonVariant.secondary,
+                            variant: AppButtonVariant.grey,
                             onPressed: () =>
                                 context.push(Routes.changePassword),
                           ),
@@ -105,17 +105,17 @@ class SettingsScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Row(
                       children: [
+                        // Phone icon: square grey box, no separate border stroke.
                         Container(
                           width: 40,
-                          height: 48,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF3F4F6),
+                            color: const Color(0xFFD9D9D9),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFE5E7EB)),
                           ),
                           child: const Icon(
                             Icons.phone_iphone_rounded,
-                            size: 26,
+                            size: 24,
                             color: Color(0xFF374151),
                           ),
                         ),
@@ -128,14 +128,14 @@ class SettingsScreen extends ConsumerWidget {
                                 'iPhone 13',
                                 style: TextStyle(
                                   fontFamily: AppFonts.family,
-                                  fontSize: 14.5,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.graphite,
                                 ),
                               ),
                               SizedBox(height: 2),
                               Text(
-                                'This Device • Lagos, Nigeria',
+                                'This Device  •  Lagos, Nigeria',
                                 style: TextStyle(
                                   fontFamily: AppFonts.family,
                                   fontSize: 12,
@@ -147,32 +147,29 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: GestureDetector(
-                        onTap: () async {
-                          final confirmed =
-                              await LogoutConfirmationDialog.show(context);
-                          if (confirmed == true && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Logged out of all other active sessions',
-                                ),
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: () async {
+                        final confirmed =
+                            await LogoutConfirmationDialog.show(context);
+                        if (confirmed == true && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Logged out of all other active sessions',
                               ),
-                            );
-                          }
-                        },
-                        child: const Text(
-                          'Logout from all devices',
-                          style: TextStyle(
-                            fontFamily: AppFonts.family,
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.graphite,
-                            decoration: TextDecoration.underline,
-                          ),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text(
+                        'Logout from all devices',
+                        style: TextStyle(
+                          fontFamily: AppFonts.family,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.graphite,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),

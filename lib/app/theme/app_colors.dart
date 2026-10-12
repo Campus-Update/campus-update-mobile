@@ -37,6 +37,9 @@ abstract final class AppColors {
     end: Alignment.bottomCenter,
   );
 
+  /// Solid grey button fill sampled from the settings design (#818181).
+  static const buttonGrey = Color(0xFF818181);
+
   // Forms. The panel groups a form's fields and is what makes white fields
   // legible — on the page's own white they would disappear, which is also why
   // the fields carry a hairline border. All measured off the design.

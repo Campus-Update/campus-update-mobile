@@ -244,7 +244,7 @@ void main() {
       expect(find.text('Change Password'), findsOneWidget);
       expect(find.text('Active Sessions'), findsOneWidget);
       expect(find.text('iPhone 13'), findsOneWidget);
-      expect(find.text('This Device • Lagos, Nigeria'), findsOneWidget);
+      expect(find.text('This Device  •  Lagos, Nigeria'), findsOneWidget);
       expect(find.text('Logout from all devices'), findsOneWidget);
     });
 
