@@ -7,6 +7,7 @@ library;
 
 export 'app_button.dart';
 export 'back_button_circle.dart';
+export 'category_pill.dart';
 export 'app_checkbox.dart';
 export 'content_card.dart';
 export 'app_form_panel.dart';
@@ -30,3 +31,5 @@ export 'step_progress.dart';
 export 'source_badge.dart';
 export 'urgency_badge.dart';
 export 'nav_icons.dart';
+export 'category_chips.dart';
+export 'notification_button.dart';

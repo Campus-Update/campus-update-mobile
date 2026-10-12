@@ -5,8 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../../../shared/domain/content_item.dart';
+import '../../../../shared/utils/date_format.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../../profile/data/profile_providers.dart';
+import '../../data/home_feed_providers.dart';
 
 /// The central landing screen matching the UI design specification.
 class HomeScreen extends ConsumerWidget {
@@ -29,38 +33,57 @@ class HomeScreen extends ConsumerWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.gutter,
-            vertical: AppSpacing.md,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _HomeHeader(userName: userName),
-              // Measured ~13pt from the greeting to the tab labels and ~11pt
-              // from the underline to the card; the tabs carry 6pt of tap
-              // padding either side, so these are the remainder.
-              const SizedBox(height: AppSpacing.sm),
-              const _CategoryTabs(),
-              const SizedBox(height: AppSpacing.xs),
-              if (showProfileCard) ...[
-                const _ProfileCompletionCard(),
-                const SizedBox(height: AppSpacing.lg),
-              ] else ...[
-                const SizedBox(height: AppSpacing.md),
+        child: RefreshIndicator(
+          color: AppColors.indigo,
+          onRefresh: () => _refresh(ref),
+          child: SingleChildScrollView(
+            // Pullable even when the feed is too short to scroll.
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.gutter,
+              vertical: AppSpacing.md,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _HomeHeader(userName: userName),
+                // Measured ~13pt from the greeting to the tab labels and ~11pt
+                // from the underline to the card; the tabs carry 6pt of tap
+                // padding either side, so these are the remainder.
+                const SizedBox(height: AppSpacing.sm),
+                const _CategoryTabs(),
+                const SizedBox(height: AppSpacing.xs),
+                if (showProfileCard) ...[
+                  const _ProfileCompletionCard(),
+                  const SizedBox(height: AppSpacing.lg),
+                ] else ...[
+                  const SizedBox(height: AppSpacing.md),
+                ],
+                // Carries its own gap below, so nothing is left behind when
+                // there is no breaking news.
+                const _BreakingNewsSection(),
+                const _LatestNewsSection(),
+                const SizedBox(height: AppSpacing.xl),
+                const _UpcomingEventsSection(),
+                const SizedBox(height: AppSpacing.xxl),
               ],
-              const _BreakingNewsSection(),
-              const SizedBox(height: AppSpacing.xl),
-              const _LatestNewsSection(),
-              const SizedBox(height: AppSpacing.xl),
-              const _UpcomingEventsSection(),
-              const SizedBox(height: AppSpacing.xxl),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  /// Fetches every feed section again. A section that fails shows its own
+  /// error state, so a failure here only needs to end the spinner.
+  Future<void> _refresh(WidgetRef ref) async {
+    try {
+      await Future.wait([
+        ref.refresh(breakingNewsProvider.future),
+        ref.refresh(latestNewsProvider.future),
+        ref.refresh(upcomingEventsProvider.future),
+      ]);
+    } catch (_) {}
   }
 }
 
@@ -128,35 +151,7 @@ class _HomeHeader extends ConsumerWidget {
                   padding: const EdgeInsets.all(6),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () => context.push(Routes.notifications),
-                  icon: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      const Icon(
-                        Icons.notifications_none_rounded,
-                        size: 25,
-                        color: Color(0xFF374151),
-                      ),
-                      Positioned(
-                        top: 0,
-                        right: 1,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 1.5),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  splashRadius: 20,
-                  constraints: const BoxConstraints(),
-                  padding: const EdgeInsets.all(6),
-                ),
+                const NotificationButton(color: Color(0xFF374151)),
               ],
             ),
           ],
@@ -353,8 +348,8 @@ class _CategoryTabsState extends State<_CategoryTabs> {
 
   @override
   Widget build(BuildContext context) {
-    // Scrolls horizontally so the strip survives a narrow phone; on a 390pt
-    // screen all six fit without scrolling, as they do in the design.
+    // Scrolls horizontally, since at 13pt the six labels can run past the
+    // edge of a narrow phone.
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -390,12 +385,9 @@ class _CategoryTab extends StatelessWidget {
   final bool isLast;
   final VoidCallback onTap;
 
-  // Measured off the design export, then checked by rendering this screen and
-  // measuring the render back. The export is only 216px wide, so it was the
-  // label widths — a long baseline — that fixed the type size, not the glyph
-  // heights: 'For You' is 17px there, which is 33pt once the frame is scaled
-  // to 390, and 13pt Archivo draws it 44pt wide.
-  static const _fontSize = 10.0;
+  // The same size as the News tab's category chips, so the two filter strips
+  // read alike. The home export measures nearer 10pt.
+  static const _fontSize = 13.0;
 
   /// How far the underline runs past the label on each side. The design's
   /// underline is 38.5pt under a 32.7pt label, so just under 3pt a side.
@@ -494,40 +486,22 @@ class _LiveUpdatesBadge extends StatelessWidget {
 /// is a flat composite with its headline already drawn into the picture, so
 /// the card suppresses its own caption for it; once the feed API supplies bare
 /// photographs every card will draw [title] and [excerpt] over the image.
-typedef _BreakingItem = ({String title, String excerpt, String? image});
 
-/// Breaking news banner.
+/// Breaking news banner: the urgent items from the feed.
 ///
 /// The design shows a swipeable stack — a 'Swipe' hint sits in the top-right
-/// of the hero — so this is a [PageView]. The second and third items are
-/// placeholders in the same spirit as the rest of this screen; they go when
-/// the feed API lands.
-class _BreakingNewsSection extends StatefulWidget {
+/// of the hero — so this is a [PageView]. With nothing urgent, or while the
+/// feed loads or fails, the whole section stays out of the way rather than
+/// showing an empty hero.
+class _BreakingNewsSection extends ConsumerStatefulWidget {
   const _BreakingNewsSection();
 
   @override
-  State<_BreakingNewsSection> createState() => _BreakingNewsSectionState();
+  ConsumerState<_BreakingNewsSection> createState() =>
+      _BreakingNewsSectionState();
 }
 
-class _BreakingNewsSectionState extends State<_BreakingNewsSection> {
-  static const List<_BreakingItem> _items = [
-    (
-      title: 'Major Infrastructure Overhaul Announced for North Campus',
-      excerpt: 'The university administration has unveiled a comprehensi...',
-      image: 'assets/images/breaking_news.png',
-    ),
-    (
-      title: 'Senate Approves Revised Academic Calendar for 2025/2026',
-      excerpt: 'Lectures resume a fortnight earlier than previously plan...',
-      image: null,
-    ),
-    (
-      title: 'Campus Clinic Extends Opening Hours Through Exam Week',
-      excerpt: 'The health centre stays open until 10pm from Monday to F...',
-      image: null,
-    ),
-  ];
-
+class _BreakingNewsSectionState extends ConsumerState<_BreakingNewsSection> {
   final _controller = PageController();
 
   @override
@@ -538,6 +512,9 @@ class _BreakingNewsSectionState extends State<_BreakingNewsSection> {
 
   @override
   Widget build(BuildContext context) {
+    final items = ref.watch(breakingNewsProvider).value ?? const [];
+    if (items.isEmpty) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -549,50 +526,73 @@ class _BreakingNewsSectionState extends State<_BreakingNewsSection> {
           child: PageView(
             controller: _controller,
             children: [
-              for (var i = 0; i < _items.length; i++)
+              for (var i = 0; i < items.length; i++)
                 _BreakingNewsCard(
-                  item: _items[i],
+                  item: items[i],
+                  onTap: () => context.push(Routes.homeArticle(items[i].id)),
                   // Nothing left to swipe to on the last card.
-                  showSwipeHint: i < _items.length - 1,
+                  showSwipeHint: i < items.length - 1,
                 ),
             ],
           ),
         ),
+        const SizedBox(height: AppSpacing.xl),
       ],
     );
   }
 }
 
 class _BreakingNewsCard extends StatelessWidget {
-  const _BreakingNewsCard({required this.item, required this.showSwipeHint});
+  const _BreakingNewsCard({
+    required this.item,
+    required this.showSwipeHint,
+    required this.onTap,
+  });
 
-  final _BreakingItem item;
+  final ContentItem item;
   final bool showSwipeHint;
+  final VoidCallback onTap;
 
   /// Inset of the swipe hint from the top-right corner, measured ~28pt.
   static const _swipeInset = 28.0;
 
   @override
   Widget build(BuildContext context) {
-    final image = item.image;
+    final image = item.imageUrl;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (image != null)
-            Image.asset(image, fit: BoxFit.cover, errorBuilder: _fallback)
-          else
-            _fallback(context, null, null),
-          if (image == null) _Caption(item: item),
-          if (showSwipeHint)
-            const Positioned(
-              top: _swipeInset,
-              right: _swipeInset,
-              child: _SwipeHint(),
-            ),
-        ],
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (image != null)
+              Image.network(image, fit: BoxFit.cover, errorBuilder: _fallback)
+            else
+              _fallback(context, null, null),
+            // Keeps the white headline readable over a photo.
+            if (image != null)
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.transparent, Color(0xB3000000)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.35, 1.0],
+                  ),
+                ),
+              ),
+            _Caption(item: item),
+            if (showSwipeHint)
+              const Positioned(
+                top: _swipeInset,
+                right: _swipeInset,
+                child: _SwipeHint(),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -619,7 +619,7 @@ class _BreakingNewsCard extends StatelessWidget {
 class _Caption extends StatelessWidget {
   const _Caption({required this.item});
 
-  final _BreakingItem item;
+  final ContentItem item;
 
   @override
   Widget build(BuildContext context) {
@@ -685,94 +685,121 @@ class _SwipeHint extends StatelessWidget {
   }
 }
 
-/// Latest News section with list of articles.
-class _LatestNewsSection extends StatelessWidget {
+/// Latest News section: the newest news items from the feed.
+class _LatestNewsSection extends ConsumerWidget {
   const _LatestNewsSection();
 
-  static const _newsItems = [
-    (
-      category: 'Campus',
-      title:
-          'FOCIT introduces machine learning elective for 400 level students',
-    ),
-    (category: 'General', title: 'New Library Wing Opens Ahead of Schedule'),
-    (category: 'Technology', title: 'New Library Wing Opens Ahead of Schedule'),
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(
           title: 'Latest News',
-          onAction: () => context.push(Routes.news),
+          onAction: () => context.go(Routes.news),
         ),
         const SizedBox(height: 14),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _newsItems.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 16),
-          itemBuilder: (context, index) {
-            final item = _newsItems[index];
-            return ContentCard(
-              label: item.category,
-              title: item.title,
-              footer: const ContentCardAction('READ MORE'),
-            );
-          },
+        _SectionFeed(
+          items: ref.watch(latestNewsProvider),
+          emptyMessage: 'No news yet.',
+          onRetry: () => ref.invalidate(latestNewsProvider),
+          itemBuilder: (item) => ContentCard(
+            label: item.label,
+            title: item.title,
+            imageUrl: item.imageUrl,
+            footer: const ContentCardAction('READ MORE'),
+            onTap: () => context.push(Routes.homeArticle(item.id)),
+          ),
         ),
       ],
     );
   }
 }
 
-/// Upcoming Events section with event schedule cards.
-class _UpcomingEventsSection extends StatelessWidget {
+/// Upcoming Events section: the next events from the feed.
+class _UpcomingEventsSection extends ConsumerWidget {
   const _UpcomingEventsSection();
 
-  static const _events = [
-    (
-      tag: 'Official event',
-      title: 'New Library Wing Opens Ahead of Schedule',
-      meta: 'Mon 21 September · Main Auditorium',
-    ),
-    (
-      tag: 'Official event',
-      title: 'Matriculation ceremony for the 2025/2026 session',
-      meta: 'Fri 25 September · University Sports Complex',
-    ),
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(
           title: 'Upcoming Events',
-          onAction: () => context.push(Routes.events),
+          onAction: () => context.go(Routes.events),
         ),
         const SizedBox(height: 14),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _events.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 16),
-          itemBuilder: (context, index) {
-            final event = _events[index];
-            return ContentCard(
-              label: event.tag,
-              title: event.title,
-              // Shipped with 4 here and 6 on Latest News; kept so the
-              // extraction is pixel-for-pixel.
-              footerGap: 4,
-              footer: ContentCardMeta(event.meta),
-            );
-          },
+        _SectionFeed(
+          items: ref.watch(upcomingEventsProvider),
+          emptyMessage: 'No upcoming events.',
+          onRetry: () => ref.invalidate(upcomingEventsProvider),
+          itemBuilder: (item) => ContentCard(
+            label: item.label,
+            title: item.title,
+            imageUrl: item.imageUrl,
+            // Shipped with 4 here and 6 on Latest News; kept so the
+            // extraction is pixel-for-pixel.
+            footerGap: 4,
+            footer: ContentCardMeta(_eventMeta(item)),
+            onTap: () => context.push(Routes.homeEvent(item.id)),
+          ),
         ),
       ],
+    );
+  }
+
+  /// 'Mon 21 September · Main Auditorium'.
+  ///
+  /// The API does not return an event's date or place yet, so until it does
+  /// this falls back to who published it.
+  static String _eventMeta(ContentItem item) {
+    final startsAt = item.eventStartsAt;
+    final parts = [
+      if (startsAt != null) AppDateFormat.weekdayDay(startsAt),
+      if (item.eventLocation != null) item.eventLocation!,
+    ];
+    return parts.isEmpty ? (item.sourceName ?? '') : parts.join(' · ');
+  }
+}
+
+/// A home section's list, with its loading, failed and empty states.
+class _SectionFeed extends StatelessWidget {
+  const _SectionFeed({
+    required this.items,
+    required this.emptyMessage,
+    required this.onRetry,
+    required this.itemBuilder,
+  });
+
+  final AsyncValue<List<ContentItem>> items;
+  final String emptyMessage;
+  final VoidCallback onRetry;
+  final Widget Function(ContentItem item) itemBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    return items.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+        child: Loader(),
+      ),
+      error: (error, _) => ErrorState(
+        message: error is ApiException
+            ? error.message
+            : 'Something went wrong. Please try again.',
+        onRetry: onRetry,
+      ),
+      data: (list) => list.isEmpty
+          ? EmptyState(message: emptyMessage)
+          : ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: list.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (context, index) => itemBuilder(list[index]),
+            ),
     );
   }
 }
