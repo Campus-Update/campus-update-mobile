@@ -7,7 +7,12 @@ import '../../../shared/utils/date_format.dart';
 import '../domain/news_item.dart';
 
 abstract class NewsRepository {
-  Future<List<NewsItem>> getNews({String? category, String? query});
+  /// Pages hold [newsPageSize] items; a shorter page is the last one.
+  Future<List<NewsItem>> getNews({
+    String? category,
+    String? query,
+    int page = 1,
+  });
   Future<NewsItem?> getNewsById(String id);
   Future<void> toggleBookmark(String id);
 }
@@ -61,7 +66,7 @@ class MockNewsRepository implements NewsRepository {
         id: 'news-4',
         title:
             'Major Security Update Required for Campus WiFi and Single Sign-On Access',
-        category: 'Tech',
+        category: 'Technology',
         timeAgo: 'Updated recently',
         summary:
             'Information Technology Services mandates a certificate renewal for all personal and institutional devices connected to the campus wireless network.',
@@ -89,7 +94,7 @@ class MockNewsRepository implements NewsRepository {
         id: 'news-6',
         title:
             'Major Security Update Released for Departmental Workstations and Lab Devices',
-        category: 'Tech',
+        category: 'Technology',
         timeAgo: 'Updated recently',
         summary:
             'Critical patches deployed to protect laboratory workstations and academic departmental systems against newly identified vulnerabilities.',
@@ -146,7 +151,11 @@ class MockNewsRepository implements NewsRepository {
   late List<NewsItem> _items;
 
   @override
-  Future<List<NewsItem>> getNews({String? category, String? query}) async {
+  Future<List<NewsItem>> getNews({
+    String? category,
+    String? query,
+    int page = 1,
+  }) async {
     await Future<void>.delayed(const Duration(milliseconds: 150));
     var result = List<NewsItem>.from(_items);
 
@@ -175,7 +184,7 @@ class MockNewsRepository implements NewsRepository {
           .toList();
     }
 
-    return result;
+    return result.skip((page - 1) * newsPageSize).take(newsPageSize).toList();
   }
 
   @override
@@ -211,8 +220,17 @@ class ApiNewsRepository implements NewsRepository {
   /// [category] is ignored: the API has no category to filter on yet, and the
   /// list screen filters what comes back.
   @override
-  Future<List<NewsItem>> getNews({String? category, String? query}) async {
-    final items = await _feed.feed(type: ContentType.news, search: query);
+  Future<List<NewsItem>> getNews({
+    String? category,
+    String? query,
+    int page = 1,
+  }) async {
+    final items = await _feed.feed(
+      type: ContentType.news,
+      search: query,
+      page: page,
+      pageSize: newsPageSize,
+    );
     return items.map(_toNewsItem).toList();
   }
 
@@ -247,6 +265,9 @@ class ApiNewsRepository implements NewsRepository {
 
 /// Provider for the [NewsRepository].
 ///
+/// How many news items one request asks for.
+const newsPageSize = 20;
+
 /// Tests override this with [MockNewsRepository].
 final newsRepositoryProvider = Provider<NewsRepository>((ref) {
   return ApiNewsRepository(ref.watch(feedRepositoryProvider));
@@ -279,19 +300,28 @@ final newsSearchQueryProvider =
       NewsSearchQueryNotifier.new,
     );
 
-/// State notifier managing the news list state.
+/// The News tab's list, loaded a page at a time.
 class NewsListNotifier extends Notifier<AsyncValue<List<NewsItem>>> {
+  int _page = 1;
+  bool _hasMore = true;
+  bool _loadingMore = false;
+
+  /// Whether another page may exist. A page shorter than [newsPageSize] was
+  /// the last one.
+  bool get hasMore => _hasMore;
+
   @override
   AsyncValue<List<NewsItem>> build() {
-    // Initial fetch
-    _loadNews();
+    _loadFirstPage();
     return const AsyncValue.loading();
   }
 
-  Future<void> _loadNews() async {
+  Future<void> _loadFirstPage() async {
+    _page = 1;
+    _hasMore = true;
     try {
-      final repo = ref.read(newsRepositoryProvider);
-      final items = await repo.getNews();
+      final items = await ref.read(newsRepositoryProvider).getNews();
+      _hasMore = items.length >= newsPageSize;
       state = AsyncValue.data(items);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -300,21 +330,42 @@ class NewsListNotifier extends Notifier<AsyncValue<List<NewsItem>>> {
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    await _loadNews();
+    await _loadFirstPage();
+  }
+
+  /// Appends the next page. Does nothing while a page is already loading or
+  /// once the last page is in. A failure stops paging rather than replacing
+  /// the list with an error, so what is already on screen stays.
+  Future<void> loadMore() async {
+    final current = state.value;
+    if (current == null || !_hasMore || _loadingMore) return;
+    _loadingMore = true;
+    try {
+      final next = await ref
+          .read(newsRepositoryProvider)
+          .getNews(page: _page + 1);
+      _page++;
+      _hasMore = next.length >= newsPageSize;
+      state = AsyncValue.data([...current, ...next]);
+    } catch (_) {
+      _hasMore = false;
+      state = AsyncValue.data([...current]);
+    } finally {
+      _loadingMore = false;
+    }
   }
 
   void toggleBookmark(String id) {
+    // The repository keeps bookmarks even for items outside this list, such as
+    // a search result further down than the pages loaded here.
+    ref.read(newsRepositoryProvider).toggleBookmark(id);
     state.whenData((items) {
-      final updated = items.map((item) {
-        if (item.id == id) {
-          final newState = !item.isBookmarked;
-          // Also notify repo
-          ref.read(newsRepositoryProvider).toggleBookmark(id);
-          return item.copyWith(isBookmarked: newState);
-        }
-        return item;
-      }).toList();
-      state = AsyncValue.data(updated);
+      state = AsyncValue.data([
+        for (final item in items)
+          item.id == id
+              ? item.copyWith(isBookmarked: !item.isBookmarked)
+              : item,
+      ]);
     });
   }
 }
@@ -324,37 +375,57 @@ final newsListProvider =
       NewsListNotifier.new,
     );
 
-/// Provider for filtered news based on selected category and search query.
+/// The loaded list narrowed to the selected category chip.
+///
+/// The API has no category filter yet, so this happens on the phone.
 final filteredNewsListProvider = Provider<AsyncValue<List<NewsItem>>>((ref) {
   final category = ref.watch(selectedNewsCategoryProvider);
-  final query = ref.watch(newsSearchQueryProvider).trim().toLowerCase();
-  final newsState = ref.watch(newsListProvider);
-
-  return newsState.whenData((items) {
-    var result = items;
-    if (category.toLowerCase() != 'all') {
-      final filter = category.toLowerCase();
-      result = result.where((item) {
-        final cat = item.category.toLowerCase();
-        if (filter == 'tech' || filter == 'technology') {
-          return cat == 'tech' || cat == 'technology';
-        }
-        return cat == filter;
-      }).toList();
-    }
-
-    if (query.isNotEmpty) {
-      result = result.where((item) {
-        return item.title.toLowerCase().contains(query) ||
-            item.summary.toLowerCase().contains(query) ||
-            (item.body?.toLowerCase().contains(query) ?? false) ||
-            item.category.toLowerCase().contains(query);
-      }).toList();
-    }
-
-    return result;
-  });
+  return ref
+      .watch(newsListProvider)
+      .whenData((items) => _inCategory(items, category));
 });
+
+/// What the search screen lists: the API's matches for the query, narrowed to
+/// the selected chip. With no query, it is the loaded list.
+final newsSearchResultsProvider = Provider<AsyncValue<List<NewsItem>>>((ref) {
+  final query = ref.watch(newsSearchQueryProvider).trim();
+  if (query.isEmpty) return ref.watch(filteredNewsListProvider);
+
+  final category = ref.watch(selectedNewsCategoryProvider);
+  // Bookmarks toggled on this screen land in the list, so read them back from
+  // there for the results it also holds.
+  final loaded = {
+    for (final item in ref.watch(newsListProvider).value ?? const <NewsItem>[])
+      item.id: item,
+  };
+  return ref
+      .watch(_newsSearchProvider(query))
+      .whenData(
+        (items) => _inCategory([
+          for (final item in items)
+            item.copyWith(
+              isBookmarked: loaded[item.id]?.isBookmarked ?? item.isBookmarked,
+            ),
+        ], category),
+      );
+});
+
+/// One search request per query. Waits for typing to pause first, so a query
+/// typed letter by letter makes one call rather than one per letter.
+final _newsSearchProvider = FutureProvider.autoDispose
+    .family<List<NewsItem>, String>((ref, query) async {
+      var superseded = false;
+      ref.onDispose(() => superseded = true);
+      await Future<void>.delayed(const Duration(milliseconds: 350));
+      if (superseded) return const [];
+      return ref.read(newsRepositoryProvider).getNews(query: query);
+    });
+
+List<NewsItem> _inCategory(List<NewsItem> items, String category) {
+  if (category.toLowerCase() == 'all') return items;
+  final filter = category.toLowerCase();
+  return items.where((item) => item.category.toLowerCase() == filter).toList();
+}
 
 /// Family provider to fetch a single news item by id.
 final newsItemByIdProvider = Provider.family<NewsItem?, String>((ref, id) {

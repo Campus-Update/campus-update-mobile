@@ -17,7 +17,7 @@ class NewsSearchScreen extends ConsumerStatefulWidget {
     'General',
     'Campus',
     'Weather',
-    'Tech',
+    'Health',
     'Technology',
   ];
 
@@ -126,7 +126,7 @@ class _NewsSearchScreenState extends ConsumerState<NewsSearchScreen> {
   @override
   Widget build(BuildContext context) {
     final selectedCategory = ref.watch(selectedNewsCategoryProvider);
-    final newsAsync = ref.watch(filteredNewsListProvider);
+    final newsAsync = ref.watch(newsSearchResultsProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,

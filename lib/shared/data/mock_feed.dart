@@ -218,6 +218,25 @@ abstract final class MockFeed {
       'imageUrl': _image('heatwave'),
     },
 
+    {
+      'id': 'mock-news-9',
+      'title': 'Free Medical Screening at the Health Centre This Week',
+      'summary':
+          'Blood pressure, blood sugar and eye checks are free for students '
+          'and staff until Friday.',
+      'body':
+          'Blood pressure, blood sugar and eye checks are free for students '
+          'and staff until Friday, from 9am to 3pm. Bring your ID card.',
+      'type': 'News',
+      'status': 'Published',
+      'urgency': 'Normal',
+      'sourceType': 'Official',
+      'sourceName': 'Health Centre',
+      'publishedAt': _ago(const Duration(days: 5)),
+      'category': 'Health',
+      'imageUrl': _image('medical-screening'),
+    },
+
     // Events — the API accepts eventStartsAt and eventLocation on create.
     {
       'id': 'mock-event-1',

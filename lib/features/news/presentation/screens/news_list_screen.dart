@@ -17,7 +17,7 @@ class NewsListScreen extends ConsumerWidget {
     'General',
     'Campus',
     'Weather',
-    'Tech',
+    'Health',
     'Technology',
   ];
 
@@ -25,6 +25,7 @@ class NewsListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCategory = ref.watch(selectedNewsCategoryProvider);
     final newsAsync = ref.watch(filteredNewsListProvider);
+    final hasMore = ref.watch(newsListProvider.notifier).hasMore;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -129,9 +130,23 @@ class NewsListScreen extends ConsumerWidget {
                         horizontal: AppSpacing.gutter,
                         vertical: AppSpacing.md,
                       ),
-                      itemCount: articles.length,
+                      itemCount: articles.length + (hasMore ? 1 : 0),
                       separatorBuilder: (_, __) => const SizedBox(height: 16),
                       itemBuilder: (context, index) {
+                        // The row after the last card: reaching it asks for
+                        // the next page.
+                        if (index == articles.length) {
+                          WidgetsBinding.instance.addPostFrameCallback(
+                            (_) =>
+                                ref.read(newsListProvider.notifier).loadMore(),
+                          );
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: AppSpacing.md,
+                            ),
+                            child: Loader(),
+                          );
+                        }
                         final article = articles[index];
                         return ContentCard(
                           label: article.category,

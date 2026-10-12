@@ -64,7 +64,7 @@ void main() {
         'General',
         'Campus',
         'Weather',
-        'Tech',
+        'Health',
         'Technology',
       ]) {
         expect(

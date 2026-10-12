@@ -14,8 +14,8 @@ import 'mock_feed.dart';
 /// `/feed` is narrowed to the signed-in user's audience, so it is what every
 /// screen reads. Home, News and Events differ only in the filters they pass.
 ///
-/// While [mockWhenEmpty] is on, an empty answer is replaced with [MockFeed]
-/// content. The request is made either way.
+/// While [mockWhenEmpty] is on, an empty first page is replaced with
+/// [MockFeed] content. The request is made either way.
 class FeedRepository {
   const FeedRepository(this._dio, {this.mockWhenEmpty = Env.mockEmptyFeed});
 
@@ -45,7 +45,8 @@ class FeedRepository {
           .whereType<Map<String, dynamic>>()
           .map(ContentItem.fromJson)
           .toList();
-      if (items.isEmpty && mockWhenEmpty) {
+      // Only the first page: an empty later page is just the end of the list.
+      if (items.isEmpty && page == 1 && mockWhenEmpty) {
         return MockFeed.feed(
           type: type,
           urgency: urgency,
