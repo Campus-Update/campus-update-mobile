@@ -4,6 +4,7 @@ import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/network/api_exception.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
 import 'package:campus_update/features/home/presentation/screens/home_screen.dart';
+import 'package:campus_update/features/news/presentation/screens/news_detail_screen.dart';
 import 'package:campus_update/features/profile/data/profile_repository.dart';
 import 'package:campus_update/features/profile/domain/user_profile.dart';
 import 'package:campus_update/shared/data/feed_repository.dart';
@@ -179,6 +180,49 @@ void main() {
     // Home is the landing tab; its title and its tab label both render.
     expect(find.text('Home'), findsWidgets);
     expect(find.text('News'), findsOneWidget); // the tab label only
+  });
+
+  testWidgets('a home news card opens the article inside the Home tab', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final card = find.text(
+      'FOCIT introduces machine learning elective for 400 level students',
+    );
+    await tester.ensureVisible(card);
+    await tester.pumpAndSettle();
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NewsDetailScreen), findsOneWidget);
+    expect(find.text('Save article'), findsOneWidget);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      0,
+    );
+
+    await tester.tap(find.byType(BackButtonCircle));
+    await tester.pumpAndSettle();
+    expect(find.byType(NewsDetailScreen), findsNothing);
+    expect(find.byType(HomeScreen), findsOneWidget);
   });
 
   testWidgets('See all switches to the News and Events tabs', (tester) async {

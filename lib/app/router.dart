@@ -49,6 +49,9 @@ abstract final class Routes {
   static const passwordResetSuccess = '/password-reset-success';
 
   static const home = '/home';
+
+  /// An article opened from home.
+  static String homeArticle(String id) => '$home/news/$id';
   static const news = '/news';
   static const newsSearch = '/news/search';
   static const announcements = '/announcements';
@@ -201,6 +204,15 @@ final routerProvider = Provider<GoRouter>((ref) {
                       : null;
                   return HomeScreen(hasPendingProfile: hasPending);
                 },
+                routes: [
+                  // An article opened from home stays in the Home tab, so
+                  // Back returns to home rather than to the News list.
+                  GoRoute(
+                    path: 'news/:id',
+                    builder: (_, s) =>
+                        NewsDetailScreen(id: s.pathParameters['id']!),
+                  ),
+                ],
               ),
             ],
           ),

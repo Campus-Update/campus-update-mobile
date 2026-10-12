@@ -359,6 +359,9 @@ class NewsListNotifier extends Notifier<AsyncValue<List<NewsItem>>> {
     // The repository keeps bookmarks even for items outside this list, such as
     // a search result further down than the pages loaded here.
     ref.read(newsRepositoryProvider).toggleBookmark(id);
+    // An article fetched on its own reads its bookmark back from the
+    // repository.
+    ref.invalidate(newsByIdProvider(id));
     state.whenData((items) {
       state = AsyncValue.data([
         for (final item in items)
@@ -426,6 +429,25 @@ List<NewsItem> _inCategory(List<NewsItem> items, String category) {
   final filter = category.toLowerCase();
   return items.where((item) => item.category.toLowerCase() == filter).toList();
 }
+
+/// One article for the detail screen.
+///
+/// Read from the News list when it holds the article, which keeps bookmarks in
+/// step with it. Otherwise — opened from home before the News tab has loaded,
+/// say — fetched on its own with `GET /content/{id}`.
+final newsArticleProvider = Provider.family<AsyncValue<NewsItem?>, String>((
+  ref,
+  id,
+) {
+  final fromList = ref.watch(newsItemByIdProvider(id));
+  if (fromList != null) return AsyncValue.data(fromList);
+  return ref.watch(newsByIdProvider(id));
+});
+
+/// A single article straight from the repository.
+final newsByIdProvider = FutureProvider.autoDispose.family<NewsItem?, String>(
+  (ref, id) => ref.read(newsRepositoryProvider).getNewsById(id),
+);
 
 /// Family provider to fetch a single news item by id.
 final newsItemByIdProvider = Provider.family<NewsItem?, String>((ref, id) {

@@ -25,7 +25,8 @@ class NewsDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final article = ref.watch(newsItemByIdProvider(id));
+    final state = ref.watch(newsArticleProvider(id));
+    final article = state.value;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -36,7 +37,14 @@ class NewsDetailScreen extends ConsumerWidget {
           children: [
             const _Header(),
             Expanded(
-              child: article == null
+              child: state.isLoading && article == null
+                  ? const Loader()
+                  : state.hasError
+                  ? ErrorState(
+                      message: "Couldn't load this article.",
+                      onRetry: () => ref.invalidate(newsByIdProvider(id)),
+                    )
+                  : article == null
                   ? const EmptyState(
                       icon: Icons.article_outlined,
                       message: 'Article not found.',

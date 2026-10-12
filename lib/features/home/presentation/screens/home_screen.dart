@@ -529,6 +529,7 @@ class _BreakingNewsSectionState extends ConsumerState<_BreakingNewsSection> {
               for (var i = 0; i < items.length; i++)
                 _BreakingNewsCard(
                   item: items[i],
+                  onTap: () => context.push(Routes.homeArticle(items[i].id)),
                   // Nothing left to swipe to on the last card.
                   showSwipeHint: i < items.length - 1,
                 ),
@@ -542,10 +543,15 @@ class _BreakingNewsSectionState extends ConsumerState<_BreakingNewsSection> {
 }
 
 class _BreakingNewsCard extends StatelessWidget {
-  const _BreakingNewsCard({required this.item, required this.showSwipeHint});
+  const _BreakingNewsCard({
+    required this.item,
+    required this.showSwipeHint,
+    required this.onTap,
+  });
 
   final ContentItem item;
   final bool showSwipeHint;
+  final VoidCallback onTap;
 
   /// Inset of the swipe hint from the top-right corner, measured ~28pt.
   static const _swipeInset = 28.0;
@@ -554,35 +560,39 @@ class _BreakingNewsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final image = item.imageUrl;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (image != null)
-            Image.network(image, fit: BoxFit.cover, errorBuilder: _fallback)
-          else
-            _fallback(context, null, null),
-          // Keeps the white headline readable over a photo.
-          if (image != null)
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.transparent, Color(0xB3000000)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  stops: [0.35, 1.0],
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (image != null)
+              Image.network(image, fit: BoxFit.cover, errorBuilder: _fallback)
+            else
+              _fallback(context, null, null),
+            // Keeps the white headline readable over a photo.
+            if (image != null)
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.transparent, Color(0xB3000000)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.35, 1.0],
+                  ),
                 ),
               ),
-            ),
-          _Caption(item: item),
-          if (showSwipeHint)
-            const Positioned(
-              top: _swipeInset,
-              right: _swipeInset,
-              child: _SwipeHint(),
-            ),
-        ],
+            _Caption(item: item),
+            if (showSwipeHint)
+              const Positioned(
+                top: _swipeInset,
+                right: _swipeInset,
+                child: _SwipeHint(),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -698,6 +708,7 @@ class _LatestNewsSection extends ConsumerWidget {
             title: item.title,
             imageUrl: item.imageUrl,
             footer: const ContentCardAction('READ MORE'),
+            onTap: () => context.push(Routes.homeArticle(item.id)),
           ),
         ),
       ],
