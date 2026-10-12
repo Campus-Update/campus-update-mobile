@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../shared/widgets/widgets.dart';
 import '../../data/events_repository.dart';
 import '../widgets/event_card.dart';
 import '../widgets/featured_event_card.dart';
@@ -14,6 +15,7 @@ class EventsListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final events = ref.watch(eventsListProvider);
     final featuredEvent = ref.watch(featuredEventProvider);
     final monthlyEvents = ref.watch(monthlyEventsProvider);
 
@@ -22,9 +24,7 @@ class EventsListScreen extends ConsumerWidget {
       body: SafeArea(
         child: RefreshIndicator(
           color: AppColors.indigo,
-          onRefresh: () async {
-            ref.read(eventsListProvider.notifier).refresh();
-          },
+          onRefresh: () => ref.read(eventsListProvider.notifier).refresh(),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(
@@ -67,6 +67,23 @@ class EventsListScreen extends ConsumerWidget {
 
                 const SizedBox(height: AppSpacing.md),
 
+                if (events.isLoading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+                    child: Loader(),
+                  )
+                else if (events.hasError)
+                  ErrorState(
+                    message: "Couldn't load events.",
+                    onRetry: () =>
+                        ref.read(eventsListProvider.notifier).refresh(),
+                  )
+                else if (featuredEvent == null)
+                  const EmptyState(
+                    icon: Icons.event_outlined,
+                    message: 'No upcoming events.',
+                  ),
+
                 // Hero Featured Event Card
                 if (featuredEvent != null) ...[
                   FeaturedEventCard(
@@ -94,14 +111,15 @@ class EventsListScreen extends ConsumerWidget {
                 ],
 
                 // "This month" Section Header
-                Text(
-                  'This month',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 19,
-                    fontWeight: AppFonts.medium,
-                    color: AppColors.graphite,
+                if (monthlyEvents.isNotEmpty)
+                  Text(
+                    'This month',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: 19,
+                      fontWeight: AppFonts.medium,
+                      color: AppColors.graphite,
+                    ),
                   ),
-                ),
 
                 const SizedBox(height: 10),
 

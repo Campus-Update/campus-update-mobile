@@ -15,7 +15,12 @@ class EventDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final event = ref.watch(eventByIdProvider(id));
+    final state = ref.watch(eventDetailProvider(id));
+    final event = state.value;
+
+    if (event == null && state.isLoading) {
+      return const Scaffold(backgroundColor: Colors.white, body: Loader());
+    }
 
     if (event == null) {
       return Scaffold(

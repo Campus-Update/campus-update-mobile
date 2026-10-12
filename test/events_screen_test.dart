@@ -1,6 +1,7 @@
 import 'package:campus_update/app/app.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
+import 'package:campus_update/features/events/data/events_repository.dart';
 import 'package:campus_update/features/events/presentation/screens/event_detail_screen.dart';
 import 'package:campus_update/features/events/presentation/screens/events_list_screen.dart';
 import 'package:campus_update/features/events/presentation/widgets/event_card.dart';
@@ -27,6 +28,9 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          eventsRepositoryProvider.overrideWithValue(
+            const MockEventsRepository(),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -78,6 +82,9 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        eventsRepositoryProvider.overrideWithValue(
+          const MockEventsRepository(),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -112,6 +119,9 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        eventsRepositoryProvider.overrideWithValue(
+          const MockEventsRepository(),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -152,6 +162,9 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          eventsRepositoryProvider.overrideWithValue(
+            const MockEventsRepository(),
+          ),
         ],
       );
       addTearDown(container.dispose);
