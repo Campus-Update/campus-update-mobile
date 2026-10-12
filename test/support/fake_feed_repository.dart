@@ -5,6 +5,9 @@ import 'package:campus_update/shared/domain/content_source.dart';
 /// Stands in for `GET /api/v1/feed`, so screens that read the feed render
 /// without a network. Three urgent items, three news and two events.
 class FakeFeedRepository implements FeedRepository {
+  /// How many times the feed has been asked for.
+  int calls = 0;
+
   @override
   Future<List<ContentItem>> feed({
     ContentType? type,
@@ -13,6 +16,7 @@ class FakeFeedRepository implements FeedRepository {
     int page = 1,
     int pageSize = 20,
   }) async {
+    calls++;
     if (urgency == Urgency.urgent) return _breaking;
     return switch (type) {
       ContentType.news => _news,

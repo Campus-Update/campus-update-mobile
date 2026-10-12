@@ -33,39 +33,57 @@ class HomeScreen extends ConsumerWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.gutter,
-            vertical: AppSpacing.md,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _HomeHeader(userName: userName),
-              // Measured ~13pt from the greeting to the tab labels and ~11pt
-              // from the underline to the card; the tabs carry 6pt of tap
-              // padding either side, so these are the remainder.
-              const SizedBox(height: AppSpacing.sm),
-              const _CategoryTabs(),
-              const SizedBox(height: AppSpacing.xs),
-              if (showProfileCard) ...[
-                const _ProfileCompletionCard(),
-                const SizedBox(height: AppSpacing.lg),
-              ] else ...[
-                const SizedBox(height: AppSpacing.md),
+        child: RefreshIndicator(
+          color: AppColors.indigo,
+          onRefresh: () => _refresh(ref),
+          child: SingleChildScrollView(
+            // Pullable even when the feed is too short to scroll.
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.gutter,
+              vertical: AppSpacing.md,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _HomeHeader(userName: userName),
+                // Measured ~13pt from the greeting to the tab labels and ~11pt
+                // from the underline to the card; the tabs carry 6pt of tap
+                // padding either side, so these are the remainder.
+                const SizedBox(height: AppSpacing.sm),
+                const _CategoryTabs(),
+                const SizedBox(height: AppSpacing.xs),
+                if (showProfileCard) ...[
+                  const _ProfileCompletionCard(),
+                  const SizedBox(height: AppSpacing.lg),
+                ] else ...[
+                  const SizedBox(height: AppSpacing.md),
+                ],
+                // Carries its own gap below, so nothing is left behind when
+                // there is no breaking news.
+                const _BreakingNewsSection(),
+                const _LatestNewsSection(),
+                const SizedBox(height: AppSpacing.xl),
+                const _UpcomingEventsSection(),
+                const SizedBox(height: AppSpacing.xxl),
               ],
-              // Carries its own gap below, so nothing is left behind when
-              // there is no breaking news.
-              const _BreakingNewsSection(),
-              const _LatestNewsSection(),
-              const SizedBox(height: AppSpacing.xl),
-              const _UpcomingEventsSection(),
-              const SizedBox(height: AppSpacing.xxl),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  /// Fetches every feed section again. A section that fails shows its own
+  /// error state, so a failure here only needs to end the spinner.
+  Future<void> _refresh(WidgetRef ref) async {
+    try {
+      await Future.wait([
+        ref.refresh(breakingNewsProvider.future),
+        ref.refresh(latestNewsProvider.future),
+        ref.refresh(upcomingEventsProvider.future),
+      ]);
+    } catch (_) {}
   }
 }
 
@@ -330,8 +348,8 @@ class _CategoryTabsState extends State<_CategoryTabs> {
 
   @override
   Widget build(BuildContext context) {
-    // Scrolls horizontally so the strip survives a narrow phone; on a 390pt
-    // screen all six fit without scrolling, as they do in the design.
+    // Scrolls horizontally, since at 13pt the six labels can run past the
+    // edge of a narrow phone.
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -367,12 +385,9 @@ class _CategoryTab extends StatelessWidget {
   final bool isLast;
   final VoidCallback onTap;
 
-  // Measured off the design export, then checked by rendering this screen and
-  // measuring the render back. The export is only 216px wide, so it was the
-  // label widths — a long baseline — that fixed the type size, not the glyph
-  // heights: 'For You' is 17px there, which is 33pt once the frame is scaled
-  // to 390, and 13pt Archivo draws it 44pt wide.
-  static const _fontSize = 10.0;
+  // The same size as the News tab's category chips, so the two filter strips
+  // read alike. The home export measures nearer 10pt.
+  static const _fontSize = 13.0;
 
   /// How far the underline runs past the label on each side. The design's
   /// underline is 38.5pt under a 32.7pt label, so just under 3pt a side.

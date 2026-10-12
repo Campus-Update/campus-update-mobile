@@ -6,6 +6,7 @@ import 'package:campus_update/core/storage/storage_providers.dart';
 import 'package:campus_update/features/home/presentation/screens/home_screen.dart';
 import 'package:campus_update/features/profile/data/profile_repository.dart';
 import 'package:campus_update/features/profile/domain/user_profile.dart';
+import 'package:campus_update/shared/data/feed_repository.dart';
 import 'package:campus_update/shared/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -667,5 +668,34 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Swipe'), findsNothing);
+  });
+
+  testWidgets('pulling home down fetches the feed again', (tester) async {
+    final feed = FakeFeedRepository();
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        feedRepositoryProvider.overrideWithValue(feed),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(homeUnder(container));
+    await tester.pumpAndSettle();
+    // One call each for the hero, Latest News and Upcoming Events.
+    expect(feed.calls, 3);
+
+    await tester.fling(
+      find.text('Welcome, Jeremiah!'),
+      const Offset(0, 300),
+      1000,
+    );
+    await tester.pumpAndSettle();
+
+    expect(feed.calls, 6);
+    expect(find.byType(RefreshIndicator), findsOneWidget);
   });
 }
