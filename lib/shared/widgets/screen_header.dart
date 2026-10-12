@@ -53,10 +53,7 @@ class ScreenHeader extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
               ),
-              SizedBox(
-                width: BackButtonCircle.size,
-                child: action,
-              ),
+              SizedBox(width: BackButtonCircle.size, child: action),
             ],
           ),
         ),

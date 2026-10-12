@@ -33,7 +33,8 @@ void main() {
   });
 
   Widget createTestWidget(Widget child, [ProviderContainer? container]) {
-    final c = container ??
+    final c =
+        container ??
         ProviderContainer(
           overrides: [
             prefsStorageProvider.overrideWithValue(storage),
@@ -45,10 +46,7 @@ void main() {
 
     return UncontrolledProviderScope(
       container: c,
-      child: MaterialApp(
-        theme: AppTheme.light(),
-        home: child,
-      ),
+      child: MaterialApp(theme: AppTheme.light(), home: child),
     );
   }
 
@@ -90,7 +88,9 @@ void main() {
         ],
       );
 
-      await container.read(userProfileProvider.notifier).setProfile(
+      await container
+          .read(userProfileProvider.notifier)
+          .setProfile(
             const UserProfile(
               firstName: 'Tolani',
               lastName: 'Balogun',
@@ -109,14 +109,15 @@ void main() {
       expect(find.text('TB'), findsOneWidget);
     });
 
-    testWidgets('shows initials when no avatar is selected, without hardcoding image', (
-      tester,
-    ) async {
-      await tester.pumpWidget(createTestWidget(const ProfileScreen()));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'shows initials when no avatar is selected, without hardcoding image',
+      (tester) async {
+        await tester.pumpWidget(createTestWidget(const ProfileScreen()));
+        await tester.pumpAndSettle();
 
-      expect(find.text('JA'), findsOneWidget);
-    });
+        expect(find.text('JA'), findsOneWidget);
+      },
+    );
   });
 
   group('AccountInformationScreen (Screen 2)', () {
@@ -198,9 +199,7 @@ void main() {
       tester,
     ) async {
       final container = ProviderContainer(
-        overrides: [
-          prefsStorageProvider.overrideWithValue(storage),
-        ],
+        overrides: [prefsStorageProvider.overrideWithValue(storage)],
       );
 
       await tester.pumpWidget(
@@ -321,23 +320,24 @@ void main() {
   });
 
   group('SupportScreen', () {
-    testWidgets('renders all support options, coming soon badge, and action button', (
-      tester,
-    ) async {
-      await tester.pumpWidget(createTestWidget(const SupportScreen()));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'renders all support options, coming soon badge, and action button',
+      (tester) async {
+        await tester.pumpWidget(createTestWidget(const SupportScreen()));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Support'), findsOneWidget);
-      expect(find.text('Call Us'), findsOneWidget);
-      expect(find.text('Send an Email'), findsOneWidget);
-      expect(find.text('Frequently Asked Questions'), findsOneWidget);
-      expect(find.text('Chat With Support'), findsOneWidget);
-      expect(find.text('Coming Soon'), findsOneWidget);
-      expect(find.text('Instagram'), findsOneWidget);
-      expect(find.text('X (Twitter)'), findsOneWidget);
-      expect(find.text('WhatsApp'), findsOneWidget);
-      expect(find.text('Save changes'), findsOneWidget);
-    });
+        expect(find.text('Support'), findsOneWidget);
+        expect(find.text('Call Us'), findsOneWidget);
+        expect(find.text('Send an Email'), findsOneWidget);
+        expect(find.text('Frequently Asked Questions'), findsOneWidget);
+        expect(find.text('Chat With Support'), findsOneWidget);
+        expect(find.text('Coming Soon'), findsOneWidget);
+        expect(find.text('Instagram'), findsOneWidget);
+        expect(find.text('X (Twitter)'), findsOneWidget);
+        expect(find.text('WhatsApp'), findsOneWidget);
+        expect(find.text('Save changes'), findsOneWidget);
+      },
+    );
 
     testWidgets('tapping Call Us shows support telephone options', (
       tester,
