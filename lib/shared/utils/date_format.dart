@@ -4,9 +4,13 @@ abstract final class AppDateFormat {
   static final _day = DateFormat('d MMM yyyy');
   static final _dayTime = DateFormat('d MMM yyyy, HH:mm');
   static final _weekdayDay = DateFormat('EEE d MMMM');
+  static final _dayMonth = DateFormat('d MMMM');
 
   static String day(DateTime value) => _day.format(value.toLocal());
   static String dayTime(DateTime value) => _dayTime.format(value.toLocal());
+
+  /// An article's date — '16 September'.
+  static String dayMonth(DateTime value) => _dayMonth.format(value.toLocal());
 
   /// An event's day — 'Mon 21 September'.
   static String weekdayDay(DateTime value) =>

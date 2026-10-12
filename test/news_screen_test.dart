@@ -183,7 +183,7 @@ void main() {
     expect(find.textContaining('New Library Wing Opens'), findsOneWidget);
 
     // Pop back to News list
-    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.tap(find.byType(BackButtonCircle));
     await tester.pumpAndSettle();
 
     // Verify returned to News list
