@@ -111,9 +111,10 @@ class EventCard extends StatelessWidget {
                         ],
                       ),
 
-                      // "Add to calendar" Button
-                      Align(
-                        alignment: Alignment.centerLeft,
+                      // "Add to calendar" fills the column, as the design
+                      // draws it, so it ends level with the screen gutter.
+                      SizedBox(
+                        width: double.infinity,
                         child: AppButton(
                           label: event.isAddedToCalendar
                               ? 'In calendar'
@@ -121,7 +122,6 @@ class EventCard extends StatelessWidget {
                           trailingIcon: event.isAddedToCalendar
                               ? Icons.check_circle_outline_rounded
                               : Icons.calendar_month_outlined,
-                          expand: false,
                           height: 34,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
