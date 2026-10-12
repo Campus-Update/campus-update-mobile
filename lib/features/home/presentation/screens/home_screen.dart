@@ -686,7 +686,7 @@ class _LatestNewsSection extends ConsumerWidget {
       children: [
         SectionHeader(
           title: 'Latest News',
-          onAction: () => context.push(Routes.news),
+          onAction: () => context.go(Routes.news),
         ),
         const SizedBox(height: 14),
         _SectionFeed(
@@ -716,7 +716,7 @@ class _UpcomingEventsSection extends ConsumerWidget {
       children: [
         SectionHeader(
           title: 'Upcoming Events',
-          onAction: () => context.push(Routes.events),
+          onAction: () => context.go(Routes.events),
         ),
         const SizedBox(height: 14),
         _SectionFeed(

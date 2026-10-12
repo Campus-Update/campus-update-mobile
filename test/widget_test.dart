@@ -181,6 +181,50 @@ void main() {
     expect(find.text('News'), findsOneWidget); // the tab label only
   });
 
+  testWidgets('See all switches to the News and Events tabs', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    int selectedTab() =>
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex;
+    expect(selectedTab(), 0);
+
+    // Latest News comes first, Upcoming Events second.
+    Future<void> tapSeeAll(int index) async {
+      final seeAll = find.text('See all').at(index);
+      await tester.ensureVisible(seeAll);
+      await tester.pumpAndSettle();
+      await tester.tap(seeAll);
+      await tester.pumpAndSettle();
+    }
+
+    await tapSeeAll(0);
+    expect(selectedTab(), 1);
+
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+    expect(selectedTab(), 0);
+
+    await tapSeeAll(1);
+    expect(selectedTab(), 2);
+  });
+
   testWidgets(
     'home screen allows backward navigation from notifications and detail screens',
     (tester) async {
