@@ -10,6 +10,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/fake_feed_repository.dart';
+
 void main() {
   late SharedPreferences prefs;
 
@@ -22,7 +24,10 @@ void main() {
     'navigating to events tab displays Upcoming Events matching design',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
+        ],
       );
       addTearDown(container.dispose);
       container.read(authProvider.notifier).signedIn();
@@ -70,7 +75,10 @@ void main() {
     tester,
   ) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
@@ -101,7 +109,10 @@ void main() {
 
   testWidgets('tapping Add to calendar toggles calendar state', (tester) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
@@ -138,7 +149,10 @@ void main() {
     'tapping event card navigates to EventDetailScreen and can pop back',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
+        ],
       );
       addTearDown(container.dispose);
       container.read(authProvider.notifier).signedIn();
