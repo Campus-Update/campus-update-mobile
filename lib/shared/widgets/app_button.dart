@@ -28,6 +28,8 @@ class AppButton extends StatelessWidget {
     this.expand = true,
     this.onImage = false,
     this.fontSize,
+    this.height,
+    this.padding,
   });
 
   final String label;
@@ -51,6 +53,12 @@ class AppButton extends StatelessWidget {
   /// button the design genuinely draws differently, so that the default stays
   /// the single source of truth rather than something each screen re-picks.
   final double? fontSize;
+
+  /// Optional explicit height override. Defaults to 50.
+  final double? height;
+
+  /// Optional explicit padding override. Defaults to horizontal: 30.
+  final EdgeInsetsGeometry? padding;
 
   /// Height of the gradient itself. The primary variant then carries
   /// [_ringWidth] of ring outside that, so its box is taller by twice it.
@@ -76,7 +84,8 @@ class AppButton extends StatelessWidget {
 
   /// The ring sits outside the gradient, so a ringed button's box is taller
   /// than its specified 50 by twice the ring.
-  double get _boxHeight => _ringed ? _height + _ringWidth * 2 : _height;
+  double get _boxHeight =>
+      height ?? (_ringed ? _height + _ringWidth * 2 : _height);
 
   bool get _enabled => onPressed != null && !loading;
 
@@ -160,7 +169,8 @@ class AppButton extends StatelessWidget {
             width: expand ? double.infinity : null,
             decoration: _decoration(scheme),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: _paddingX),
+              padding:
+                  padding ?? const EdgeInsets.symmetric(horizontal: _paddingX),
               child: Center(widthFactor: expand ? null : 1, child: content),
             ),
           ),

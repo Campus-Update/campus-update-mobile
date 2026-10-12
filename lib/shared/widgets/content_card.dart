@@ -12,13 +12,16 @@ import '../../app/theme/app_colors.dart';
 ///
 /// Only the footer differs between the two uses on home, so it is a slot:
 /// pass [ContentCardAction] for a call to action, [ContentCardMeta] for a
-/// quiet line of detail.
+/// quiet line of detail. [trailing] sits at the end of the label line, for a
+/// per-item action such as a bookmark.
 class ContentCard extends StatelessWidget {
   const ContentCard({
     super.key,
     required this.label,
     required this.title,
     required this.footer,
+    this.imageUrl,
+    this.trailing,
     this.footerGap = _footerGap,
     this.onTap,
   });
@@ -30,6 +33,13 @@ class ContentCard extends StatelessWidget {
 
   /// The line under the title.
   final Widget footer;
+
+  /// The thumbnail. Without one, or if it fails to load, the thumbnail is a
+  /// plain surface.
+  final String? imageUrl;
+
+  /// An action at the end of the label line — a bookmark.
+  final Widget? trailing;
 
   /// Space between the title and [footer].
   ///
@@ -52,7 +62,6 @@ class ContentCard extends StatelessWidget {
     final row = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Stands in for the article image until the feed API supplies one.
         Container(
           width: _thumbWidth,
           height: _thumbHeight,
@@ -60,19 +69,34 @@ class ContentCard extends StatelessWidget {
             color: AppColors.indigoSurface,
             borderRadius: BorderRadius.circular(_thumbRadius),
           ),
+          clipBehavior: Clip.antiAlias,
+          child: imageUrl == null || imageUrl!.isEmpty
+              ? null
+              : Image.network(
+                  imageUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
         ),
         const SizedBox(width: _thumbGap),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.sourceSponsored,
-                  fontWeight: AppFonts.regular,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.sourceSponsored,
+                        fontWeight: AppFonts.regular,
+                      ),
+                    ),
+                  ),
+                  if (trailing != null) trailing!,
+                ],
               ),
               const SizedBox(height: _labelGap),
               Text(

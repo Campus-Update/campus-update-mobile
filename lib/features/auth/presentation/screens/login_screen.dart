@@ -77,10 +77,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  /// No provider on the backend yet. Left enabled so the screen matches the
-  /// design; it does no more than the primary button does until the API is
-  /// wired, and both land together.
-  void _google() {}
+  Future<void> _google() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() => _busy = true);
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    if (!mounted) return;
+    ref.read(authProvider.notifier).signedIn();
+  }
 
   Future<void> _loadProfile() async {
     try {
@@ -117,11 +120,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 textInputAction: TextInputAction.done,
                 autofillHints: const [AutofillHints.password],
                 validator: Validators.password,
-                // Done puts the keyboard away. It deliberately does not
-                // submit: the form goes forward only when the button is
-                // tapped.
-                onSubmitted: (_) =>
-                    FocusManager.instance.primaryFocus?.unfocus(),
+                onSubmitted: (_) => _submit(),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

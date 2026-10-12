@@ -11,6 +11,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/fake_feed_repository.dart';
+
 void main() {
   late SharedPreferences prefs;
 
@@ -23,7 +25,10 @@ void main() {
     'navigating to calendar tab displays Calendar screen matching design',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
+        ],
       );
       addTearDown(container.dispose);
       container.read(authProvider.notifier).signedIn();
@@ -87,7 +92,10 @@ void main() {
     tester,
   ) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
@@ -127,7 +135,10 @@ void main() {
     'tapping an event opens CalendarDetailScreen with details matching design and can pop back',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
+        ],
       );
       addTearDown(container.dispose);
       container.read(authProvider.notifier).signedIn();
@@ -196,7 +207,10 @@ void main() {
     'tapping Save this events button toggles state on CalendarDetailScreen',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
+        ],
       );
       addTearDown(container.dispose);
       container.read(authProvider.notifier).signedIn();
