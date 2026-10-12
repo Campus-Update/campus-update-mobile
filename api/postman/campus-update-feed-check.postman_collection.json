@@ -1,0 +1,243 @@
+{
+  "info": {
+    "name": "Campus Update \u2013 Feed check (dev)",
+    "description": "Shows whether the dev API has content for the mobile app.\n\nRun the whole collection (Run \u2192 Run Campus Update \u2013 Feed check). '1. Login' saves the access token; every other request uses it.\n\nA failing 'has \u2026 items' test means the endpoint returned an empty list. A failing field test means ContentResponse does not include a field the app's screens need.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://campus-update-api.vercel.app/api/v1"
+    },
+    {
+      "key": "email",
+      "value": "feed-probe-258@example.com"
+    },
+    {
+      "key": "password",
+      "value": "Passw0rd!"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('login succeeds', () => pm.response.to.have.status(200));",
+              "const token = pm.response.json().accessToken;",
+              "pm.test('returns an access token', () => pm.expect(token).to.be.a('string'));",
+              "pm.collectionVariables.set('accessToken', token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Dev test account at Osun State University with faculty, department, programme and level all set, so the feed has an audience to match."
+      }
+    },
+    {
+      "name": "2. Feed \u2013 News",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('responds 200', () => pm.response.to.have.status(200));",
+              "const items = pm.response.json();",
+              "pm.test('returns a list', () => pm.expect(items).to.be.an('array'));",
+              "pm.test('has news items (empty list means nothing is published on dev)', () => pm.expect(items.length, 'items returned').to.be.above(0));",
+              "if (items.length > 0) {",
+              "  const first = items[0];",
+              "  ['category', 'imageUrl', 'summary'].forEach((field) => {",
+              "    pm.test(`item has ${field} (the app needs it, ContentResponse lacks it)`, () => pm.expect(first).to.have.property(field));",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/feed?type=News",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "feed"
+          ],
+          "query": [
+            {
+              "key": "type",
+              "value": "News"
+            }
+          ]
+        },
+        "description": "What the News tab and home's Latest News call."
+      }
+    },
+    {
+      "name": "3. Feed \u2013 Urgent (breaking news)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('responds 200', () => pm.response.to.have.status(200));",
+              "const items = pm.response.json();",
+              "pm.test('returns a list', () => pm.expect(items).to.be.an('array'));",
+              "pm.test('has urgent items (empty list means nothing is published on dev)', () => pm.expect(items.length, 'items returned').to.be.above(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/feed?urgency=Urgent",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "feed"
+          ],
+          "query": [
+            {
+              "key": "urgency",
+              "value": "Urgent"
+            }
+          ]
+        },
+        "description": "What home's live-updates hero calls."
+      }
+    },
+    {
+      "name": "4. Feed \u2013 Events",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('responds 200', () => pm.response.to.have.status(200));",
+              "const items = pm.response.json();",
+              "pm.test('returns a list', () => pm.expect(items).to.be.an('array'));",
+              "pm.test('has events (empty list means nothing is published on dev)', () => pm.expect(items.length, 'items returned').to.be.above(0));",
+              "if (items.length > 0) {",
+              "  const first = items[0];",
+              "  ['eventStartsAt', 'eventLocation', 'imageUrl'].forEach((field) => {",
+              "    pm.test(`event has ${field} (accepted by POST /content but not returned)`, () => pm.expect(first).to.have.property(field));",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/feed?type=Event",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "feed"
+          ],
+          "query": [
+            {
+              "key": "type",
+              "value": "Event"
+            }
+          ]
+        },
+        "description": "What home's Upcoming Events calls."
+      }
+    },
+    {
+      "name": "5. Content \u2013 everything",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('responds 200', () => pm.response.to.have.status(200));",
+              "const items = pm.response.json();",
+              "pm.test('returns a list', () => pm.expect(items).to.be.an('array'));",
+              "pm.test('has published content (empty list means nothing is published on dev)', () => pm.expect(items.length, 'items returned').to.be.above(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/content",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "content"
+          ],
+          "query": []
+        },
+        "description": "Unfiltered. If this is empty too, nothing is published on dev at all, so it is not a targeting or filter problem."
+      }
+    }
+  ]
+}

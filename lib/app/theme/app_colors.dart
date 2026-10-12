@@ -114,6 +114,13 @@ abstract final class AppColors {
   static const feedTitle = Color(0xFF111827);
   static const feedLink = Color(0xFF3730A3);
 
+  /// The category pill on an article — solid, white label. Sampled off the
+  /// news detail design; the same purple as [optionSelected].
+  static const categoryPill = optionSelected;
+
+  /// An article's body text: black at 70%, from the Figma inspector.
+  static const articleBody = Color(0xB3000000);
+
   /// The live/breaking marker on the home feed.
   ///
   /// Measured off the home design export as #ED0000 — brighter and more

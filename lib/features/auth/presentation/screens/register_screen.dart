@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
+import '../../../../core/auth/auth_state.dart';
 import '../../../../shared/utils/validators.dart';
 import '../../domain/registration_draft.dart';
 import '../../../../shared/widgets/widgets.dart';
@@ -50,7 +51,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   /// No provider on the backend yet. Left enabled so the screen matches the
   /// design; it does no more than the primary button does until the API is
   /// wired, and both land together.
-  void _google() {}
+  void _google() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    ref.read(authProvider.notifier).signedIn();
+  }
 
   @override
   Widget build(BuildContext context) {

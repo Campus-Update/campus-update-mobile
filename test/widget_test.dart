@@ -4,13 +4,17 @@ import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/network/api_exception.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
 import 'package:campus_update/features/home/presentation/screens/home_screen.dart';
+import 'package:campus_update/features/news/presentation/screens/news_detail_screen.dart';
 import 'package:campus_update/features/profile/data/profile_repository.dart';
 import 'package:campus_update/features/profile/domain/user_profile.dart';
+import 'package:campus_update/shared/data/feed_repository.dart';
 import 'package:campus_update/shared/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'support/fake_feed_repository.dart';
 
 /// Stands in for the real repository so a test that drives the login screen
 /// does not reach the deployed API. Without it these tests make a live network
@@ -73,6 +77,7 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -88,6 +93,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -112,6 +118,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -153,6 +160,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -174,12 +182,100 @@ void main() {
     expect(find.text('News'), findsOneWidget); // the tab label only
   });
 
+  testWidgets('a home news card opens the article inside the Home tab', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final card = find.text(
+      'FOCIT introduces machine learning elective for 400 level students',
+    );
+    await tester.ensureVisible(card);
+    await tester.pumpAndSettle();
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NewsDetailScreen), findsOneWidget);
+    expect(find.text('Save article'), findsOneWidget);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      0,
+    );
+
+    await tester.tap(find.byType(BackButtonCircle));
+    await tester.pumpAndSettle();
+    expect(find.byType(NewsDetailScreen), findsNothing);
+    expect(find.byType(HomeScreen), findsOneWidget);
+  });
+
+  testWidgets('See all switches to the News and Events tabs', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    int selectedTab() =>
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex;
+    expect(selectedTab(), 0);
+
+    // Latest News comes first, Upcoming Events second.
+    Future<void> tapSeeAll(int index) async {
+      final seeAll = find.text('See all').at(index);
+      await tester.ensureVisible(seeAll);
+      await tester.pumpAndSettle();
+      await tester.tap(seeAll);
+      await tester.pumpAndSettle();
+    }
+
+    await tapSeeAll(0);
+    expect(selectedTab(), 1);
+
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+    expect(selectedTab(), 0);
+
+    await tapSeeAll(1);
+    expect(selectedTab(), 2);
+  });
+
   testWidgets(
     'home screen allows backward navigation from notifications and detail screens',
     (tester) async {
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -224,6 +320,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -292,6 +389,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -339,6 +437,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -379,6 +478,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -416,6 +516,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -479,6 +580,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(
           _FakeProfileRepository(
@@ -522,6 +624,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -550,6 +653,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -590,6 +694,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -617,6 +722,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -650,5 +756,34 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Swipe'), findsNothing);
+  });
+
+  testWidgets('pulling home down fetches the feed again', (tester) async {
+    final feed = FakeFeedRepository();
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        feedRepositoryProvider.overrideWithValue(feed),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(homeUnder(container));
+    await tester.pumpAndSettle();
+    // One call each for the hero, Latest News and Upcoming Events.
+    expect(feed.calls, 3);
+
+    await tester.fling(
+      find.text('Welcome, Jeremiah!'),
+      const Offset(0, 300),
+      1000,
+    );
+    await tester.pumpAndSettle();
+
+    expect(feed.calls, 6);
+    expect(find.byType(RefreshIndicator), findsOneWidget);
   });
 }

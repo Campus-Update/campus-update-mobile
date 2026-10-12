@@ -44,4 +44,14 @@ abstract final class Env {
       : Flavor.dev;
 
   static bool get isDev => flavor == Flavor.dev;
+
+  /// Whether an empty feed is filled with `MockFeed` content.
+  ///
+  /// The dev API has no content yet, so screens would otherwise show nothing
+  /// but empty states. The API is still called every time; its answer is used
+  /// as soon as it has anything in it. Never on in staging or prod. Turn it
+  /// off with `--dart-define=MOCK_EMPTY_FEED=false`.
+  static const bool mockEmptyFeed =
+      bool.fromEnvironment('MOCK_EMPTY_FEED', defaultValue: true) &&
+      flavor == Flavor.dev;
 }
