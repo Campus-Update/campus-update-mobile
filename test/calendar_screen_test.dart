@@ -6,12 +6,25 @@ import 'package:campus_update/features/calendar/presentation/screens/calendar_sc
 import 'package:campus_update/features/calendar/presentation/widgets/calendar_event_card.dart';
 import 'package:campus_update/features/calendar/presentation/widgets/calendar_grid.dart';
 import 'package:campus_update/shared/widgets/back_button_circle.dart';
+import 'package:campus_update/features/calendar/data/calendar_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_feed_repository.dart';
+
+/// The calendar opens on the current month; these tests check the July 2026
+/// sample events, so they start there.
+class _July2026 extends ActiveMonthNotifier {
+  @override
+  DateTime build() => DateTime(2026, 7);
+}
+
+class _July15 extends SelectedDateNotifier {
+  @override
+  DateTime? build() => DateTime(2026, 7, 15);
+}
 
 void main() {
   late SharedPreferences prefs;
@@ -28,6 +41,8 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          activeMonthProvider.overrideWith(_July2026.new),
+          selectedDateProvider.overrideWith(_July15.new),
         ],
       );
       addTearDown(container.dispose);
@@ -95,6 +110,8 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        activeMonthProvider.overrideWith(_July2026.new),
+        selectedDateProvider.overrideWith(_July15.new),
       ],
     );
     addTearDown(container.dispose);
@@ -138,6 +155,8 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          activeMonthProvider.overrideWith(_July2026.new),
+          selectedDateProvider.overrideWith(_July15.new),
         ],
       );
       addTearDown(container.dispose);
@@ -210,6 +229,8 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          activeMonthProvider.overrideWith(_July2026.new),
+          selectedDateProvider.overrideWith(_July15.new),
         ],
       );
       addTearDown(container.dispose);

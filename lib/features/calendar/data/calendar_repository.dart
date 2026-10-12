@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/calendar_event.dart';
 
-/// Tracks the active month displayed on the calendar grid.
+/// Tracks the active month displayed on the calendar grid. Opens on the
+/// current month.
 final activeMonthProvider = NotifierProvider<ActiveMonthNotifier, DateTime>(
   ActiveMonthNotifier.new,
 );
@@ -10,7 +11,8 @@ final activeMonthProvider = NotifierProvider<ActiveMonthNotifier, DateTime>(
 class ActiveMonthNotifier extends Notifier<DateTime> {
   @override
   DateTime build() {
-    return DateTime(2026, 7);
+    final now = DateTime.now();
+    return DateTime(now.year, now.month);
   }
 
   void setMonth(DateTime month) {
@@ -26,7 +28,7 @@ class ActiveMonthNotifier extends Notifier<DateTime> {
   }
 }
 
-/// Tracks the selected day (defaults to July 15, 2026).
+/// Tracks the selected day. Starts on today.
 final selectedDateProvider = NotifierProvider<SelectedDateNotifier, DateTime?>(
   SelectedDateNotifier.new,
 );
@@ -34,7 +36,8 @@ final selectedDateProvider = NotifierProvider<SelectedDateNotifier, DateTime?>(
 class SelectedDateNotifier extends Notifier<DateTime?> {
   @override
   DateTime? build() {
-    return DateTime(2026, 7, 15);
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
   }
 
   void selectDate(DateTime date) {
