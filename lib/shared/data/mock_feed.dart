@@ -292,5 +292,59 @@ abstract final class MockFeed {
       'eventStartsAt': _ahead(const Duration(days: 14)),
       'eventLocation': 'Faculty of Computing Lab 2',
     },
+    {
+      'id': 'mock-event-4',
+      'title': 'Students Union Town Hall on Hostel Fees',
+      'summary': 'Bring your questions on the new hostel fee schedule.',
+      'body':
+          'The Students Union executive will take questions on the new hostel '
+          'fee schedule and the plan for the new blocks.',
+      'type': 'Event',
+      'status': 'Published',
+      'urgency': 'Normal',
+      'sourceType': 'External',
+      'sourceName': 'Students Union',
+      'publishedAt': _ago(const Duration(days: 1)),
+      'category': 'Campus',
+      'imageUrl': _image('town-hall'),
+      'eventStartsAt': _ahead(const Duration(days: 18)),
+      'eventLocation': 'Student Union Auditorium',
+    },
+    {
+      'id': 'mock-event-5',
+      'title': 'Inaugural Lecture: Data, Health and the Nigerian Hospital',
+      'summary': 'The Faculty of Computing presents its first inaugural.',
+      'body':
+          'The Faculty of Computing presents its first inaugural lecture, on '
+          'how hospital data can shorten waiting times. Open to all.',
+      'type': 'Event',
+      'status': 'Published',
+      'urgency': 'Normal',
+      'sourceType': 'Official',
+      'sourceName': 'Faculty of Computing',
+      'publishedAt': _ago(const Duration(days: 6)),
+      'category': 'Health',
+      'imageUrl': _image('inaugural-lecture'),
+      'eventStartsAt': _ahead(const Duration(days: 21)),
+      'eventLocation': 'University Main Auditorium',
+    },
+    {
+      'id': 'mock-event-6',
+      'title': 'Inter-Faculty Football Final',
+      'summary': 'Computing take on Law for the trophy.',
+      'body':
+          'Computing take on Law for the inter-faculty trophy. Kick-off at '
+          '4pm; come early for seats.',
+      'type': 'Event',
+      'status': 'Published',
+      'urgency': 'Normal',
+      'sourceType': 'External',
+      'sourceName': 'Sports Council',
+      'publishedAt': _ago(const Duration(days: 2)),
+      'category': 'Campus',
+      'imageUrl': _image('football-final'),
+      'eventStartsAt': _ahead(const Duration(days: 25)),
+      'eventLocation': 'University Sports Complex',
+    },
   ];
 }

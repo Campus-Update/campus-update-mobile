@@ -52,6 +52,9 @@ abstract final class Routes {
 
   /// An article opened from home.
   static String homeArticle(String id) => '$home/news/$id';
+
+  /// An event opened from home.
+  static String homeEvent(String id) => '$home/events/$id';
   static const news = '/news';
   static const newsSearch = '/news/search';
   static const announcements = '/announcements';
@@ -211,6 +214,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'news/:id',
                     builder: (_, s) =>
                         NewsDetailScreen(id: s.pathParameters['id']!),
+                  ),
+                  GoRoute(
+                    path: 'events/:id',
+                    builder: (_, s) =>
+                        EventDetailScreen(id: s.pathParameters['id']!),
                   ),
                 ],
               ),

@@ -742,6 +742,7 @@ class _UpcomingEventsSection extends ConsumerWidget {
             // extraction is pixel-for-pixel.
             footerGap: 4,
             footer: ContentCardMeta(_eventMeta(item)),
+            onTap: () => context.push(Routes.homeEvent(item.id)),
           ),
         ),
       ],

@@ -3,6 +3,7 @@ import 'package:campus_update/core/auth/auth_repository.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/network/api_exception.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
+import 'package:campus_update/features/events/presentation/screens/event_detail_screen.dart';
 import 'package:campus_update/features/home/presentation/screens/home_screen.dart';
 import 'package:campus_update/features/news/presentation/screens/news_detail_screen.dart';
 import 'package:campus_update/features/profile/data/profile_repository.dart';
@@ -223,6 +224,41 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(NewsDetailScreen), findsNothing);
     expect(find.byType(HomeScreen), findsOneWidget);
+  });
+
+  testWidgets('a home event card opens the event inside the Home tab', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final card = find.text('Matriculation ceremony for the 2025/2026 session');
+    await tester.ensureVisible(card);
+    await tester.pumpAndSettle();
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EventDetailScreen), findsOneWidget);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      0,
+    );
   });
 
   testWidgets('See all switches to the News and Events tabs', (tester) async {
