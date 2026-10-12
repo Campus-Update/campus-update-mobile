@@ -5,8 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../../../shared/domain/content_item.dart';
+import '../../../../shared/utils/date_format.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../../profile/data/profile_providers.dart';
+import '../../data/home_feed_providers.dart';
 
 /// The central landing screen matching the UI design specification.
 class HomeScreen extends ConsumerWidget {
@@ -50,8 +54,9 @@ class HomeScreen extends ConsumerWidget {
               ] else ...[
                 const SizedBox(height: AppSpacing.md),
               ],
+              // Carries its own gap below, so nothing is left behind when
+              // there is no breaking news.
               const _BreakingNewsSection(),
-              const SizedBox(height: AppSpacing.xl),
               const _LatestNewsSection(),
               const SizedBox(height: AppSpacing.xl),
               const _UpcomingEventsSection(),
@@ -466,40 +471,22 @@ class _LiveUpdatesBadge extends StatelessWidget {
 /// is a flat composite with its headline already drawn into the picture, so
 /// the card suppresses its own caption for it; once the feed API supplies bare
 /// photographs every card will draw [title] and [excerpt] over the image.
-typedef _BreakingItem = ({String title, String excerpt, String? image});
 
-/// Breaking news banner.
+/// Breaking news banner: the urgent items from the feed.
 ///
 /// The design shows a swipeable stack — a 'Swipe' hint sits in the top-right
-/// of the hero — so this is a [PageView]. The second and third items are
-/// placeholders in the same spirit as the rest of this screen; they go when
-/// the feed API lands.
-class _BreakingNewsSection extends StatefulWidget {
+/// of the hero — so this is a [PageView]. With nothing urgent, or while the
+/// feed loads or fails, the whole section stays out of the way rather than
+/// showing an empty hero.
+class _BreakingNewsSection extends ConsumerStatefulWidget {
   const _BreakingNewsSection();
 
   @override
-  State<_BreakingNewsSection> createState() => _BreakingNewsSectionState();
+  ConsumerState<_BreakingNewsSection> createState() =>
+      _BreakingNewsSectionState();
 }
 
-class _BreakingNewsSectionState extends State<_BreakingNewsSection> {
-  static const List<_BreakingItem> _items = [
-    (
-      title: 'Major Infrastructure Overhaul Announced for North Campus',
-      excerpt: 'The university administration has unveiled a comprehensi...',
-      image: 'assets/images/breaking_news.png',
-    ),
-    (
-      title: 'Senate Approves Revised Academic Calendar for 2025/2026',
-      excerpt: 'Lectures resume a fortnight earlier than previously plan...',
-      image: null,
-    ),
-    (
-      title: 'Campus Clinic Extends Opening Hours Through Exam Week',
-      excerpt: 'The health centre stays open until 10pm from Monday to F...',
-      image: null,
-    ),
-  ];
-
+class _BreakingNewsSectionState extends ConsumerState<_BreakingNewsSection> {
   final _controller = PageController();
 
   @override
@@ -510,6 +497,9 @@ class _BreakingNewsSectionState extends State<_BreakingNewsSection> {
 
   @override
   Widget build(BuildContext context) {
+    final items = ref.watch(breakingNewsProvider).value ?? const [];
+    if (items.isEmpty) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -521,15 +511,16 @@ class _BreakingNewsSectionState extends State<_BreakingNewsSection> {
           child: PageView(
             controller: _controller,
             children: [
-              for (var i = 0; i < _items.length; i++)
+              for (var i = 0; i < items.length; i++)
                 _BreakingNewsCard(
-                  item: _items[i],
+                  item: items[i],
                   // Nothing left to swipe to on the last card.
-                  showSwipeHint: i < _items.length - 1,
+                  showSwipeHint: i < items.length - 1,
                 ),
             ],
           ),
         ),
+        const SizedBox(height: AppSpacing.xl),
       ],
     );
   }
@@ -538,7 +529,7 @@ class _BreakingNewsSectionState extends State<_BreakingNewsSection> {
 class _BreakingNewsCard extends StatelessWidget {
   const _BreakingNewsCard({required this.item, required this.showSwipeHint});
 
-  final _BreakingItem item;
+  final ContentItem item;
   final bool showSwipeHint;
 
   /// Inset of the swipe hint from the top-right corner, measured ~28pt.
@@ -546,7 +537,7 @@ class _BreakingNewsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final image = item.image;
+    final image = item.imageUrl;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
@@ -554,7 +545,7 @@ class _BreakingNewsCard extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           if (image != null)
-            Image.asset(image, fit: BoxFit.cover, errorBuilder: _fallback)
+            Image.network(image, fit: BoxFit.cover, errorBuilder: _fallback)
           else
             _fallback(context, null, null),
           if (image == null) _Caption(item: item),
@@ -591,7 +582,7 @@ class _BreakingNewsCard extends StatelessWidget {
 class _Caption extends StatelessWidget {
   const _Caption({required this.item});
 
-  final _BreakingItem item;
+  final ContentItem item;
 
   @override
   Widget build(BuildContext context) {
@@ -657,22 +648,12 @@ class _SwipeHint extends StatelessWidget {
   }
 }
 
-/// Latest News section with list of articles.
-class _LatestNewsSection extends StatelessWidget {
+/// Latest News section: the newest news items from the feed.
+class _LatestNewsSection extends ConsumerWidget {
   const _LatestNewsSection();
 
-  static const _newsItems = [
-    (
-      category: 'Campus',
-      title:
-          'FOCIT introduces machine learning elective for 400 level students',
-    ),
-    (category: 'General', title: 'New Library Wing Opens Ahead of Schedule'),
-    (category: 'Technology', title: 'New Library Wing Opens Ahead of Schedule'),
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -681,44 +662,28 @@ class _LatestNewsSection extends StatelessWidget {
           onAction: () => context.push(Routes.news),
         ),
         const SizedBox(height: 14),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _newsItems.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 16),
-          itemBuilder: (context, index) {
-            final item = _newsItems[index];
-            return ContentCard(
-              label: item.category,
-              title: item.title,
-              footer: const ContentCardAction('READ MORE'),
-            );
-          },
+        _SectionFeed(
+          items: ref.watch(latestNewsProvider),
+          emptyMessage: 'No news yet.',
+          onRetry: () => ref.invalidate(latestNewsProvider),
+          itemBuilder: (item) => ContentCard(
+            label: item.label,
+            title: item.title,
+            imageUrl: item.imageUrl,
+            footer: const ContentCardAction('READ MORE'),
+          ),
         ),
       ],
     );
   }
 }
 
-/// Upcoming Events section with event schedule cards.
-class _UpcomingEventsSection extends StatelessWidget {
+/// Upcoming Events section: the next events from the feed.
+class _UpcomingEventsSection extends ConsumerWidget {
   const _UpcomingEventsSection();
 
-  static const _events = [
-    (
-      tag: 'Official event',
-      title: 'New Library Wing Opens Ahead of Schedule',
-      meta: 'Mon 21 September · Main Auditorium',
-    ),
-    (
-      tag: 'Official event',
-      title: 'Matriculation ceremony for the 2025/2026 session',
-      meta: 'Fri 25 September · University Sports Complex',
-    ),
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -727,24 +692,75 @@ class _UpcomingEventsSection extends StatelessWidget {
           onAction: () => context.push(Routes.events),
         ),
         const SizedBox(height: 14),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _events.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 16),
-          itemBuilder: (context, index) {
-            final event = _events[index];
-            return ContentCard(
-              label: event.tag,
-              title: event.title,
-              // Shipped with 4 here and 6 on Latest News; kept so the
-              // extraction is pixel-for-pixel.
-              footerGap: 4,
-              footer: ContentCardMeta(event.meta),
-            );
-          },
+        _SectionFeed(
+          items: ref.watch(upcomingEventsProvider),
+          emptyMessage: 'No upcoming events.',
+          onRetry: () => ref.invalidate(upcomingEventsProvider),
+          itemBuilder: (item) => ContentCard(
+            label: item.label,
+            title: item.title,
+            imageUrl: item.imageUrl,
+            // Shipped with 4 here and 6 on Latest News; kept so the
+            // extraction is pixel-for-pixel.
+            footerGap: 4,
+            footer: ContentCardMeta(_eventMeta(item)),
+          ),
         ),
       ],
+    );
+  }
+
+  /// 'Mon 21 September · Main Auditorium'.
+  ///
+  /// The API does not return an event's date or place yet, so until it does
+  /// this falls back to who published it.
+  static String _eventMeta(ContentItem item) {
+    final startsAt = item.eventStartsAt;
+    final parts = [
+      if (startsAt != null) AppDateFormat.weekdayDay(startsAt),
+      if (item.eventLocation != null) item.eventLocation!,
+    ];
+    return parts.isEmpty ? (item.sourceName ?? '') : parts.join(' · ');
+  }
+}
+
+/// A home section's list, with its loading, failed and empty states.
+class _SectionFeed extends StatelessWidget {
+  const _SectionFeed({
+    required this.items,
+    required this.emptyMessage,
+    required this.onRetry,
+    required this.itemBuilder,
+  });
+
+  final AsyncValue<List<ContentItem>> items;
+  final String emptyMessage;
+  final VoidCallback onRetry;
+  final Widget Function(ContentItem item) itemBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    return items.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+        child: Loader(),
+      ),
+      error: (error, _) => ErrorState(
+        message: error is ApiException
+            ? error.message
+            : 'Something went wrong. Please try again.',
+        onRetry: onRetry,
+      ),
+      data: (list) => list.isEmpty
+          ? EmptyState(message: emptyMessage)
+          : ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: list.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (context, index) => itemBuilder(list[index]),
+            ),
     );
   }
 }

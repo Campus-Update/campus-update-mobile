@@ -12,6 +12,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/fake_feed_repository.dart';
+
 /// Stands in for the real repository so a test that drives the login screen
 /// does not reach the deployed API. Without it these tests make a live network
 /// call, which is slow, flaky, and fails against a server that has never heard
@@ -73,6 +75,7 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -88,6 +91,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -112,6 +116,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -153,6 +158,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -180,6 +186,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -224,6 +231,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -292,6 +300,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -339,6 +348,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -379,6 +389,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -416,6 +427,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -479,6 +491,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(
           _FakeProfileRepository(
@@ -522,6 +535,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -550,6 +564,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -590,6 +605,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -617,6 +633,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],

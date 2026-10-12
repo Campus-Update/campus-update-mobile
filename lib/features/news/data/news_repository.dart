@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/data/feed_repository.dart';
+import '../../../shared/domain/content_item.dart';
 import '../../../shared/domain/content_source.dart';
+import '../../../shared/utils/date_format.dart';
 import '../domain/news_item.dart';
 
 abstract class NewsRepository {
@@ -195,9 +198,58 @@ class MockNewsRepository implements NewsRepository {
   }
 }
 
+/// News from `GET /api/v1/feed?type=News`.
+///
+/// The API has no bookmark endpoint, so bookmarks live in memory for the
+/// session and are lost on restart.
+class ApiNewsRepository implements NewsRepository {
+  ApiNewsRepository(this._feed);
+
+  final FeedRepository _feed;
+  final _bookmarked = <String>{};
+
+  /// [category] is ignored: the API has no category to filter on yet, and the
+  /// list screen filters what comes back.
+  @override
+  Future<List<NewsItem>> getNews({String? category, String? query}) async {
+    final items = await _feed.feed(type: ContentType.news, search: query);
+    return items.map(_toNewsItem).toList();
+  }
+
+  @override
+  Future<NewsItem?> getNewsById(String id) async =>
+      _toNewsItem(await _feed.item(id));
+
+  @override
+  Future<void> toggleBookmark(String id) async {
+    if (!_bookmarked.remove(id)) _bookmarked.add(id);
+  }
+
+  NewsItem _toNewsItem(ContentItem item) {
+    final publishedAt = item.publishedAt;
+    return NewsItem(
+      id: item.id,
+      title: item.title,
+      category: item.label,
+      summary: item.excerpt,
+      body: item.body,
+      imageUrl: item.imageUrl,
+      timeAgo: publishedAt == null
+          ? 'Recent update'
+          : AppDateFormat.relative(publishedAt),
+      publishedAt: publishedAt,
+      isBookmarked: _bookmarked.contains(item.id),
+      author: item.sourceName ?? 'Campus Update Staff',
+      source: item.source,
+    );
+  }
+}
+
 /// Provider for the [NewsRepository].
+///
+/// Tests override this with [MockNewsRepository].
 final newsRepositoryProvider = Provider<NewsRepository>((ref) {
-  return MockNewsRepository();
+  return ApiNewsRepository(ref.watch(feedRepositoryProvider));
 });
 
 /// State notifier managing selected news category filter.

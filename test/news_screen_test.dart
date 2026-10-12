@@ -1,6 +1,7 @@
 import 'package:campus_update/app/app.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
+import 'package:campus_update/features/news/data/news_repository.dart';
 import 'package:campus_update/features/news/presentation/screens/news_detail_screen.dart';
 import 'package:campus_update/features/news/presentation/screens/news_list_screen.dart';
 import 'package:campus_update/features/news/presentation/screens/news_search_screen.dart';
@@ -9,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'support/fake_feed_repository.dart';
 
 void main() {
   late SharedPreferences prefs;
@@ -22,7 +25,11 @@ void main() {
     'navigating to news section displays the News screen matching design',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
+          newsRepositoryProvider.overrideWithValue(MockNewsRepository()),
+        ],
       );
       addTearDown(container.dispose);
       container.read(authProvider.notifier).signedIn();
@@ -78,7 +85,11 @@ void main() {
 
   testWidgets('filtering news by category updates news list', (tester) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
+        newsRepositoryProvider.overrideWithValue(MockNewsRepository()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
@@ -106,7 +117,11 @@ void main() {
 
   testWidgets('tapping bookmark icon toggles bookmark state', (tester) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
+        newsRepositoryProvider.overrideWithValue(MockNewsRepository()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
@@ -138,7 +153,11 @@ void main() {
     tester,
   ) async {
     final container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        fakeFeedOverride,
+        newsRepositoryProvider.overrideWithValue(MockNewsRepository()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(authProvider.notifier).signedIn();
@@ -175,7 +194,11 @@ void main() {
     'toggling search, typing unmatched query shows empty state, and clear restores list',
     (tester) async {
       final container = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
+          newsRepositoryProvider.overrideWithValue(MockNewsRepository()),
+        ],
       );
       addTearDown(container.dispose);
       container.read(authProvider.notifier).signedIn();
