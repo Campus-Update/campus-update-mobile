@@ -4,7 +4,6 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../domain/event_item.dart';
-import 'event_image.dart';
 
 class FeaturedEventCard extends StatelessWidget {
   const FeaturedEventCard({
