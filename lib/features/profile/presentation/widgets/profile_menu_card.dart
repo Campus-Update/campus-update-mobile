@@ -15,10 +15,7 @@ class ProfileMenuItem {
 }
 
 class ProfileMenuCard extends StatelessWidget {
-  const ProfileMenuCard({
-    super.key,
-    required this.items,
-  });
+  const ProfileMenuCard({super.key, required this.items});
 
   final List<ProfileMenuItem> items;
 
@@ -36,11 +33,7 @@ class ProfileMenuCard extends StatelessWidget {
         children: [
           for (int i = 0; i < items.length; i++) ...[
             if (i > 0)
-              const Divider(
-                height: 1,
-                thickness: 1,
-                color: Color(0xFFF3F4F6),
-              ),
+              const Divider(height: 1, thickness: 1, color: Color(0xFFF3F4F6)),
             _MenuRowItem(item: items[i]),
           ],
         ],
@@ -75,11 +68,7 @@ class _MenuRowItem extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(
-                item.trailingIcon,
-                size: 20,
-                color: const Color(0xFF9CA3AF),
-              ),
+              Icon(item.trailingIcon, size: 20, color: const Color(0xFF9CA3AF)),
             ],
           ),
         ),

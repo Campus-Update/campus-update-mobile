@@ -38,38 +38,45 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final inst = defaultLeadCityUniversity;
 
     if (profile?.facultyId != null || profile?.facultyName != null) {
-      _selectedFaculty = inst.faculties.where(
-        (f) =>
-            f.id == profile?.facultyId ||
-            f.name == profile?.facultyName,
-      ).firstOrNull;
+      _selectedFaculty = inst.faculties
+          .where(
+            (f) => f.id == profile?.facultyId || f.name == profile?.facultyName,
+          )
+          .firstOrNull;
     }
 
     if (_selectedFaculty != null &&
         (profile?.departmentId != null || profile?.departmentName != null)) {
-      _selectedDepartment = _selectedFaculty!.departments.where(
-        (d) =>
-            d.id == profile?.departmentId ||
-            d.name == profile?.departmentName,
-      ).firstOrNull;
+      _selectedDepartment = _selectedFaculty!.departments
+          .where(
+            (d) =>
+                d.id == profile?.departmentId ||
+                d.name == profile?.departmentName,
+          )
+          .firstOrNull;
     }
 
     if (_selectedDepartment != null &&
         (profile?.programmeId != null || profile?.programmeName != null)) {
-      _selectedProgramme = _selectedDepartment!.programmes.where(
-        (p) =>
-            p.id == profile?.programmeId ||
-            p.name == profile?.programmeName,
-      ).firstOrNull;
+      _selectedProgramme = _selectedDepartment!.programmes
+          .where(
+            (p) =>
+                p.id == profile?.programmeId ||
+                p.name == profile?.programmeName,
+          )
+          .firstOrNull;
     }
 
     if (_selectedProgramme != null &&
-        (profile?.academicLevelId != null || profile?.academicLevelName != null)) {
-      _selectedLevel = _selectedProgramme!.levels.where(
-        (l) =>
-            l.id == profile?.academicLevelId ||
-            l.name == profile?.academicLevelName,
-      ).firstOrNull;
+        (profile?.academicLevelId != null ||
+            profile?.academicLevelName != null)) {
+      _selectedLevel = _selectedProgramme!.levels
+          .where(
+            (l) =>
+                l.id == profile?.academicLevelId ||
+                l.name == profile?.academicLevelName,
+          )
+          .firstOrNull;
     }
   }
 
@@ -99,7 +106,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     final institution = _resolveInstitution();
 
-    await ref.read(userProfileProvider.notifier).updateProfile(
+    await ref
+        .read(userProfileProvider.notifier)
+        .updateProfile(
           firstName: firstName,
           lastName: lastName,
           institutionId: institution.id,

@@ -41,10 +41,26 @@ final defaultLeadCityUniversity = Institution(
               name: 'Computer Science',
               code: 'CS',
               levels: [
-                AcademicLevel(id: 'lvl-cs-100', name: '100 Level', sortOrder: 100),
-                AcademicLevel(id: 'lvl-cs-200', name: '200 Level', sortOrder: 200),
-                AcademicLevel(id: 'lvl-cs-300', name: '300 Level', sortOrder: 300),
-                AcademicLevel(id: 'lvl-cs-400', name: '400 Level', sortOrder: 400),
+                AcademicLevel(
+                  id: 'lvl-cs-100',
+                  name: '100 Level',
+                  sortOrder: 100,
+                ),
+                AcademicLevel(
+                  id: 'lvl-cs-200',
+                  name: '200 Level',
+                  sortOrder: 200,
+                ),
+                AcademicLevel(
+                  id: 'lvl-cs-300',
+                  name: '300 Level',
+                  sortOrder: 300,
+                ),
+                AcademicLevel(
+                  id: 'lvl-cs-400',
+                  name: '400 Level',
+                  sortOrder: 400,
+                ),
               ],
             ),
           ],

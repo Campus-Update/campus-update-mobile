@@ -42,10 +42,7 @@ class DashedBorderPainter extends CustomPainter {
       double distance = 0.0;
       while (distance < metric.length) {
         final length = min(dashLength, metric.length - distance);
-        canvas.drawPath(
-          metric.extractPath(distance, distance + length),
-          paint,
-        );
+        canvas.drawPath(metric.extractPath(distance, distance + length), paint);
         distance += dashLength + gapLength;
       }
     }
@@ -81,10 +78,7 @@ class DashedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: DashedBorderPainter(
-        color: borderColor,
-        radius: radius,
-      ),
+      painter: DashedBorderPainter(color: borderColor, radius: radius),
       child: Container(
         padding: padding,
         decoration: BoxDecoration(

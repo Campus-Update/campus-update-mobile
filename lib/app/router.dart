@@ -219,10 +219,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.changePassword,
         builder: (_, __) => const ChangePasswordScreen(),
       ),
-      GoRoute(
-        path: Routes.support,
-        builder: (_, __) => const SupportScreen(),
-      ),
+      GoRoute(path: Routes.support, builder: (_, __) => const SupportScreen()),
 
       StatefulShellRoute.indexedStack(
         builder: (_, __, shell) => _TabShell(shell: shell),

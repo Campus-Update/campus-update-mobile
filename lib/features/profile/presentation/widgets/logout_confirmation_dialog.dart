@@ -19,9 +19,7 @@ class LogoutConfirmationDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       alignment: Alignment.bottomCenter,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       elevation: 0,
       backgroundColor: Colors.white,
       insetPadding: const EdgeInsets.fromLTRB(20, 0, 20, 36),
@@ -54,9 +52,7 @@ class LogoutConfirmationDialog extends StatelessWidget {
                         color: Color(0xFFDC2626),
                         shape: BoxShape.circle,
                       ),
-                      child: const Center(
-                        child: _WarningTriangleInfoIcon(),
-                      ),
+                      child: const Center(child: _WarningTriangleInfoIcon()),
                     ),
                   ),
                 ),

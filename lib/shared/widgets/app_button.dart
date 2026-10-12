@@ -108,10 +108,7 @@ class AppButton extends StatelessWidget {
   BoxDecoration _decoration(ColorScheme scheme) {
     final radius = BorderRadius.circular(_radius);
     if (backgroundColor != null) {
-      return BoxDecoration(
-        color: backgroundColor,
-        borderRadius: radius,
-      );
+      return BoxDecoration(color: backgroundColor, borderRadius: radius);
     }
     return switch (variant) {
       AppButtonVariant.primary => BoxDecoration(

@@ -37,9 +37,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   bool get _hasLowercase =>
       _newPasswordController.text.contains(RegExp(r'[a-z]'));
   bool get _hasNumber => _newPasswordController.text.contains(RegExp(r'[0-9]'));
-  bool get _hasSpecialChar => _newPasswordController.text.contains(
-        RegExp(r'[!@#$%^&*(),.?":{}|<>]'),
-      );
+  bool get _hasSpecialChar =>
+      _newPasswordController.text.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
   bool get _passwordsMatch =>
       _confirmPasswordController.text.isNotEmpty &&
       _confirmPasswordController.text == _newPasswordController.text;

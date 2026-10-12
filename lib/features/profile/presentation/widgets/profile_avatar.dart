@@ -71,20 +71,20 @@ class ProfileAvatar extends StatelessWidget {
       backgroundImage: imageProvider,
       child: imageProvider == null
           ? (_resolvedInitials.isNotEmpty
-              ? Text(
-                  _resolvedInitials,
-                  style: TextStyle(
-                    fontFamily: AppFonts.family,
-                    fontSize: radius * 0.52,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF4F46E5),
-                  ),
-                )
-              : Icon(
-                  Icons.person_rounded,
-                  size: radius * 1.1,
-                  color: const Color(0xFF9CA3AF),
-                ))
+                ? Text(
+                    _resolvedInitials,
+                    style: TextStyle(
+                      fontFamily: AppFonts.family,
+                      fontSize: radius * 0.52,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF4F46E5),
+                    ),
+                  )
+                : Icon(
+                    Icons.person_rounded,
+                    size: radius * 1.1,
+                    color: const Color(0xFF9CA3AF),
+                  ))
           : null,
     );
 
@@ -95,10 +95,7 @@ class ProfileAvatar extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        GestureDetector(
-          onTap: onEditPhoto,
-          child: avatar,
-        ),
+        GestureDetector(onTap: onEditPhoto, child: avatar),
         Positioned(
           right: 0,
           bottom: 0,

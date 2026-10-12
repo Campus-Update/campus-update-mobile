@@ -307,7 +307,9 @@ class SupportScreen extends StatelessWidget {
                     Clipboard.setData(ClipboardData(text: handle));
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('$platform handle copied: $handle')),
+                      SnackBar(
+                        content: Text('$platform handle copied: $handle'),
+                      ),
                     );
                   },
                 ),
@@ -494,10 +496,7 @@ class _SupportOptionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFF3F4F6),
-          width: 1.2,
-        ),
+        border: Border.all(color: const Color(0xFFF3F4F6), width: 1.2),
         boxShadow: const [
           BoxShadow(
             color: Color(0x06000000),
@@ -548,10 +547,7 @@ class _SupportOptionCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (badge != null) ...[
-                        const SizedBox(width: 6),
-                        badge!,
-                      ],
+                      if (badge != null) ...[const SizedBox(width: 6), badge!],
                     ],
                   ),
                 ),
@@ -675,10 +671,7 @@ class _InstagramVectorIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(18, 18),
-      painter: _InstagramPainter(),
-    );
+    return CustomPaint(size: const Size(18, 18), painter: _InstagramPainter());
   }
 }
 
@@ -721,10 +714,7 @@ class _XTwitterVectorIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(18, 18),
-      painter: _XTwitterPainter(),
-    );
+    return CustomPaint(size: const Size(18, 18), painter: _XTwitterPainter());
   }
 }
 
@@ -771,10 +761,7 @@ class _WhatsAppVectorIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(18, 18),
-      painter: _WhatsAppPainter(),
-    );
+    return CustomPaint(size: const Size(18, 18), painter: _WhatsAppPainter());
   }
 }
 

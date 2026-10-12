@@ -6,12 +6,9 @@ import '../../../../shared/widgets/screen_header.dart';
 
 /// Top bar used across profile screens: delegates to the shared [ScreenHeader]
 /// with circular back button treatment.
-class ProfileScreenHeader extends StatelessWidget implements PreferredSizeWidget {
-  const ProfileScreenHeader({
-    super.key,
-    required this.title,
-    this.onBack,
-  });
+class ProfileScreenHeader extends StatelessWidget
+    implements PreferredSizeWidget {
+  const ProfileScreenHeader({super.key, required this.title, this.onBack});
 
   final String title;
   final VoidCallback? onBack;
@@ -24,7 +21,8 @@ class ProfileScreenHeader extends StatelessWidget implements PreferredSizeWidget
     return ScreenHeader(
       title: title,
       useCircleButton: true,
-      onBack: onBack ??
+      onBack:
+          onBack ??
           () {
             if (context.canPop()) {
               context.pop();

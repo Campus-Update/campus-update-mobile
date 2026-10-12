@@ -67,17 +67,15 @@ class SettingsScreen extends ConsumerWidget {
                           _SettingsSwitchRow(
                             title: 'Two-Factor Authentication',
                             value: prefs.twoFactorAuth,
-                            onChanged: (val) => notifier.updatePreferences(
-                              twoFactorAuth: val,
-                            ),
+                            onChanged: (val) =>
+                                notifier.updatePreferences(twoFactorAuth: val),
                           ),
                           const SizedBox(height: 12),
                           _SettingsSwitchRow(
                             title: 'Pass-key',
                             value: prefs.passKey,
-                            onChanged: (val) => notifier.updatePreferences(
-                              passKey: val,
-                            ),
+                            onChanged: (val) =>
+                                notifier.updatePreferences(passKey: val),
                           ),
                           const SizedBox(height: 16),
                           AppButton(
@@ -150,8 +148,9 @@ class SettingsScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     GestureDetector(
                       onTap: () async {
-                        final confirmed =
-                            await LogoutConfirmationDialog.show(context);
+                        final confirmed = await LogoutConfirmationDialog.show(
+                          context,
+                        );
                         if (confirmed == true && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(

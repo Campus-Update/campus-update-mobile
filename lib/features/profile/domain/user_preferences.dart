@@ -1,7 +1,4 @@
-enum FeedPreferenceMode {
-  personalized,
-  allCampus,
-}
+enum FeedPreferenceMode { personalized, allCampus }
 
 class UserPreferences {
   const UserPreferences({
@@ -39,13 +36,13 @@ class UserPreferences {
   }
 
   Map<String, dynamic> toJson() => {
-        'feedMode': feedMode.name,
-        'emergencyAlerts': emergencyAlerts,
-        'dailyNewsDigest': dailyNewsDigest,
-        'pushNotification': pushNotification,
-        'twoFactorAuth': twoFactorAuth,
-        'passKey': passKey,
-      };
+    'feedMode': feedMode.name,
+    'emergencyAlerts': emergencyAlerts,
+    'dailyNewsDigest': dailyNewsDigest,
+    'pushNotification': pushNotification,
+    'twoFactorAuth': twoFactorAuth,
+    'passKey': passKey,
+  };
 
   factory UserPreferences.fromJson(Map<String, dynamic> json) {
     return UserPreferences(
