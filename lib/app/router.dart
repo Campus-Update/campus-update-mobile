@@ -19,6 +19,7 @@ import '../features/auth/presentation/screens/select_school_screen.dart';
 import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/auth/presentation/screens/verify_otp_screen.dart';
+import '../features/calendar/presentation/screens/calendar_detail_screen.dart';
 import '../features/calendar/presentation/screens/calendar_screen.dart';
 import '../features/events/presentation/screens/event_detail_screen.dart';
 import '../features/events/presentation/screens/events_list_screen.dart';
@@ -99,11 +100,14 @@ class _AuthListenable extends ChangeNotifier {
   }
 }
 
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = _AuthListenable(ref);
   ref.onDispose(refresh.dispose);
 
   return GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: Routes.splash,
     refreshListenable: refresh,
     redirect: (context, state) {
@@ -265,6 +269,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: ':id',
+                    parentNavigatorKey: _rootNavigatorKey,
                     builder: (_, s) =>
                         NewsDetailScreen(id: s.pathParameters['id']!),
                   ),
@@ -280,6 +285,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: ':id',
+                    parentNavigatorKey: _rootNavigatorKey,
                     builder: (_, s) =>
                         EventDetailScreen(id: s.pathParameters['id']!),
                   ),
@@ -292,6 +298,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: Routes.calendar,
                 builder: (_, __) => const CalendarScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (_, s) =>
+                        CalendarDetailScreen(id: s.pathParameters['id']!),
+                  ),
+                ],
               ),
             ],
           ),

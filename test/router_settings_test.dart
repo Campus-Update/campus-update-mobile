@@ -9,6 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/fake_feed_repository.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -20,6 +22,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         prefsStorageProvider.overrideWithValue(storage),
+        fakeFeedOverride,
         schoolsProvider.overrideWith(
           (ref) => Future.value([defaultLeadCityUniversity]),
         ),

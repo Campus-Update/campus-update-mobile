@@ -6,7 +6,6 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../data/events_repository.dart';
-import '../widgets/event_image.dart';
 
 class EventDetailScreen extends ConsumerWidget {
   const EventDetailScreen({super.key, required this.id});
