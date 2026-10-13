@@ -249,53 +249,54 @@ void main() {
     expect(find.byType(AlertCard), findsNWidgets(4));
   });
 
-  testWidgets('search filters alerts and shows result counter banner and footer', (
-    tester,
-  ) async {
-    final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        feedRepositoryProvider.overrideWithValue(
-          _FakeAnnouncementsFeedRepository(),
+  testWidgets(
+    'search filters alerts and shows result counter banner and footer',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          feedRepositoryProvider.overrideWithValue(
+            _FakeAnnouncementsFeedRepository(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(authProvider.notifier).signedIn();
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const CampusUpdateApp(),
         ),
-      ],
-    );
-    addTearDown(container.dispose);
-    container.read(authProvider.notifier).signedIn();
+      );
+      await tester.pumpAndSettle();
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: const CampusUpdateApp(),
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.notifications_none_rounded));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.notifications_none_rounded));
-    await tester.pumpAndSettle();
+      // Open search
+      await tester.tap(find.byIcon(Icons.search));
+      await tester.pumpAndSettle();
 
-    // Open search
-    await tester.tap(find.byIcon(Icons.search));
-    await tester.pumpAndSettle();
+      expect(find.byType(AlertsSearchBar), findsOneWidget);
+      expect(find.text('Search by title, or keywords'), findsWidgets);
 
-    expect(find.byType(AlertsSearchBar), findsOneWidget);
-    expect(find.text('Search by title, or keywords'), findsWidgets);
+      // Enter query
+      await tester.enterText(find.byType(TextField), 'CSC 304');
+      await tester.pumpAndSettle();
 
-    // Enter query
-    await tester.enterText(find.byType(TextField), 'CSC 304');
-    await tester.pumpAndSettle();
+      // Result counter banner
+      expect(find.text('2 results for "CSC 304"'), findsOneWidget);
+      expect(find.byType(AlertCard), findsNWidgets(2));
 
-    // Result counter banner
-    expect(find.text('2 results for "CSC 304"'), findsOneWidget);
-    expect(find.byType(AlertCard), findsNWidgets(2));
+      // Clear search and cancel
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
 
-    // Clear search and cancel
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(AlertsSearchBar), findsNothing);
-    expect(find.byType(AlertCard), findsNWidgets(4));
-  });
+      expect(find.byType(AlertsSearchBar), findsNothing);
+      expect(find.byType(AlertCard), findsNWidgets(4));
+    },
+  );
 
   testWidgets('unmatched search query displays empty state', (tester) async {
     final container = ProviderContainer(
@@ -328,9 +329,6 @@ void main() {
 
     expect(find.byType(AlertsEmptyState), findsOneWidget);
     expect(find.text('No results found'), findsOneWidget);
-    expect(
-      find.text('Try a different search term or filter.'),
-      findsOneWidget,
-    );
+    expect(find.text('Try a different search term or filter.'), findsOneWidget);
   });
 }

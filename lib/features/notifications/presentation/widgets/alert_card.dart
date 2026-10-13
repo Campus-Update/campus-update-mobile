@@ -48,11 +48,7 @@ class AlertCard extends StatelessWidget {
             const SizedBox(height: 10),
 
             // Subtle divider spanning across card.
-            const Divider(
-              height: 1,
-              thickness: 1,
-              color: Color(0xFFE5E7EB),
-            ),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFE5E7EB)),
             const SizedBox(height: 10),
 
             // Alert title.

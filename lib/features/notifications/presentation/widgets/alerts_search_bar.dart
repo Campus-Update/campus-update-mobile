@@ -37,11 +37,7 @@ class AlertsSearchBar extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              child: Icon(
-                Icons.arrow_back,
-                size: 22,
-                color: Color(0xFF1F2937),
-              ),
+              child: Icon(Icons.arrow_back, size: 22, color: Color(0xFF1F2937)),
             ),
           ),
           const SizedBox(width: 10),
@@ -58,11 +54,7 @@ class AlertsSearchBar extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.search,
-                    size: 20,
-                    color: Color(0xFF6B7280),
-                  ),
+                  const Icon(Icons.search, size: 20, color: Color(0xFF6B7280)),
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
