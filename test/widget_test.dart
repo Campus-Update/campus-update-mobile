@@ -603,8 +603,9 @@ void main() {
       // Now on Edit details screen
       expect(find.text('Edit details'), findsOneWidget);
 
-      // Enter Full Name as 'Amara Okafor'
-      await tester.enterText(find.byType(EditableText).first, 'Amara Okafor');
+      // Enter the name as first and last
+      await tester.enterText(find.byType(EditableText).at(0), 'Amara');
+      await tester.enterText(find.byType(EditableText).at(1), 'Okafor');
       await tester.pumpAndSettle();
 
       // Tap 'Save changes'

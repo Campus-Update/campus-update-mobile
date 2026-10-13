@@ -15,6 +15,7 @@ import 'package:campus_update/features/profile/presentation/screens/profile_scre
 import 'package:campus_update/features/profile/presentation/screens/settings_screen.dart';
 import 'package:campus_update/features/profile/presentation/screens/support_screen.dart';
 import 'package:campus_update/features/profile/presentation/widgets/logout_confirmation_dialog.dart';
+import 'package:campus_update/shared/widgets/app_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -167,18 +168,17 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Edit details'), findsOneWidget);
-      expect(find.text('Full name'), findsOneWidget);
+      expect(find.text('First Name'), findsOneWidget);
+      expect(find.text('Last Name'), findsOneWidget);
       expect(find.text('Faculty'), findsOneWidget);
       expect(find.text('Department'), findsOneWidget);
       expect(find.text('Programme'), findsOneWidget);
       expect(find.text('Level'), findsOneWidget);
       expect(find.text('Save changes'), findsOneWidget);
 
-      // Enter a new name
-      await tester.enterText(
-        find.byType(EditableText).first,
-        'Jeremiah Alalade',
-      );
+      // Enter a new name, first and last separately
+      await tester.enterText(find.byType(EditableText).at(0), 'Jeremiah');
+      await tester.enterText(find.byType(EditableText).at(1), 'Alalade');
       await tester.pumpAndSettle();
 
       // Tap Save changes
@@ -192,6 +192,48 @@ void main() {
       expect(profile?.lastName, 'Alalade');
       expect(profile?.fullName, 'Jeremiah Alalade');
     });
+  });
+
+  group('EditProfileScreen names', () {
+    testWidgets(
+      'a two-word first name is kept whole, and Save waits for both',
+      (tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            prefsStorageProvider.overrideWithValue(storage),
+            schoolsProvider.overrideWith(
+              (ref) => Future.value([defaultLeadCityUniversity]),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(
+          createTestWidget(const EditProfileScreen(), container),
+        );
+        await tester.pumpAndSettle();
+
+        final names = find.byType(EditableText);
+        await tester.enterText(names.at(0), 'Mary Jane');
+        await tester.enterText(names.at(1), '');
+        await tester.pumpAndSettle();
+
+        final save = find.widgetWithText(AppButton, 'Save changes');
+        await tester.ensureVisible(save);
+        expect(tester.widget<AppButton>(save).onPressed, isNull);
+
+        await tester.enterText(names.at(1), 'Okafor');
+        await tester.pumpAndSettle();
+        expect(tester.widget<AppButton>(save).onPressed, isNotNull);
+
+        await tester.tap(save);
+        await tester.pumpAndSettle();
+
+        final profile = container.read(userProfileProvider);
+        expect(profile?.firstName, 'Mary Jane');
+        expect(profile?.lastName, 'Okafor');
+      },
+    );
   });
 
   group('PreferenceScreen', () {

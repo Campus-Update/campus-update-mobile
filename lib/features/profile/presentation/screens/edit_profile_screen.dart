@@ -22,7 +22,8 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
-  late final TextEditingController _fullNameController;
+  late final TextEditingController _firstName;
+  late final TextEditingController _lastName;
   Faculty? _selectedFaculty;
   Department? _selectedDepartment;
   Programme? _selectedProgramme;
@@ -38,8 +39,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void initState() {
     super.initState();
     final profile = ref.read(userProfileProvider);
-    final initialName = profile?.fullName ?? '';
-    _fullNameController = TextEditingController(text: initialName);
+    _firstName = TextEditingController(text: profile?.firstName ?? '');
+    _lastName = TextEditingController(text: profile?.lastName ?? '');
   }
 
   /// Sets the dropdowns to what the profile already holds, within [inst].
@@ -92,7 +93,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   void dispose() {
-    _fullNameController.dispose();
+    _firstName.dispose();
+    _lastName.dispose();
     super.dispose();
   }
 
@@ -110,9 +112,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (_busy) return;
     setState(() => _busy = true);
 
-    final parts = _fullNameController.text.trim().split(RegExp(r'\s+'));
-    final firstName = parts.first;
-    final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+    final firstName = _firstName.text.trim();
+    final lastName = _lastName.text.trim();
 
     final institution = _school();
     final notifier = ref.read(userProfileProvider.notifier);
@@ -195,12 +196,25 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   children: [
                     AppFormPanel(
                       children: [
+                        // Two fields, as on sign-up and in the API. One name
+                        // split on the first space guesses where the surname
+                        // starts, and guesses wrong for anyone with two given
+                        // names or a compound surname.
                         AppInput(
-                          label: 'Full name',
+                          label: 'First Name',
                           hint: 'Enter First Name',
-                          controller: _fullNameController,
+                          controller: _firstName,
+                          onChanged: (_) => setState(() {}),
                           textInputAction: TextInputAction.next,
-                          autofillHints: const [AutofillHints.name],
+                          autofillHints: const [AutofillHints.givenName],
+                        ),
+                        AppInput(
+                          label: 'Last Name',
+                          hint: 'Enter Last Name',
+                          controller: _lastName,
+                          onChanged: (_) => setState(() {}),
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.familyName],
                         ),
                         AppSelect<Faculty>(
                           label: 'Faculty',
@@ -254,7 +268,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     AppButton(
                       label: 'Save changes',
                       loading: _busy,
-                      onPressed: _saveChanges,
+                      // Both names are required, as on sign-up.
+                      onPressed:
+                          _firstName.text.trim().isEmpty ||
+                              _lastName.text.trim().isEmpty
+                          ? null
+                          : _saveChanges,
                     ),
                     const SizedBox(height: 24),
                   ],
