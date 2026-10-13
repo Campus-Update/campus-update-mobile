@@ -341,8 +341,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Active Alerts'), findsOneWidget);
-      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
 
       // Returned to Home

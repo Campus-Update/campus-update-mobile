@@ -82,7 +82,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final alertsAsync = ref.watch(alertsFeedProvider(_currentFilter));
-    final canPop = Navigator.of(context).canPop();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -92,26 +91,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           children: [
             // Top Header: Active Alerts title + subtitle + search icon.
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
+              padding: const EdgeInsets.fromLTRB(20, 16, 16, 12),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (canPop) ...[
-                    IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: AppColors.graphite,
-                      ),
-                      splashRadius: 22,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 32,
-                        minHeight: 32,
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,13 +134,6 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   ),
                 ],
               ),
-            ),
-
-            // Horizontal hairline divider below the header.
-            const Divider(
-              height: 1,
-              thickness: 1,
-              color: Color(0xFFE5E7EB),
             ),
 
             // Search Bar Row (shown when search is active).
