@@ -138,6 +138,27 @@ class UserProfileNotifier extends Notifier<UserProfile?> {
     await setProfile(chosen.mergedWith(saved));
   }
 
+  /// Saves the feed settings from Preferences and Settings with
+  /// `PUT /auth/academic-settings`, sending the academic IDs unchanged
+  /// alongside, since the endpoint replaces the whole set.
+  ///
+  /// Throws [ApiException] when the call fails.
+  Future<void> saveFeedSettings({
+    bool? allCampusFeed,
+    bool? pushNotificationsEnabled,
+  }) async {
+    final current = state;
+    if (current == null) return;
+    final wanted = current.copyWith(
+      allCampusFeed: allCampusFeed,
+      pushNotificationsEnabled: pushNotificationsEnabled,
+    );
+    final saved = await ref
+        .read(profileRepositoryProvider)
+        .updateAcademicSettings(wanted);
+    await setProfile(wanted.mergedWith(saved));
+  }
+
   Future<void> signIn({
     required String email,
     String? firstName,

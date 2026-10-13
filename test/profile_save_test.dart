@@ -73,6 +73,36 @@ Future<(ProviderContainer, _EchoAdapter)> _setUp() async {
 }
 
 void main() {
+  test(
+    'a feed setting sends the academic IDs and other switches unchanged',
+    () async {
+      final (container, adapter) = await _setUp();
+
+      await container
+          .read(userProfileProvider.notifier)
+          .saveFeedSettings(allCampusFeed: true);
+
+      final request = adapter.requests.single;
+      expect(request.method, 'PUT');
+      expect(request.path, '/api/v1/auth/academic-settings');
+      expect(request.body, {
+        'institutionId': 'osun',
+        'facultyId': 'f-comp',
+        'departmentId': 'd-cs',
+        'programmeId': 'p-bsc',
+        'academicLevelId': 'l-100',
+        'newsEnabled': true,
+        'announcementsEnabled': false,
+        'eventsEnabled': true,
+        'advertisementsEnabled': false,
+        'pushNotificationsEnabled': true,
+        'allCampusFeed': true,
+      });
+      expect(container.read(userProfileProvider)!.allCampusFeed, isTrue);
+      expect(container.read(userProfileProvider)!.facultyId, 'f-comp');
+    },
+  );
+
   test('Edit profile saves the name, then the academic choice', () async {
     final (container, adapter) = await _setUp();
 

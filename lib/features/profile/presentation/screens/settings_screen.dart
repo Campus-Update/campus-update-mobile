@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/network/api_exception.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
@@ -59,8 +61,9 @@ class SettingsScreen extends ConsumerWidget {
                           _SettingsSwitchRow(
                             title: 'Push Notification',
                             value: prefs.pushNotification,
-                            onChanged: (val) => notifier.updatePreferences(
-                              pushNotification: val,
+                            onChanged: (val) => _saveOrSay(
+                              context,
+                              notifier.updatePreferences(pushNotification: val),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -227,5 +230,18 @@ class _SettingsSwitchRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Waits for [save] and, if the API refused it, says so.
+Future<void> _saveOrSay(BuildContext context, Future<void> save) async {
+  try {
+    await save;
+  } on ApiException catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
+    }
   }
 }

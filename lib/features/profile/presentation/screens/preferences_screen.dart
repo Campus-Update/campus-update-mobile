@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/network/api_exception.dart';
+
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../data/preferences_provider.dart';
@@ -42,8 +44,11 @@ class PreferencesScreen extends ConsumerWidget {
                             'Institution-wide and urgent notices still always reach you.',
                         isSelected:
                             prefs.feedMode == FeedPreferenceMode.personalized,
-                        onTap: () => notifier.updatePreferences(
-                          feedMode: FeedPreferenceMode.personalized,
+                        onTap: () => _saveOrSay(
+                          context,
+                          notifier.updatePreferences(
+                            feedMode: FeedPreferenceMode.personalized,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -53,8 +58,11 @@ class PreferencesScreen extends ConsumerWidget {
                             'Everything published by your institution, whoever it was aimed at.',
                         isSelected:
                             prefs.feedMode == FeedPreferenceMode.allCampus,
-                        onTap: () => notifier.updatePreferences(
-                          feedMode: FeedPreferenceMode.allCampus,
+                        onTap: () => _saveOrSay(
+                          context,
+                          notifier.updatePreferences(
+                            feedMode: FeedPreferenceMode.allCampus,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -225,5 +233,18 @@ class _TogglePreferenceCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Waits for [save] and, if the API refused it, says so.
+Future<void> _saveOrSay(BuildContext context, Future<void> save) async {
+  try {
+    await save;
+  } on ApiException catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
+    }
   }
 }
