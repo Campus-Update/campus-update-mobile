@@ -23,11 +23,15 @@ class AccountInformationScreen extends ConsumerWidget {
 
     final firstName = user.firstName ?? '';
     final lastName = user.lastName ?? '';
-    final institution = user.institutionName ?? 'Lead City University';
-    final faculty = user.facultyName ?? '—';
-    final department = user.departmentName ?? '—';
-    final programme = user.programmeName ?? '—';
-    final level = user.academicLevelName ?? '—';
+    // Signed out, the screen shows the sample user, with that user's names.
+    final placement = profile == null
+        ? AcademicPlacement.stored(user)
+        : ref.watch(academicPlacementProvider);
+    final institution = placement.institution ?? '—';
+    final faculty = placement.faculty ?? '—';
+    final department = placement.department ?? '—';
+    final programme = placement.programme ?? '—';
+    final level = placement.level ?? '—';
 
     return Scaffold(
       backgroundColor: Colors.white,

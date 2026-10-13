@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_feed_repository.dart';
+import 'support/fake_schools.dart';
 
 /// Stands in for the real repository so a test that drives the login screen
 /// does not reach the deployed API. Without it these tests make a live network
@@ -79,6 +80,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -95,6 +97,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -120,6 +123,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -162,6 +166,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -190,6 +195,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -233,6 +239,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -266,6 +273,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -312,6 +320,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -357,6 +366,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -426,6 +436,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -474,6 +485,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -515,6 +527,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -553,6 +566,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -618,6 +632,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(
           _FakeProfileRepository(
@@ -662,6 +677,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -691,6 +707,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -732,6 +749,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -760,6 +778,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],

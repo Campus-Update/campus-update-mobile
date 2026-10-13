@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/storage/storage_providers.dart';
+import '../../auth/data/school_repository.dart';
+import '../../auth/domain/institution.dart';
 import '../domain/user_profile.dart';
 
 /// Manages whether the user has a pending profile to complete.
@@ -141,3 +143,64 @@ class UserProfileNotifier extends Notifier<UserProfile?> {
 final userProfileProvider = NotifierProvider<UserProfileNotifier, UserProfile?>(
   UserProfileNotifier.new,
 );
+
+/// The names of the signed-in user's own school, faculty, department,
+/// programme and level.
+///
+/// The profile carries only their IDs. `GET /schools` returns every school
+/// with its whole tree, so this finds the user's school in it by
+/// [UserProfile.institutionId] and walks down by the other IDs. Until the
+/// schools have loaded, or for an ID it cannot find, a name already stored on
+/// the profile stands in, and otherwise null.
+class AcademicPlacement {
+  const AcademicPlacement({
+    this.institution,
+    this.faculty,
+    this.department,
+    this.programme,
+    this.level,
+  });
+
+  /// The names [profile] already carries, without looking anything up.
+  factory AcademicPlacement.stored(UserProfile profile) => AcademicPlacement(
+    institution: profile.institutionName,
+    faculty: profile.facultyName,
+    department: profile.departmentName,
+    programme: profile.programmeName,
+    level: profile.academicLevelName,
+  );
+
+  final String? institution;
+  final String? faculty;
+  final String? department;
+  final String? programme;
+  final String? level;
+}
+
+final academicPlacementProvider = Provider<AcademicPlacement>((ref) {
+  final user = ref.watch(userProfileProvider);
+  if (user == null) return const AcademicPlacement();
+
+  final schools = ref.watch(schoolsProvider).value ?? const <Institution>[];
+  final school = schools.where((s) => s.id == user.institutionId).firstOrNull;
+  final faculty = school?.faculties
+      .where((f) => f.id == user.facultyId)
+      .firstOrNull;
+  final department = faculty?.departments
+      .where((d) => d.id == user.departmentId)
+      .firstOrNull;
+  final programme = department?.programmes
+      .where((p) => p.id == user.programmeId)
+      .firstOrNull;
+  final level = programme?.levels
+      .where((l) => l.id == user.academicLevelId)
+      .firstOrNull;
+
+  return AcademicPlacement(
+    institution: school?.name ?? user.institutionName,
+    faculty: faculty?.name ?? user.facultyName,
+    department: department?.name ?? user.departmentName,
+    programme: programme?.name ?? user.programmeName,
+    level: level?.name ?? user.academicLevelName,
+  );
+});

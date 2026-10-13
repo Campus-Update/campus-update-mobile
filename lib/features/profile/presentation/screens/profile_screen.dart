@@ -25,7 +25,13 @@ class ProfileScreen extends ConsumerWidget {
     final user = profile ?? defaultMockUserProfile;
     final displayName = user.fullName;
     final displayEmail = user.email ?? '';
-    final displayInstitution = user.institutionName ?? 'Lead City University';
+    // Signed out, the screen shows the sample user, with that user's school.
+    final displayInstitution =
+        (profile == null
+                ? AcademicPlacement.stored(user)
+                : ref.watch(academicPlacementProvider))
+            .institution ??
+        '';
 
     return Scaffold(
       backgroundColor: Colors.white,
