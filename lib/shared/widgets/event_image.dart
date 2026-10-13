@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
+import '../../app/theme/app_colors.dart';
 
-/// Reusable image widget for events with asset/network support and fallback placeholder.
+/// Reusable image widget for events and calendar items with asset/network support and fallback placeholder.
 class EventImage extends StatelessWidget {
   const EventImage({
     super.key,

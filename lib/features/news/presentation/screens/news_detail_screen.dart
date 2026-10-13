@@ -208,12 +208,14 @@ class _Actions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The bar runs under the phone's own navigation bar, so its buttons sit
+    // above it: 20 plus whatever the system bar takes.
     return Container(
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         NewsDetailScreen._gutter,
         20,
         NewsDetailScreen._gutter,
-        20,
+        20 + MediaQuery.paddingOf(context).bottom,
       ),
       decoration: const BoxDecoration(
         color: Colors.white,

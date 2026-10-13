@@ -167,6 +167,8 @@ class _ProfileCompletionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final school =
+        ref.watch(academicPlacementProvider).institution ?? 'your school';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
@@ -209,8 +211,8 @@ class _ProfileCompletionCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'You are seeing everything from Lead City University. Tell us your faculty, department and level and we can put what matters to you first.',
+          Text(
+            'You are seeing everything from $school. Tell us your faculty, department and level and we can put what matters to you first.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12.5,

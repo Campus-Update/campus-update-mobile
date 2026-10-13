@@ -37,6 +37,9 @@ abstract final class AppColors {
     end: Alignment.bottomCenter,
   );
 
+  /// Solid grey button fill sampled from the settings design (#818181).
+  static const buttonGrey = Color(0xFF818181);
+
   // Forms. The panel groups a form's fields and is what makes white fields
   // legible — on the page's own white they would disappear, which is also why
   // the fields carry a hairline border. All measured off the design.
@@ -120,6 +123,43 @@ abstract final class AppColors {
 
   /// An article's body text: black at 70%, from the Figma inspector.
   static const articleBody = Color(0xB3000000);
+
+  // Neutral ramp — Tailwind's gray scale, which the profile screens were built
+  // on. Named here so screens stop repeating hex values; design should map
+  // them onto the brand palette.
+  static const neutral50 = Color(0xFFF9FAFB);
+  static const neutral100 = Color(0xFFF3F4F6);
+  static const neutral200 = Color(0xFFE5E7EB);
+  static const neutral300 = Color(0xFFD1D5DB);
+  static const neutral400 = Color(0xFF9CA3AF);
+  static const neutral500 = Color(0xFF6B7280);
+  static const neutral600 = Color(0xFF4B5563);
+  static const neutral700 = Color(0xFF374151);
+  static const neutral800 = Color(0xFF1F2937);
+  static const neutral900 = Color(0xFF111827);
+
+  /// Near-blacks used for the profile name and the avatar's edit badge.
+  static const charcoal = Color(0xFF2C2D2F);
+  static const nearBlack = Color(0xFF1E1E1E);
+
+  /// A switch's track when on, in Preferences and Settings.
+  static const switchTrack = Color(0xFF5B52E0);
+
+  // Success and danger shades for status text, badges and the sign-out and
+  // logout prompts.
+  static const success = Color(0xFF16A34A);
+  static const successStrong = Color(0xFF059669);
+  static const successSurface = Color(0xFFF0FDF4);
+  static const dangerBright = Color(0xFFEF4444);
+  static const dangerSurface = Color(0xFFFFF1F2);
+  static const dangerBorder = Color(0xFFFFC7C7);
+
+  /// A card's soft drop shadow, black at 2%.
+  static const cardShadow = Color(0x06000000);
+
+  /// Touch feedback on support options: indigo #4338CA at 5% and 2%.
+  static const indigoSplash = Color(0x0D4338CA);
+  static const indigoHighlight = Color(0x054338CA);
 
   /// The live/breaking marker on the home feed.
   ///

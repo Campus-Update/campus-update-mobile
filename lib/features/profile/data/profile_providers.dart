@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/storage/storage_providers.dart';
+import '../../auth/data/school_repository.dart';
+import '../../auth/domain/institution.dart';
 import '../domain/user_profile.dart';
+import 'profile_repository.dart';
 
 /// Manages whether the user has a pending profile to complete.
 ///
@@ -64,6 +67,13 @@ class UserProfileNotifier extends Notifier<UserProfile?> {
     String? departmentId,
     String? programmeId,
     String? academicLevelId,
+    String? institutionName,
+    String? facultyName,
+    String? departmentName,
+    String? programmeName,
+    String? academicLevelName,
+    String? avatarPath,
+    bool clearAvatar = false,
   }) async {
     final current = state ?? const UserProfile();
     final updated = current.copyWith(
@@ -76,8 +86,77 @@ class UserProfileNotifier extends Notifier<UserProfile?> {
       departmentId: departmentId ?? current.departmentId,
       programmeId: programmeId ?? current.programmeId,
       academicLevelId: academicLevelId ?? current.academicLevelId,
+      institutionName: institutionName ?? current.institutionName,
+      facultyName: facultyName ?? current.facultyName,
+      departmentName: departmentName ?? current.departmentName,
+      programmeName: programmeName ?? current.programmeName,
+      academicLevelName: academicLevelName ?? current.academicLevelName,
+      avatarPath: clearAvatar ? null : (avatarPath ?? current.avatarPath),
+      clearAvatar: clearAvatar,
     );
     await setProfile(updated);
+  }
+
+  /// Saves Edit profile to the API: the name and number with
+  /// `PUT /auth/profile`, then the academic choice with
+  /// `PUT /auth/academic-settings`. The phone keeps what the API returns.
+  ///
+  /// Throws [ApiException] when either call fails, leaving the stored
+  /// profile as it was.
+  Future<void> saveDetails({
+    required String firstName,
+    required String lastName,
+    Institution? institution,
+    Faculty? faculty,
+    Department? department,
+    Programme? programme,
+    AcademicLevel? level,
+  }) async {
+    final current = state ?? const UserProfile();
+    final repo = ref.read(profileRepositoryProvider);
+
+    final afterDetails = await repo.updateDetails(
+      firstName: firstName,
+      lastName: lastName,
+      matriculationOrStaffNumber: current.matriculationOrStaffNumber,
+    );
+    final chosen = current
+        .mergedWith(afterDetails)
+        .copyWith(
+          institutionId: institution?.id,
+          facultyId: faculty?.id,
+          departmentId: department?.id,
+          programmeId: programme?.id,
+          academicLevelId: level?.id,
+          institutionName: institution?.name,
+          facultyName: faculty?.name,
+          departmentName: department?.name,
+          programmeName: programme?.name,
+          academicLevelName: level?.name,
+        );
+    final saved = await repo.updateAcademicSettings(chosen);
+    await setProfile(chosen.mergedWith(saved));
+  }
+
+  /// Saves the feed settings from Preferences and Settings with
+  /// `PUT /auth/academic-settings`, sending the academic IDs unchanged
+  /// alongside, since the endpoint replaces the whole set.
+  ///
+  /// Throws [ApiException] when the call fails.
+  Future<void> saveFeedSettings({
+    bool? allCampusFeed,
+    bool? pushNotificationsEnabled,
+  }) async {
+    final current = state;
+    if (current == null) return;
+    final wanted = current.copyWith(
+      allCampusFeed: allCampusFeed,
+      pushNotificationsEnabled: pushNotificationsEnabled,
+    );
+    final saved = await ref
+        .read(profileRepositoryProvider)
+        .updateAcademicSettings(wanted);
+    await setProfile(wanted.mergedWith(saved));
   }
 
   Future<void> signIn({
@@ -127,3 +206,64 @@ class UserProfileNotifier extends Notifier<UserProfile?> {
 final userProfileProvider = NotifierProvider<UserProfileNotifier, UserProfile?>(
   UserProfileNotifier.new,
 );
+
+/// The names of the signed-in user's own school, faculty, department,
+/// programme and level.
+///
+/// The profile carries only their IDs. `GET /schools` returns every school
+/// with its whole tree, so this finds the user's school in it by
+/// [UserProfile.institutionId] and walks down by the other IDs. Until the
+/// schools have loaded, or for an ID it cannot find, a name already stored on
+/// the profile stands in, and otherwise null.
+class AcademicPlacement {
+  const AcademicPlacement({
+    this.institution,
+    this.faculty,
+    this.department,
+    this.programme,
+    this.level,
+  });
+
+  /// The names [profile] already carries, without looking anything up.
+  factory AcademicPlacement.stored(UserProfile profile) => AcademicPlacement(
+    institution: profile.institutionName,
+    faculty: profile.facultyName,
+    department: profile.departmentName,
+    programme: profile.programmeName,
+    level: profile.academicLevelName,
+  );
+
+  final String? institution;
+  final String? faculty;
+  final String? department;
+  final String? programme;
+  final String? level;
+}
+
+final academicPlacementProvider = Provider<AcademicPlacement>((ref) {
+  final user = ref.watch(userProfileProvider);
+  if (user == null) return const AcademicPlacement();
+
+  final schools = ref.watch(schoolsProvider).value ?? const <Institution>[];
+  final school = schools.where((s) => s.id == user.institutionId).firstOrNull;
+  final faculty = school?.faculties
+      .where((f) => f.id == user.facultyId)
+      .firstOrNull;
+  final department = faculty?.departments
+      .where((d) => d.id == user.departmentId)
+      .firstOrNull;
+  final programme = department?.programmes
+      .where((p) => p.id == user.programmeId)
+      .firstOrNull;
+  final level = programme?.levels
+      .where((l) => l.id == user.academicLevelId)
+      .firstOrNull;
+
+  return AcademicPlacement(
+    institution: school?.name ?? user.institutionName,
+    faculty: faculty?.name ?? user.facultyName,
+    department: department?.name ?? user.departmentName,
+    programme: programme?.name ?? user.programmeName,
+    level: level?.name ?? user.academicLevelName,
+  );
+});
