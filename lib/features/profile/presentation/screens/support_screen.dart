@@ -30,7 +30,7 @@ class SupportScreen extends StatelessWidget {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE5E7EB),
+                      color: AppColors.neutral200,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -42,7 +42,7 @@ class SupportScreen extends StatelessWidget {
                     fontFamily: AppFonts.family,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
+                    color: AppColors.neutral900,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -51,7 +51,7 @@ class SupportScreen extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: AppFonts.family,
                     fontSize: 13.5,
-                    color: Color(0xFF6B7280),
+                    color: AppColors.neutral500,
                     height: 1.4,
                   ),
                 ),
@@ -117,7 +117,7 @@ class SupportScreen extends StatelessWidget {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE5E7EB),
+                      color: AppColors.neutral200,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -129,7 +129,7 @@ class SupportScreen extends StatelessWidget {
                     fontFamily: AppFonts.family,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
+                    color: AppColors.neutral900,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -138,7 +138,7 @@ class SupportScreen extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: AppFonts.family,
                     fontSize: 13.5,
-                    color: Color(0xFF6B7280),
+                    color: AppColors.neutral500,
                     height: 1.4,
                   ),
                 ),
@@ -209,7 +209,7 @@ class SupportScreen extends StatelessWidget {
                       width: 36,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE5E7EB),
+                        color: AppColors.neutral200,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -221,7 +221,7 @@ class SupportScreen extends StatelessWidget {
                       fontFamily: AppFonts.family,
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
+                      color: AppColors.neutral900,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -274,7 +274,7 @@ class SupportScreen extends StatelessWidget {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE5E7EB),
+                      color: AppColors.neutral200,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -286,7 +286,7 @@ class SupportScreen extends StatelessWidget {
                     fontFamily: AppFonts.family,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
+                    color: AppColors.neutral900,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -295,7 +295,7 @@ class SupportScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontFamily: AppFonts.family,
                     fontSize: 13.5,
-                    color: Color(0xFF6B7280),
+                    color: AppColors.neutral500,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -344,7 +344,7 @@ class SupportScreen extends StatelessWidget {
                       iconWidget: const Icon(
                         Icons.phone_outlined,
                         size: 18,
-                        color: Color(0xFF374151),
+                        color: AppColors.neutral700,
                       ),
                       onTap: () => _showCallModal(context),
                     ),
@@ -356,7 +356,7 @@ class SupportScreen extends StatelessWidget {
                       iconWidget: const Icon(
                         Icons.mail_outline_rounded,
                         size: 18,
-                        color: Color(0xFF374151),
+                        color: AppColors.neutral700,
                       ),
                       onTap: () => _showEmailModal(context),
                     ),
@@ -368,7 +368,7 @@ class SupportScreen extends StatelessWidget {
                       iconWidget: const Icon(
                         Icons.help_outline_rounded,
                         size: 18,
-                        color: Color(0xFF374151),
+                        color: AppColors.neutral700,
                       ),
                       onTap: () => _showFaqModal(context),
                     ),
@@ -383,7 +383,7 @@ class SupportScreen extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF0FDF4),
+                          color: AppColors.successSurface,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(
@@ -392,14 +392,14 @@ class SupportScreen extends StatelessWidget {
                             fontFamily: AppFonts.family,
                             fontSize: 9.5,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF16A34A),
+                            color: AppColors.success,
                           ),
                         ),
                       ),
                       iconWidget: const Icon(
                         Icons.chat_bubble_outline_rounded,
                         size: 18,
-                        color: Color(0xFF374151),
+                        color: AppColors.neutral700,
                       ),
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -496,10 +496,10 @@ class _SupportOptionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF3F4F6), width: 1.2),
+        border: Border.all(color: AppColors.neutral100, width: 1.2),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x06000000),
+            color: AppColors.cardShadow,
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -511,8 +511,8 @@ class _SupportOptionCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          splashColor: const Color(0x0D4338CA),
-          highlightColor: const Color(0x054338CA),
+          splashColor: AppColors.indigoSplash,
+          highlightColor: AppColors.indigoHighlight,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
@@ -524,10 +524,7 @@ class _SupportOptionCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
-                    border: Border.all(
-                      color: const Color(0xFFE5E7EB),
-                      width: 1,
-                    ),
+                    border: Border.all(color: AppColors.neutral200, width: 1),
                   ),
                   child: Center(child: iconWidget),
                 ),
@@ -542,7 +539,7 @@ class _SupportOptionCard extends StatelessWidget {
                             fontFamily: AppFonts.family,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF1F2937),
+                            color: AppColors.neutral800,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -554,7 +551,7 @@ class _SupportOptionCard extends StatelessWidget {
                 const Icon(
                   Icons.chevron_right_rounded,
                   size: 20,
-                  color: Color(0xFF1F2937),
+                  color: AppColors.neutral800,
                 ),
               ],
             ),
@@ -583,21 +580,21 @@ class _ContactActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: AppColors.neutral50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppColors.neutral200),
       ),
       child: ListTile(
         onTap: onTap,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        leading: Icon(icon, color: const Color(0xFF4F46E5), size: 24),
+        leading: Icon(icon, color: AppColors.indigo, size: 24),
         title: Text(
           title,
           style: const TextStyle(
             fontFamily: AppFonts.family,
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
+            color: AppColors.neutral900,
           ),
         ),
         subtitle: Text(
@@ -605,13 +602,13 @@ class _ContactActionTile extends StatelessWidget {
           style: const TextStyle(
             fontFamily: AppFonts.family,
             fontSize: 13,
-            color: Color(0xFF4B5563),
+            color: AppColors.neutral600,
           ),
         ),
         trailing: const Icon(
           Icons.copy_rounded,
           size: 18,
-          color: Color(0xFF9CA3AF),
+          color: AppColors.neutral400,
         ),
       ),
     );
@@ -630,9 +627,9 @@ class _FaqTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: AppColors.neutral50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppColors.neutral200),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -645,7 +642,7 @@ class _FaqTile extends StatelessWidget {
               fontFamily: AppFonts.family,
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF111827),
+              color: AppColors.neutral900,
             ),
           ),
           children: [
@@ -654,7 +651,7 @@ class _FaqTile extends StatelessWidget {
               style: const TextStyle(
                 fontFamily: AppFonts.family,
                 fontSize: 13,
-                color: Color(0xFF4B5563),
+                color: AppColors.neutral600,
                 height: 1.4,
               ),
             ),
@@ -680,13 +677,13 @@ class _InstagramPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final s = size.width / 18.0;
     final strokePaint = Paint()
-      ..color = const Color(0xFF374151)
+      ..color = AppColors.neutral700
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.6 * s
       ..isAntiAlias = true;
 
     final dotPaint = Paint()
-      ..color = const Color(0xFF374151)
+      ..color = AppColors.neutral700
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
 
@@ -723,7 +720,7 @@ class _XTwitterPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final s = size.width / 18.0;
     final strokePaint = Paint()
-      ..color = const Color(0xFF374151)
+      ..color = AppColors.neutral700
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.3 * s
       ..isAntiAlias = true;
@@ -733,7 +730,7 @@ class _XTwitterPainter extends CustomPainter {
 
     // Stylized X mark
     final xPaint = Paint()
-      ..color = const Color(0xFF374151)
+      ..color = AppColors.neutral700
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5 * s
       ..strokeCap = StrokeCap.round
@@ -770,7 +767,7 @@ class _WhatsAppPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final s = size.width / 18.0;
     final strokePaint = Paint()
-      ..color = const Color(0xFF374151)
+      ..color = AppColors.neutral700
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4 * s
       ..strokeCap = StrokeCap.round
@@ -806,7 +803,7 @@ class _WhatsAppPainter extends CustomPainter {
       ..close();
 
     final handsetPaint = Paint()
-      ..color = const Color(0xFF374151)
+      ..color = AppColors.neutral700
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
 

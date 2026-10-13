@@ -1,10 +1,12 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+import '../../../../app/theme/app_colors.dart';
+
 /// A custom painter that draws a dashed rounded rectangle border.
 class DashedBorderPainter extends CustomPainter {
   const DashedBorderPainter({
-    this.color = const Color(0xFFD1D5DB),
+    this.color = AppColors.neutral300,
     this.strokeWidth = 1.0,
     this.radius = 16.0,
     this.dashLength = 5.0,
@@ -65,7 +67,7 @@ class DashedCard extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(20),
     this.radius = 16.0,
-    this.borderColor = const Color(0xFFD1D5DB),
+    this.borderColor = AppColors.neutral300,
     this.backgroundColor = Colors.white,
   });
 

@@ -107,14 +107,14 @@ class ProfileScreen extends ConsumerWidget {
                                 style: const TextStyle(
                                   fontFamily: AppFonts.family,
                                   fontSize: 12.5,
-                                  color: Color(0xFF6B7280),
+                                  color: AppColors.neutral500,
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 14),
                           Material(
-                            color: const Color(0xFF2C2D2F),
+                            color: AppColors.charcoal,
                             borderRadius: BorderRadius.circular(100),
                             clipBehavior: Clip.antiAlias,
                             child: InkWell(
@@ -197,7 +197,7 @@ class ProfileScreen extends ConsumerWidget {
                             fontFamily: AppFonts.family,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFFEF4444),
+                            color: AppColors.dangerBright,
                           ),
                         ),
                       ),

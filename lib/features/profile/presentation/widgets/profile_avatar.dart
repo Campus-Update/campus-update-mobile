@@ -66,8 +66,8 @@ class ProfileAvatar extends StatelessWidget {
     final avatar = CircleAvatar(
       radius: radius,
       backgroundColor: hasImage
-          ? const Color(0xFFE5E7EB)
-          : const Color(0xFFEDE9FE),
+          ? AppColors.neutral200
+          : AppColors.indigoSurface,
       backgroundImage: imageProvider,
       child: imageProvider == null
           ? (_resolvedInitials.isNotEmpty
@@ -77,13 +77,13 @@ class ProfileAvatar extends StatelessWidget {
                       fontFamily: AppFonts.family,
                       fontSize: radius * 0.52,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF4F46E5),
+                      color: AppColors.indigo,
                     ),
                   )
                 : Icon(
                     Icons.person_rounded,
                     size: radius * 1.1,
-                    color: const Color(0xFF9CA3AF),
+                    color: AppColors.neutral400,
                   ))
           : null,
     );
@@ -105,7 +105,7 @@ class ProfileAvatar extends StatelessWidget {
               width: 30,
               height: 30,
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1E1E),
+                color: AppColors.nearBlack,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
                 boxShadow: [

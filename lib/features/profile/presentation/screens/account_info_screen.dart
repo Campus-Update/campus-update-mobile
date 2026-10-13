@@ -90,9 +90,9 @@ class AccountInformationScreen extends ConsumerWidget {
                         vertical: 18,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFB),
+                        color: AppColors.neutral50,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFF3F4F6)),
+                        border: Border.all(color: AppColors.neutral100),
                       ),
                       child: Column(
                         children: [
@@ -148,7 +148,7 @@ class _DetailRow extends StatelessWidget {
                 fontFamily: AppFonts.family,
                 fontSize: 13.5,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF6B7280),
+                color: AppColors.neutral500,
               ),
             ),
           ),

@@ -97,9 +97,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
             margin: const EdgeInsets.only(right: 8),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: satisfied
-                  ? const Color(0xFF059669)
-                  : const Color(0xFF6B7280),
+              color: satisfied ? AppColors.successStrong : AppColors.neutral500,
             ),
           ),
           Expanded(
@@ -109,9 +107,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 fontFamily: AppFonts.family,
                 fontSize: 12.5,
                 fontWeight: FontWeight.w400,
-                color: satisfied
-                    ? const Color(0xFF059669)
-                    : const Color(0xFFDC2626),
+                color: satisfied ? AppColors.successStrong : AppColors.alertRed,
               ),
             ),
           ),
@@ -168,7 +164,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                         fontFamily: AppFonts.family,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF374151),
+                        color: AppColors.neutral700,
                       ),
                     ),
                     const SizedBox(height: 8),

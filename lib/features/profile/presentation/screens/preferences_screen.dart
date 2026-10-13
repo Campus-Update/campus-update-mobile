@@ -100,10 +100,10 @@ class _FeedModeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = const Color(0xFF4F46E5);
+    final activeColor = AppColors.indigo;
 
     return Material(
-      color: isSelected ? activeColor : const Color(0xFFF9FAFB),
+      color: isSelected ? activeColor : AppColors.neutral50,
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -112,9 +112,7 @@ class _FeedModeCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: isSelected
-                ? null
-                : Border.all(color: const Color(0xFFE5E7EB)),
+            border: isSelected ? null : Border.all(color: AppColors.neutral200),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,7 +124,7 @@ class _FeedModeCard extends StatelessWidget {
                         ? Icons.radio_button_checked
                         : Icons.radio_button_unchecked,
                     size: 20,
-                    color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                    color: isSelected ? Colors.white : AppColors.neutral400,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -153,7 +151,7 @@ class _FeedModeCard extends StatelessWidget {
                     height: 1.4,
                     color: isSelected
                         ? Colors.white.withValues(alpha: 0.88)
-                        : const Color(0xFF6B7280),
+                        : AppColors.neutral500,
                   ),
                 ),
               ),
@@ -185,7 +183,7 @@ class _TogglePreferenceCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppColors.neutral200),
       ),
       child: Row(
         children: [
@@ -208,7 +206,7 @@ class _TogglePreferenceCard extends StatelessWidget {
                   style: const TextStyle(
                     fontFamily: AppFonts.family,
                     fontSize: 12,
-                    color: Color(0xFF6B7280),
+                    color: AppColors.neutral500,
                   ),
                 ),
               ],
@@ -219,9 +217,9 @@ class _TogglePreferenceCard extends StatelessWidget {
             value: value,
             onChanged: onChanged,
             activeThumbColor: Colors.white,
-            activeTrackColor: const Color(0xFF5B52E0),
+            activeTrackColor: AppColors.switchTrack,
             inactiveThumbColor: Colors.white,
-            inactiveTrackColor: const Color(0xFFE5E7EB),
+            inactiveTrackColor: AppColors.neutral200,
             trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
           ),
         ],

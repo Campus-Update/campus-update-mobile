@@ -25,7 +25,7 @@ class ProfileMenuCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppColors.neutral200),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -33,7 +33,11 @@ class ProfileMenuCard extends StatelessWidget {
         children: [
           for (int i = 0; i < items.length; i++) ...[
             if (i > 0)
-              const Divider(height: 1, thickness: 1, color: Color(0xFFF3F4F6)),
+              const Divider(
+                height: 1,
+                thickness: 1,
+                color: AppColors.neutral100,
+              ),
             _MenuRowItem(item: items[i]),
           ],
         ],
@@ -68,7 +72,7 @@ class _MenuRowItem extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(item.trailingIcon, size: 20, color: const Color(0xFF9CA3AF)),
+              Icon(item.trailingIcon, size: 20, color: AppColors.neutral400),
             ],
           ),
         ),

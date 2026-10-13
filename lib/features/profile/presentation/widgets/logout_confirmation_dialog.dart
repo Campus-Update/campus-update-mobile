@@ -33,7 +33,7 @@ class LogoutConfirmationDialog extends StatelessWidget {
               width: 120,
               height: 120,
               decoration: const BoxDecoration(
-                color: Color(0xFFFFF1F2),
+                color: AppColors.dangerSurface,
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -41,7 +41,7 @@ class LogoutConfirmationDialog extends StatelessWidget {
                   width: 94,
                   height: 94,
                   decoration: const BoxDecoration(
-                    color: Color(0xFFFFC7C7),
+                    color: AppColors.dangerBorder,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -49,7 +49,7 @@ class LogoutConfirmationDialog extends StatelessWidget {
                       width: 66,
                       height: 66,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFDC2626),
+                        color: AppColors.alertRed,
                         shape: BoxShape.circle,
                       ),
                       child: const Center(child: _WarningTriangleInfoIcon()),
@@ -65,7 +65,7 @@ class LogoutConfirmationDialog extends StatelessWidget {
                 fontFamily: AppFonts.family,
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF111827),
+                color: AppColors.neutral900,
               ),
               textAlign: TextAlign.center,
             ),
@@ -79,7 +79,7 @@ class LogoutConfirmationDialog extends StatelessWidget {
                   fontFamily: AppFonts.family,
                   fontSize: 14,
                   height: 1.45,
-                  color: Color(0xFF4B5563),
+                  color: AppColors.neutral600,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -126,7 +126,7 @@ class _WarningTriangleInfoIcon extends StatelessWidget {
 class _WarningTriangleInfoPainter extends CustomPainter {
   const _WarningTriangleInfoPainter();
 
-  static const _iconColor = Color(0xFFDC2626);
+  static const _iconColor = AppColors.alertRed;
   static const _backgroundColor = Colors.white;
 
   @override
