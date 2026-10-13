@@ -6,6 +6,8 @@ import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_form_panel.dart';
 import '../../../../shared/widgets/app_input.dart';
 import '../../../../shared/widgets/app_select.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../../auth/data/school_repository.dart';
 import '../../../auth/domain/default_institution.dart';
 import '../../../auth/domain/institution.dart';
 import '../../data/profile_providers.dart';
@@ -27,54 +29,62 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   AcademicLevel? _selectedLevel;
   bool _busy = false;
 
+  /// Whether the dropdowns have been set from the saved profile. That waits
+  /// for the user's school to load, so it happens on the first build that has
+  /// it rather than in [initState].
+  bool _prefilled = false;
+
   @override
   void initState() {
     super.initState();
     final profile = ref.read(userProfileProvider);
     final initialName = profile?.fullName ?? '';
     _fullNameController = TextEditingController(text: initialName);
+  }
 
-    // Attempt to pre-populate selected academic options if already saved
-    final inst = defaultLeadCityUniversity;
+  /// Sets the dropdowns to what the profile already holds, within [inst].
+  void _prefill(Institution inst) {
+    _prefilled = true;
+    final profile = ref.read(userProfileProvider);
+    if (profile == null) return;
 
-    if (profile?.facultyId != null || profile?.facultyName != null) {
+    if (profile.facultyId != null || profile.facultyName != null) {
       _selectedFaculty = inst.faculties
           .where(
-            (f) => f.id == profile?.facultyId || f.name == profile?.facultyName,
+            (f) => f.id == profile.facultyId || f.name == profile.facultyName,
           )
           .firstOrNull;
     }
 
     if (_selectedFaculty != null &&
-        (profile?.departmentId != null || profile?.departmentName != null)) {
+        (profile.departmentId != null || profile.departmentName != null)) {
       _selectedDepartment = _selectedFaculty!.departments
           .where(
             (d) =>
-                d.id == profile?.departmentId ||
-                d.name == profile?.departmentName,
+                d.id == profile.departmentId ||
+                d.name == profile.departmentName,
           )
           .firstOrNull;
     }
 
     if (_selectedDepartment != null &&
-        (profile?.programmeId != null || profile?.programmeName != null)) {
+        (profile.programmeId != null || profile.programmeName != null)) {
       _selectedProgramme = _selectedDepartment!.programmes
           .where(
             (p) =>
-                p.id == profile?.programmeId ||
-                p.name == profile?.programmeName,
+                p.id == profile.programmeId || p.name == profile.programmeName,
           )
           .firstOrNull;
     }
 
     if (_selectedProgramme != null &&
-        (profile?.academicLevelId != null ||
-            profile?.academicLevelName != null)) {
+        (profile.academicLevelId != null ||
+            profile.academicLevelName != null)) {
       _selectedLevel = _selectedProgramme!.levels
           .where(
             (l) =>
-                l.id == profile?.academicLevelId ||
-                l.name == profile?.academicLevelName,
+                l.id == profile.academicLevelId ||
+                l.name == profile.academicLevelName,
           )
           .firstOrNull;
     }
@@ -86,46 +96,67 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.dispose();
   }
 
-  Institution _resolveInstitution() {
-    return defaultLeadCityUniversity;
+  /// The signed-in user's own school, from `GET /schools`, whose faculties
+  /// the dropdowns offer. Signed out, the screen shows the sample user, so it
+  /// offers the sample school. Null while the schools load.
+  Institution? _school() {
+    final profile = ref.watch(userProfileProvider);
+    if (profile == null) return defaultLeadCityUniversity;
+    final schools = ref.watch(schoolsProvider).value ?? const <Institution>[];
+    return schools.where((s) => s.id == profile.institutionId).firstOrNull;
   }
 
   Future<void> _saveChanges() async {
     if (_busy) return;
     setState(() => _busy = true);
 
-    final rawName = _fullNameController.text.trim();
-    String? firstName;
-    String? lastName;
+    final parts = _fullNameController.text.trim().split(RegExp(r'\s+'));
+    final firstName = parts.first;
+    final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
 
-    if (rawName.isNotEmpty) {
-      final parts = rawName.split(RegExp(r'\s+'));
-      firstName = parts.first;
-      lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
-    }
+    final institution = _school();
+    final notifier = ref.read(userProfileProvider.notifier);
 
-    final institution = _resolveInstitution();
-
-    await ref
-        .read(userProfileProvider.notifier)
-        .updateProfile(
+    // Signed in, the change goes to the API; signed out, there is only the
+    // sample user on this phone to update.
+    if (ref.read(userProfileProvider) != null) {
+      try {
+        await notifier.saveDetails(
           firstName: firstName,
           lastName: lastName,
-          institutionId: institution.id,
-          institutionName: institution.name,
-          facultyId: _selectedFaculty?.id,
-          facultyName: _selectedFaculty?.name,
-          departmentId: _selectedDepartment?.id,
-          departmentName: _selectedDepartment?.name,
-          programmeId: _selectedProgramme?.id,
-          programmeName: _selectedProgramme?.name,
-          academicLevelId: _selectedLevel?.id,
-          academicLevelName: _selectedLevel?.name,
+          institution: institution,
+          faculty: _selectedFaculty,
+          department: _selectedDepartment,
+          programme: _selectedProgramme,
+          level: _selectedLevel,
         );
-
-    if (rawName.isNotEmpty) {
-      ref.read(pendingProfileProvider.notifier).complete();
+      } on ApiException catch (e) {
+        if (mounted) {
+          setState(() => _busy = false);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.message)));
+        }
+        return;
+      }
+    } else {
+      await notifier.updateProfile(
+        firstName: firstName,
+        lastName: lastName,
+        institutionId: institution?.id,
+        institutionName: institution?.name,
+        facultyId: _selectedFaculty?.id,
+        facultyName: _selectedFaculty?.name,
+        departmentId: _selectedDepartment?.id,
+        departmentName: _selectedDepartment?.name,
+        programmeId: _selectedProgramme?.id,
+        programmeName: _selectedProgramme?.name,
+        academicLevelId: _selectedLevel?.id,
+        academicLevelName: _selectedLevel?.name,
+      );
     }
+
+    ref.read(pendingProfileProvider.notifier).complete();
 
     if (mounted) {
       setState(() => _busy = false);
@@ -140,8 +171,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final institution = _resolveInstitution();
-    final faculties = institution.faculties;
+    final institution = _school();
+    if (institution != null && !_prefilled) _prefill(institution);
+    final faculties = institution?.faculties ?? const <Faculty>[];
     final departments = _selectedFaculty?.departments ?? const <Department>[];
     final programmes = _selectedDepartment?.programmes ?? const <Programme>[];
     final levels = _selectedProgramme?.levels ?? const <AcademicLevel>[];

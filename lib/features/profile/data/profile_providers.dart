@@ -4,6 +4,7 @@ import '../../../core/storage/storage_providers.dart';
 import '../../auth/data/school_repository.dart';
 import '../../auth/domain/institution.dart';
 import '../domain/user_profile.dart';
+import 'profile_repository.dart';
 
 /// Manages whether the user has a pending profile to complete.
 ///
@@ -94,6 +95,47 @@ class UserProfileNotifier extends Notifier<UserProfile?> {
       clearAvatar: clearAvatar,
     );
     await setProfile(updated);
+  }
+
+  /// Saves Edit profile to the API: the name and number with
+  /// `PUT /auth/profile`, then the academic choice with
+  /// `PUT /auth/academic-settings`. The phone keeps what the API returns.
+  ///
+  /// Throws [ApiException] when either call fails, leaving the stored
+  /// profile as it was.
+  Future<void> saveDetails({
+    required String firstName,
+    required String lastName,
+    Institution? institution,
+    Faculty? faculty,
+    Department? department,
+    Programme? programme,
+    AcademicLevel? level,
+  }) async {
+    final current = state ?? const UserProfile();
+    final repo = ref.read(profileRepositoryProvider);
+
+    final afterDetails = await repo.updateDetails(
+      firstName: firstName,
+      lastName: lastName,
+      matriculationOrStaffNumber: current.matriculationOrStaffNumber,
+    );
+    final chosen = current
+        .mergedWith(afterDetails)
+        .copyWith(
+          institutionId: institution?.id,
+          facultyId: faculty?.id,
+          departmentId: department?.id,
+          programmeId: programme?.id,
+          academicLevelId: level?.id,
+          institutionName: institution?.name,
+          facultyName: faculty?.name,
+          departmentName: department?.name,
+          programmeName: programme?.name,
+          academicLevelName: level?.name,
+        );
+    final saved = await repo.updateAcademicSettings(chosen);
+    await setProfile(chosen.mergedWith(saved));
   }
 
   Future<void> signIn({
