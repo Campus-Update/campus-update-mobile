@@ -346,5 +346,108 @@ abstract final class MockFeed {
       'eventStartsAt': _ahead(const Duration(days: 25)),
       'eventLocation': 'University Sports Complex',
     },
+
+    // Announcements — the Active Alerts screen.
+    {
+      'id': 'mock-alert-1',
+      'title': 'CSC 304 exam venue moved to Auditorium B',
+      'summary':
+          'The CSC 304 examination has been relocated from the Faculty of '
+          'Computing exam hall to Auditorium B. Please arrive 30 minutes early.',
+      'body':
+          'The CSC 304 examination has been relocated from the Faculty of '
+          'Computing exam hall to Auditorium B due to ongoing renovations. '
+          'Students are advised to arrive at least 30 minutes early to settle '
+          'in. Bring your ID card and exam docket.',
+      'type': 'Announcement',
+      'status': 'Published',
+      'urgency': 'Urgent',
+      'sourceType': 'Official',
+      'sourceName': 'Faculty of Computing',
+      'publishedAt': _ago(const Duration(minutes: 32)),
+      'category': 'Academic',
+    },
+    {
+      'id': 'mock-alert-2',
+      'title': 'Second semester course registration closes 26 September',
+      'summary':
+          'All students must complete course registration before the deadline.',
+      'body':
+          'All students must complete their course registration on the portal '
+          'before 11:59pm on 26 September. Late registrations will not be '
+          'accepted without the Dean\'s approval.',
+      'type': 'Announcement',
+      'status': 'Published',
+      'urgency': 'Important',
+      'sourceType': 'Official',
+      'sourceName': 'Office of the Registrar',
+      'publishedAt': _ago(const Duration(days: 1)),
+      'category': 'Academic',
+    },
+    {
+      'id': 'mock-alert-3',
+      'title': 'Library extends weekend opening hours',
+      'summary': 'The main library will now open from 7am to 11pm on weekends.',
+      'body':
+          'Starting this weekend, the main library extends its Saturday and '
+          'Sunday hours to 7am–11pm. The 24-hour study lounge remains '
+          'available at all times.',
+      'type': 'Announcement',
+      'status': 'Published',
+      'urgency': 'Normal',
+      'sourceType': 'Official',
+      'sourceName': 'University Library',
+      'publishedAt': _ago(const Duration(days: 2)),
+      'category': 'General',
+    },
+    {
+      'id': 'mock-alert-4',
+      'title': 'Water supply interruption on South Campus Thursday',
+      'summary':
+          'Maintenance work will interrupt water supply from 8am to 4pm.',
+      'body':
+          'Planned maintenance on the South Campus water mains will cause '
+          'an interruption from 8am to 4pm on Thursday. Please store water '
+          'in advance. The North Campus hostels are not affected.',
+      'type': 'Announcement',
+      'status': 'Published',
+      'urgency': 'Important',
+      'sourceType': 'Official',
+      'sourceName': 'Works and Services',
+      'publishedAt': _ago(const Duration(days: 1, hours: 6)),
+      'category': 'Campus',
+    },
+    {
+      'id': 'mock-alert-5',
+      'title': 'CSC 304 lab submission deadline extended to Friday',
+      'summary':
+          'The lab submission deadline for CSC 304 has been pushed to Friday.',
+      'body':
+          'Due to the exam venue change, the lab submission deadline for '
+          'CSC 304 has been extended from Wednesday to Friday at 5pm.',
+      'type': 'Announcement',
+      'status': 'Published',
+      'urgency': 'Normal',
+      'sourceType': 'Official',
+      'sourceName': 'Faculty of Computing',
+      'publishedAt': _ago(const Duration(hours: 2)),
+      'category': 'Academic',
+    },
+    {
+      'id': 'mock-alert-6',
+      'title': 'CSC 304 revision tutorial session scheduled for Saturday',
+      'summary':
+          'A tutorial revision session for CSC 304 will be held in Hall C.',
+      'body':
+          'Ahead of the exams, course assistants will hold an interactive '
+          'revision session for CSC 304 covering core algorithms and queries.',
+      'type': 'Announcement',
+      'status': 'Published',
+      'urgency': 'Normal',
+      'sourceType': 'Official',
+      'sourceName': 'Faculty of Computing',
+      'publishedAt': _ago(const Duration(days: 3)),
+      'category': 'Academic',
+    },
   ];
 }
