@@ -8,7 +8,8 @@ import '../../app/theme/app_spacing.dart';
 /// [primary] is specified by design: a 50px gradient pill, fully rounded, with
 /// 30px of horizontal padding. [secondary] is its Skip — the same pill in
 /// white behind a hairline. [ghost] and [danger] still await their screens.
-enum AppButtonVariant { primary, secondary, ghost, danger }
+/// [grey] is a solid neutral grey fill with white text.
+enum AppButtonVariant { primary, secondary, ghost, danger, grey }
 
 /// The button used across the app.
 ///
@@ -23,6 +24,8 @@ class AppButton extends StatelessWidget {
     this.onPressed,
     this.loading = false,
     this.variant = AppButtonVariant.primary,
+    this.backgroundColor,
+    this.foregroundColor,
     this.leadingIcon,
     this.trailingIcon,
     this.expand = true,
@@ -36,6 +39,8 @@ class AppButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool loading;
   final AppButtonVariant variant;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
   final IconData? leadingIcon;
   final IconData? trailingIcon;
 
@@ -89,14 +94,22 @@ class AppButton extends StatelessWidget {
 
   bool get _enabled => onPressed != null && !loading;
 
-  Color _foreground(ColorScheme scheme) => switch (variant) {
-    AppButtonVariant.primary || AppButtonVariant.danger => Colors.white,
-    AppButtonVariant.secondary => AppColors.graphite,
-    AppButtonVariant.ghost => AppColors.indigo,
-  };
+  Color _foreground(ColorScheme scheme) {
+    if (foregroundColor != null) return foregroundColor!;
+    return switch (variant) {
+      AppButtonVariant.primary ||
+      AppButtonVariant.danger ||
+      AppButtonVariant.grey => Colors.white,
+      AppButtonVariant.secondary => AppColors.graphite,
+      AppButtonVariant.ghost => AppColors.indigo,
+    };
+  }
 
   BoxDecoration _decoration(ColorScheme scheme) {
     final radius = BorderRadius.circular(_radius);
+    if (backgroundColor != null) {
+      return BoxDecoration(color: backgroundColor, borderRadius: radius);
+    }
     return switch (variant) {
       AppButtonVariant.primary => BoxDecoration(
         gradient: AppColors.buttonGradient,
@@ -119,6 +132,10 @@ class AppButton extends StatelessWidget {
         border: Border.all(color: AppColors.fieldBorder),
       ),
       AppButtonVariant.ghost => BoxDecoration(borderRadius: radius),
+      AppButtonVariant.grey => BoxDecoration(
+        color: AppColors.buttonGrey,
+        borderRadius: radius,
+      ),
     };
   }
 

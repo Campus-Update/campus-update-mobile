@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_feed_repository.dart';
+import 'support/fake_schools.dart';
 
 /// The calendar opens on the current month; these tests check the July 2026
 /// sample events, so they start there.
@@ -41,6 +42,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           activeMonthProvider.overrideWith(_July2026.new),
           selectedDateProvider.overrideWith(_July15.new),
         ],
@@ -110,6 +112,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         activeMonthProvider.overrideWith(_July2026.new),
         selectedDateProvider.overrideWith(_July15.new),
       ],
@@ -155,6 +158,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           activeMonthProvider.overrideWith(_July2026.new),
           selectedDateProvider.overrideWith(_July15.new),
         ],
@@ -229,6 +233,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           activeMonthProvider.overrideWith(_July2026.new),
           selectedDateProvider.overrideWith(_July15.new),
         ],

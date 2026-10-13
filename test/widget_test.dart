@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_feed_repository.dart';
+import 'support/fake_schools.dart';
 
 /// Stands in for the real repository so a test that drives the login screen
 /// does not reach the deployed API. Without it these tests make a live network
@@ -59,6 +60,17 @@ class _FakeProfileRepository implements ProfileRepository {
     }
     return p;
   }
+
+  @override
+  Future<UserProfile> updateDetails({
+    required String firstName,
+    required String lastName,
+    String? matriculationOrStaffNumber,
+  }) async => UserProfile(firstName: firstName, lastName: lastName);
+
+  @override
+  Future<UserProfile> updateAcademicSettings(UserProfile profile) async =>
+      profile;
 }
 
 void main() {
@@ -79,6 +91,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -95,6 +108,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -120,6 +134,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -162,6 +177,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -190,6 +206,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -233,6 +250,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -266,6 +284,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -312,6 +331,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -357,6 +377,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -426,6 +447,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -474,6 +496,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -515,6 +538,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -553,6 +577,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
           profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
         ],
@@ -575,16 +600,18 @@ void main() {
       await tester.tap(find.text('Add details'));
       await tester.pumpAndSettle();
 
-      // Now on Edit Profile screen
-      expect(find.text('Edit profile'), findsOneWidget);
+      // Now on Edit details screen
+      expect(find.text('Edit details'), findsOneWidget);
 
-      // Enter First Name as 'Amara' and Last Name as 'Okafor'
+      // Enter the name as first and last
       await tester.enterText(find.byType(EditableText).at(0), 'Amara');
       await tester.enterText(find.byType(EditableText).at(1), 'Okafor');
       await tester.pumpAndSettle();
 
-      // Tap 'Save profile'
-      await tester.tap(find.text('Save profile'));
+      // Tap 'Save changes'
+      await tester.ensureVisible(find.text('Save changes'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save changes'));
       await tester.pumpAndSettle();
 
       // Returned to Home Screen, greeted with new name
@@ -617,6 +644,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(
           _FakeProfileRepository(
@@ -661,6 +689,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -690,6 +719,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -731,6 +761,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
@@ -759,6 +790,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],

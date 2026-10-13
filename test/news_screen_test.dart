@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_feed_repository.dart';
+import 'support/fake_schools.dart';
 
 void main() {
   late SharedPreferences prefs;
@@ -28,6 +29,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           newsRepositoryProvider.overrideWithValue(MockNewsRepository()),
         ],
       );
@@ -88,6 +90,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         newsRepositoryProvider.overrideWithValue(MockNewsRepository()),
       ],
     );
@@ -120,6 +123,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         newsRepositoryProvider.overrideWithValue(MockNewsRepository()),
       ],
     );
@@ -156,6 +160,7 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
+        fakeSchoolsOverride,
         newsRepositoryProvider.overrideWithValue(MockNewsRepository()),
       ],
     );
@@ -197,6 +202,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           fakeFeedOverride,
+          fakeSchoolsOverride,
           newsRepositoryProvider.overrideWithValue(MockNewsRepository()),
         ],
       );

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/profile/domain/user_preferences.dart';
 import '../../features/profile/domain/user_profile.dart';
 
 /// Non-sensitive local settings.
@@ -71,5 +72,25 @@ class PrefsStorage {
 
   Future<void> clearCurrentUser() async {
     await _prefs.remove(_currentUserEmail);
+  }
+
+  static const _userPreferencesKey = 'user_preferences';
+
+  UserPreferences getUserPreferences() {
+    final raw = _prefs.getString(_userPreferencesKey);
+    if (raw == null || raw.isEmpty) return const UserPreferences();
+    try {
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      return UserPreferences.fromJson(map);
+    } catch (_) {
+      return const UserPreferences();
+    }
+  }
+
+  Future<void> saveUserPreferences(UserPreferences preferences) async {
+    await _prefs.setString(
+      _userPreferencesKey,
+      jsonEncode(preferences.toJson()),
+    );
   }
 }
