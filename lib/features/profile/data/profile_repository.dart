@@ -23,6 +23,41 @@ class ProfileRepository {
       throw ApiException.from(e);
     }
   }
+
+  /// `PUT /auth/profile`: name and matriculation or staff number.
+  Future<UserProfile> updateDetails({
+    required String firstName,
+    required String lastName,
+    String? matriculationOrStaffNumber,
+  }) async {
+    try {
+      final res = await _dio.put<Map<String, dynamic>>(
+        '/api/v1/auth/profile',
+        data: {
+          'firstName': firstName,
+          'lastName': lastName,
+          'matriculationOrStaffNumber': matriculationOrStaffNumber,
+        },
+      );
+      return UserProfile.fromJson(res.data ?? const {});
+    } on DioException catch (e) {
+      throw ApiException.from(e);
+    }
+  }
+
+  /// `PUT /auth/academic-settings`: the academic IDs and feed settings,
+  /// replaced as one set. See [UserProfile.toAcademicSettingsJson].
+  Future<UserProfile> updateAcademicSettings(UserProfile profile) async {
+    try {
+      final res = await _dio.put<Map<String, dynamic>>(
+        '/api/v1/auth/academic-settings',
+        data: profile.toAcademicSettingsJson(),
+      );
+      return UserProfile.fromJson(res.data ?? const {});
+    } on DioException catch (e) {
+      throw ApiException.from(e);
+    }
+  }
 }
 
 final profileRepositoryProvider = Provider<ProfileRepository>(

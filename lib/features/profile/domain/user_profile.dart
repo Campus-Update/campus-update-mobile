@@ -20,6 +20,12 @@ class UserProfile {
     this.programmeName,
     this.academicLevelName,
     this.avatarPath,
+    this.newsEnabled,
+    this.announcementsEnabled,
+    this.eventsEnabled,
+    this.advertisementsEnabled,
+    this.pushNotificationsEnabled,
+    this.allCampusFeed,
   });
 
   final String? id;
@@ -39,6 +45,20 @@ class UserProfile {
   final String? programmeName;
   final String? academicLevelName;
   final String? avatarPath;
+
+  // The feed settings `PUT /auth/academic-settings` takes alongside the
+  // academic IDs. That endpoint replaces the whole set at once, so the app
+  // keeps all of them to send back. Null when the profile came from an older
+  // build that did not store them.
+  final bool? newsEnabled;
+  final bool? announcementsEnabled;
+  final bool? eventsEnabled;
+  final bool? advertisementsEnabled;
+  final bool? pushNotificationsEnabled;
+
+  /// Everything from the school rather than only the user's faculty,
+  /// department and level — the Preferences screen's "All campus".
+  final bool? allCampusFeed;
 
   /// Friendly display name for greetings and headers.
   ///
@@ -109,6 +129,12 @@ class UserProfile {
     String? academicLevelName,
     String? avatarPath,
     bool clearAvatar = false,
+    bool? newsEnabled,
+    bool? announcementsEnabled,
+    bool? eventsEnabled,
+    bool? advertisementsEnabled,
+    bool? pushNotificationsEnabled,
+    bool? allCampusFeed,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -129,6 +155,14 @@ class UserProfile {
       programmeName: programmeName ?? this.programmeName,
       academicLevelName: academicLevelName ?? this.academicLevelName,
       avatarPath: clearAvatar ? null : (avatarPath ?? this.avatarPath),
+      newsEnabled: newsEnabled ?? this.newsEnabled,
+      announcementsEnabled: announcementsEnabled ?? this.announcementsEnabled,
+      eventsEnabled: eventsEnabled ?? this.eventsEnabled,
+      advertisementsEnabled:
+          advertisementsEnabled ?? this.advertisementsEnabled,
+      pushNotificationsEnabled:
+          pushNotificationsEnabled ?? this.pushNotificationsEnabled,
+      allCampusFeed: allCampusFeed ?? this.allCampusFeed,
     );
   }
 
@@ -151,6 +185,32 @@ class UserProfile {
     if (programmeName != null) 'programmeName': programmeName,
     if (academicLevelName != null) 'academicLevelName': academicLevelName,
     if (avatarPath != null) 'avatarPath': avatarPath,
+    if (newsEnabled != null) 'newsEnabled': newsEnabled,
+    if (announcementsEnabled != null)
+      'announcementsEnabled': announcementsEnabled,
+    if (eventsEnabled != null) 'eventsEnabled': eventsEnabled,
+    if (advertisementsEnabled != null)
+      'advertisementsEnabled': advertisementsEnabled,
+    if (pushNotificationsEnabled != null)
+      'pushNotificationsEnabled': pushNotificationsEnabled,
+    if (allCampusFeed != null) 'allCampusFeed': allCampusFeed,
+  };
+
+  /// The body for `PUT /auth/academic-settings`: every academic ID and every
+  /// feed setting, since the endpoint replaces them all. A setting the app
+  /// has never seen goes as the API's own default, on.
+  Map<String, dynamic> toAcademicSettingsJson() => {
+    'institutionId': institutionId,
+    'facultyId': facultyId,
+    'departmentId': departmentId,
+    'programmeId': programmeId,
+    'academicLevelId': academicLevelId,
+    'newsEnabled': newsEnabled ?? true,
+    'announcementsEnabled': announcementsEnabled ?? true,
+    'eventsEnabled': eventsEnabled ?? true,
+    'advertisementsEnabled': advertisementsEnabled ?? true,
+    'pushNotificationsEnabled': pushNotificationsEnabled ?? true,
+    'allCampusFeed': allCampusFeed ?? false,
   };
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -181,8 +241,37 @@ class UserProfile {
       programmeName: json['programmeName'] as String?,
       academicLevelName: json['academicLevelName'] as String?,
       avatarPath: json['avatarPath'] as String?,
+      newsEnabled: json['newsEnabled'] as bool?,
+      announcementsEnabled: json['announcementsEnabled'] as bool?,
+      eventsEnabled: json['eventsEnabled'] as bool?,
+      advertisementsEnabled: json['advertisementsEnabled'] as bool?,
+      pushNotificationsEnabled: json['pushNotificationsEnabled'] as bool?,
+      allCampusFeed: json['allCampusFeed'] as bool?,
     );
   }
+
+  /// This profile updated with [server]'s answer. A field the answer leaves
+  /// out keeps its value here rather than being cleared, and so does what
+  /// only this phone knows: the names looked up for the IDs and the photo.
+  UserProfile mergedWith(UserProfile server) => copyWith(
+    id: server.id,
+    email: server.email,
+    firstName: server.firstName,
+    lastName: server.lastName,
+    role: server.role,
+    matriculationOrStaffNumber: server.matriculationOrStaffNumber,
+    institutionId: server.institutionId,
+    facultyId: server.facultyId,
+    departmentId: server.departmentId,
+    programmeId: server.programmeId,
+    academicLevelId: server.academicLevelId,
+    newsEnabled: server.newsEnabled,
+    announcementsEnabled: server.announcementsEnabled,
+    eventsEnabled: server.eventsEnabled,
+    advertisementsEnabled: server.advertisementsEnabled,
+    pushNotificationsEnabled: server.pushNotificationsEnabled,
+    allCampusFeed: server.allCampusFeed,
+  );
 }
 
 /// Default mock user profile data matching the design specification.

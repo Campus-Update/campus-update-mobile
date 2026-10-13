@@ -60,6 +60,17 @@ class _FakeProfileRepository implements ProfileRepository {
     }
     return p;
   }
+
+  @override
+  Future<UserProfile> updateDetails({
+    required String firstName,
+    required String lastName,
+    String? matriculationOrStaffNumber,
+  }) async => UserProfile(firstName: firstName, lastName: lastName);
+
+  @override
+  Future<UserProfile> updateAcademicSettings(UserProfile profile) async =>
+      profile;
 }
 
 void main() {
