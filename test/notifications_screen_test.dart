@@ -1,6 +1,7 @@
 import 'package:campus_update/app/app.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
+import 'package:campus_update/features/announcements/presentation/screens/announcement_detail_screen.dart';
 import 'package:campus_update/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:campus_update/features/notifications/presentation/widgets/alert_card.dart';
 import 'package:campus_update/features/notifications/presentation/widgets/alert_filter_chips.dart';
@@ -9,6 +10,7 @@ import 'package:campus_update/features/notifications/presentation/widgets/alerts
 import 'package:campus_update/shared/data/feed_repository.dart';
 import 'package:campus_update/shared/domain/content_item.dart';
 import 'package:campus_update/shared/domain/content_source.dart';
+import 'package:campus_update/shared/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,6 +19,51 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'support/fake_feed_repository.dart';
 
 class _FakeAnnouncementsFeedRepository extends FakeFeedRepository {
+  /// Resolved by [item] too, so tapping a card reaches the detail screen the
+  /// same way it does against the API.
+  static final announcements = [
+    ContentItem(
+      id: 'a1',
+      title: 'CSC 304 exam venue moved to Auditorium B',
+      body: 'The exam venue has moved.',
+      type: ContentType.announcement,
+      urgency: Urgency.urgent,
+      source: ContentSource.officialSchool,
+      publishedAt: DateTime.now().subtract(const Duration(minutes: 32)),
+    ),
+    ContentItem(
+      id: 'a2',
+      title: 'Second semester course registration closes 26 September',
+      body: 'Course registration deadline approaching.',
+      type: ContentType.announcement,
+      urgency: Urgency.important,
+      source: ContentSource.officialSchool,
+      publishedAt: DateTime.now().subtract(const Duration(days: 1)),
+    ),
+    ContentItem(
+      id: 'a3',
+      title: 'Library extends weekend opening hours',
+      body: 'Opening hours extended for all students.',
+      type: ContentType.announcement,
+      urgency: Urgency.normal,
+      source: ContentSource.officialSchool,
+      publishedAt: DateTime.now().subtract(const Duration(days: 2)),
+    ),
+    ContentItem(
+      id: 'a4',
+      title: 'CSC 304 lab submission deadline extended to Friday',
+      body: 'Deadline pushed for CSC 304 students.',
+      type: ContentType.announcement,
+      urgency: Urgency.normal,
+      source: ContentSource.officialSchool,
+      publishedAt: DateTime.now().subtract(const Duration(hours: 2)),
+    ),
+  ];
+
+  @override
+  Future<ContentItem> item(String id) async =>
+      announcements.firstWhere((i) => i.id == id);
+
   @override
   Future<List<ContentItem>> feed({
     ContentType? type,
@@ -26,44 +73,10 @@ class _FakeAnnouncementsFeedRepository extends FakeFeedRepository {
     int pageSize = 20,
   }) async {
     calls++;
-    var list = [
-      ContentItem(
-        id: 'a1',
-        title: 'CSC 304 exam venue moved to Auditorium B',
-        body: 'The exam venue has moved.',
-        type: ContentType.announcement,
-        urgency: Urgency.urgent,
-        source: ContentSource.officialSchool,
-        publishedAt: DateTime.now().subtract(const Duration(minutes: 32)),
-      ),
-      ContentItem(
-        id: 'a2',
-        title: 'Second semester course registration closes 26 September',
-        body: 'Course registration deadline approaching.',
-        type: ContentType.announcement,
-        urgency: Urgency.important,
-        source: ContentSource.officialSchool,
-        publishedAt: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      ContentItem(
-        id: 'a3',
-        title: 'Library extends weekend opening hours',
-        body: 'Opening hours extended for all students.',
-        type: ContentType.announcement,
-        urgency: Urgency.normal,
-        source: ContentSource.officialSchool,
-        publishedAt: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-      ContentItem(
-        id: 'a4',
-        title: 'CSC 304 lab submission deadline extended to Friday',
-        body: 'Deadline pushed for CSC 304 students.',
-        type: ContentType.announcement,
-        urgency: Urgency.normal,
-        source: ContentSource.officialSchool,
-        publishedAt: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-    ];
+    // The screen is defined by this filter, so the fake enforces it.
+    var list = type == null || type == ContentType.announcement
+        ? [...announcements]
+        : <ContentItem>[];
 
     if (urgency != null) {
       list = list.where((i) => i.urgency == urgency).toList();
@@ -330,5 +343,44 @@ void main() {
     expect(find.byType(AlertsEmptyState), findsOneWidget);
     expect(find.text('No results found'), findsOneWidget);
     expect(find.text('Try a different search term or filter.'), findsOneWidget);
+  });
+
+  testWidgets('tapping an alert opens the announcement detail', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        feedRepositoryProvider.overrideWithValue(
+          _FakeAnnouncementsFeedRepository(),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.notifications_none_rounded));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.text('CSC 304 exam venue moved to Auditorium B').first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AnnouncementDetailScreen), findsOneWidget);
+    expect(find.text('Announcement'), findsOneWidget);
+    expect(find.text('The exam venue has moved.'), findsOneWidget);
+    expect(find.byType(UrgencyBadge), findsOneWidget);
+
+    // And back to the list.
+    await tester.tap(find.byType(BackButtonCircle));
+    await tester.pumpAndSettle();
+    expect(find.text('Active Alerts'), findsOneWidget);
   });
 }

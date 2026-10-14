@@ -249,8 +249,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           final item = items[index];
                           return AlertCard(
                             item: item,
-                            onTap: () =>
-                                context.push('/announcements/${item.id}'),
+                            onTap: () => context.push(
+                              '${Routes.announcements}/${item.id}',
+                            ),
                           );
                         }
 
