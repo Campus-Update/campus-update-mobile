@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Flutter only adds this to the debug and profile manifests, so a
+         release build cannot reach the API at all without it. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
-        android:label="campus_update"
+        android:label="Campus Update"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
