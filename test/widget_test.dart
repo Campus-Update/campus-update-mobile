@@ -360,9 +360,10 @@ void main() {
       await tester.tap(find.byIcon(Icons.notifications_none_rounded));
       await tester.pumpAndSettle();
 
-      expect(find.text('Notifications'), findsWidgets);
-      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.arrow_back));
+      expect(find.text('Active Alerts'), findsOneWidget);
+
+      // The screen covers the tab bar, so it carries its own back button.
+      await tester.tap(find.byType(BackButtonCircle));
       await tester.pumpAndSettle();
 
       // Returned to Home
