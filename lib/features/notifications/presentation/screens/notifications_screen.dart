@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/domain/content_source.dart';
+import '../../../../shared/widgets/back_button_circle.dart';
 import '../../data/notifications_providers.dart';
 import '../widgets/alert_card.dart';
 import '../widgets/alert_filter_chips.dart';
@@ -52,6 +54,17 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     super.dispose();
   }
 
+  /// The bell opens this screen above the tab bar, so it needs its own way
+  /// back. Opened cold — a notification deep link — there is nothing to pop,
+  /// so fall back to home rather than leaving a dead button.
+  void _goBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(Routes.home);
+    }
+  }
+
   void _openSearch() {
     setState(() => _searchActive = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -89,6 +102,17 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // While searching, the search bar's own arrow cancels the search,
+            // so only one back affordance is ever on screen.
+            if (!_searchActive)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 16, 0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: BackButtonCircle(onPressed: _goBack),
+                ),
+              ),
+
             // Top Header: Active Alerts title + subtitle + search icon.
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 16, 12),

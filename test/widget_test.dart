@@ -361,7 +361,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Active Alerts'), findsOneWidget);
-      await tester.binding.handlePopRoute();
+
+      // The screen covers the tab bar, so it carries its own back button.
+      await tester.tap(find.byType(BackButtonCircle));
       await tester.pumpAndSettle();
 
       // Returned to Home
