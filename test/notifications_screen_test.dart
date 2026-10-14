@@ -1,5 +1,6 @@
 import 'package:campus_update/app/app.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
+import 'package:campus_update/core/network/api_exception.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
 import 'package:campus_update/features/announcements/presentation/screens/announcement_detail_screen.dart';
 import 'package:campus_update/features/notifications/presentation/screens/notifications_screen.dart';
@@ -92,6 +93,21 @@ class _FakeAnnouncementsFeedRepository extends FakeFeedRepository {
           .toList();
     }
     return list;
+  }
+}
+
+/// Always fails, so the error state and the retry path can be exercised.
+class _FailingFeedRepository extends FakeFeedRepository {
+  @override
+  Future<List<ContentItem>> feed({
+    ContentType? type,
+    Urgency? urgency,
+    String? search,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    calls++;
+    throw const ApiException(statusCode: 500, message: 'boom');
   }
 }
 
@@ -382,5 +398,55 @@ void main() {
     await tester.tap(find.byType(BackButtonCircle));
     await tester.pumpAndSettle();
     expect(find.text('Active Alerts'), findsOneWidget);
+  });
+
+  testWidgets('pull to retry after a failure does not throw', (tester) async {
+    final repo = _FailingFeedRepository();
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        feedRepositoryProvider.overrideWithValue(repo),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CampusUpdateApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.notifications_none_rounded));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Could not load alerts.\nPull down to retry.'),
+      findsOneWidget,
+    );
+
+    final before = repo.calls;
+
+    // The retry the error state asks for. It fails again; the screen must
+    // absorb it rather than letting it escape the refresh.
+    await tester.fling(
+      // The chips are a ListView too; the refreshable one is the vertical list.
+      find.descendant(
+        of: find.byType(RefreshIndicator),
+        matching: find.byType(ListView),
+      ),
+      const Offset(0, 400),
+      1000,
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(repo.calls, greaterThan(before));
+    expect(
+      find.text('Could not load alerts.\nPull down to retry.'),
+      findsOneWidget,
+    );
   });
 }

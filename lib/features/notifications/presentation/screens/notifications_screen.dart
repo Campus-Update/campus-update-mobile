@@ -65,6 +65,18 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     }
   }
 
+  /// Fetches the alerts again. The list shows its own error state, so a
+  /// failure here only needs to end the spinner — left unguarded, the retry
+  /// the error state tells the user to pull throws out of the refresh.
+  Future<void> _refresh() async {
+    // Held in a local so the refresh counts as used: awaiting it as a bare
+    // statement trips the unused_result lint.
+    final refreshed = ref.refresh(alertsFeedProvider(_currentFilter).future);
+    try {
+      await refreshed;
+    } catch (_) {}
+  }
+
   void _openSearch() {
     setState(() => _searchActive = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -218,8 +230,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             Expanded(
               child: RefreshIndicator(
                 color: AppColors.indigo,
-                onRefresh: () =>
-                    ref.refresh(alertsFeedProvider(_currentFilter).future),
+                onRefresh: _refresh,
                 child: alertsAsync.when(
                   data: (items) {
                     if (items.isEmpty) {
