@@ -5,6 +5,8 @@ import 'package:campus_update/features/auth/data/school_repository.dart';
 import 'package:campus_update/features/auth/domain/default_institution.dart';
 import 'package:campus_update/features/profile/data/preferences_provider.dart';
 import 'package:campus_update/features/profile/data/profile_providers.dart';
+import 'package:campus_update/features/profile/data/profile_repository.dart';
+import 'package:campus_update/core/network/api_exception.dart';
 import 'package:campus_update/features/profile/domain/user_preferences.dart';
 import 'package:campus_update/features/profile/domain/user_profile.dart';
 import 'package:campus_update/features/profile/presentation/screens/account_info_screen.dart';
@@ -20,6 +22,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// Records `POST /auth/change-password`, or refuses it as the API does.
+class _PasswordRepo implements ProfileRepository {
+  _PasswordRepo({this.refuseWith});
+
+  final String? refuseWith;
+  final sent = <String>[];
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    sent.add('$currentPassword -> $newPassword');
+    if (refuseWith != null) {
+      throw ApiException(statusCode: 400, message: refuseWith!);
+    }
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -318,8 +342,52 @@ void main() {
   });
 
   group('ChangePasswordScreen', () {
+    Future<_PasswordRepo> pumpWith(
+      WidgetTester tester,
+      _PasswordRepo repo,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          prefsStorageProvider.overrideWithValue(storage),
+          profileRepositoryProvider.overrideWithValue(repo),
+        ],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        createTestWidget(const ChangePasswordScreen(), container),
+      );
+      return repo;
+    }
+
+    Future<void> fillAndSave(WidgetTester tester) async {
+      final fields = find.byType(EditableText);
+      await tester.enterText(fields.at(0), 'OldPass123!');
+      await tester.enterText(fields.at(1), 'NewPass123!');
+      await tester.enterText(fields.at(2), 'NewPass123!');
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Save changes'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save changes'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a wrong current password shows the API\'s message', (
+      tester,
+    ) async {
+      final repo = await pumpWith(
+        tester,
+        _PasswordRepo(refuseWith: 'The current password is incorrect.'),
+      );
+      await tester.pumpAndSettle();
+      await fillAndSave(tester);
+
+      expect(repo.sent, ['OldPass123! -> NewPass123!']);
+      expect(find.text('The current password is incorrect.'), findsOneWidget);
+      expect(find.text('Password changed successfully'), findsNothing);
+    });
+
     testWidgets('validates password criteria dynamically', (tester) async {
-      await tester.pumpWidget(createTestWidget(const ChangePasswordScreen()));
+      final repo = await pumpWith(tester, _PasswordRepo());
       await tester.pumpAndSettle();
 
       expect(find.text('Change Password'), findsOneWidget);
@@ -358,6 +426,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Password changed successfully'), findsOneWidget);
+      expect(repo.sent, ['OldPass123! -> NewPass123!']);
     });
   });
 

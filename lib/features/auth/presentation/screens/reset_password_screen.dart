@@ -4,11 +4,18 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/auth/auth_repository.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../widgets/auth_page.dart';
+import 'verify_otp_screen.dart';
 
 class ResetPasswordScreen extends ConsumerStatefulWidget {
-  const ResetPasswordScreen({super.key});
+  const ResetPasswordScreen({super.key, this.args});
+
+  /// The email and code from the screens before. Null if the screen was
+  /// reached any other way, when there is nothing to reset with.
+  final PasswordResetArgs? args;
 
   @override
   ConsumerState<ResetPasswordScreen> createState() =>
@@ -20,6 +27,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   bool _remember = false;
+  bool _busy = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -47,9 +56,38 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       _hasSpecial &&
       _matches;
 
-  void _submit() {
-    if (!_isValid) return;
-    context.go(Routes.passwordResetSuccess);
+  Future<void> _submit() async {
+    final args = widget.args;
+    if (!_isValid || _busy) return;
+    if (args == null) {
+      setState(() => _error = 'Start again from Forgot Password.');
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .resetPassword(
+            email: args.email,
+            code: args.code,
+            newPassword: _password.text,
+          );
+      if (mounted) context.go(Routes.passwordResetSuccess);
+    } on ApiException catch (e) {
+      // A wrong or expired code only shows up here, so say where to fix it.
+      if (mounted) {
+        setState(
+          () => _error = e.statusCode == 400
+              ? '${e.message} Go back to enter it again, or resend it.'
+              : e.message,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   /// One rule. The design sets these 19 apart: a 12 line plus [_ruleGap].
@@ -154,11 +192,21 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
             ],
           ),
         ),
+        if (_error != null) ...[
+          const SizedBox(height: 12),
+          Text(
+            _error!,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.alertRed),
+          ),
+        ],
         const SizedBox(height: AuthGaps.toButton),
         // Disabled until the rules pass, so the list above explains why
         // rather than the tap doing nothing.
         AppButton(
           label: 'Reset Password',
+          loading: _busy,
           onPressed: _isValid ? _submit : null,
         ),
       ],

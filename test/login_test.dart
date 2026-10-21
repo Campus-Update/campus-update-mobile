@@ -41,6 +41,16 @@ class _FakeRepo implements AuthRepository {
 
   @override
   Future<void> signOut() async {}
+
+  @override
+  Future<void> forgotPassword(String email) async {}
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {}
 }
 
 /// Signing in now also reads GET /auth/profile, so the screen needs one of
@@ -71,6 +81,12 @@ class _FakeProfileRepo implements ProfileRepository {
   @override
   Future<UserProfile> updateAcademicSettings(UserProfile profile) async =>
       profile;
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {}
 }
 
 Future<ProviderContainer> boot(

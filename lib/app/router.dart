@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../app/theme/app_colors.dart';
+import '../core/auth/auth_repository.dart';
 import '../core/auth/auth_state.dart';
 import '../core/storage/storage_providers.dart';
 import '../features/announcements/presentation/screens/announcement_detail_screen.dart';
@@ -143,16 +144,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.verifyOtp,
         builder: (context, state) {
           final args = state.extra as OtpArgs?;
+          final email = args?.email;
+          final isReset = args?.next == Routes.resetPassword && email != null;
           return VerifyOtpScreen(
             title: args?.title ?? 'Verify OTP',
-            email: args?.email,
+            email: email,
+            length: args?.length ?? 6,
+            onResend: isReset
+                ? () => ref.read(authRepositoryProvider).forgotPassword(email)
+                : null,
             onVerified: args == null
                 ? null
-                : (_) {
+                : (code) {
                     if (args.next == Routes.home) {
                       ref
                           .read(authProvider.notifier)
                           .signedIn(email: args.email);
+                    } else if (isReset) {
+                      context.push(
+                        args.next,
+                        extra: PasswordResetArgs(email: email, code: code),
+                      );
                     } else {
                       context.push(args.next);
                     }
@@ -179,7 +191,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: Routes.resetPassword,
-        builder: (_, __) => const ResetPasswordScreen(),
+        builder: (_, state) =>
+            ResetPasswordScreen(args: state.extra as PasswordResetArgs?),
       ),
       GoRoute(
         path: Routes.passwordResetSuccess,

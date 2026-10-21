@@ -5,10 +5,25 @@ import 'package:campus_update/app/router.dart';
 import 'package:campus_update/app/theme/app_theme.dart';
 import 'package:campus_update/features/auth/presentation/screens/password_reset_success_screen.dart';
 import 'package:campus_update/features/auth/presentation/screens/reset_password_screen.dart';
+import 'package:campus_update/features/auth/presentation/screens/verify_otp_screen.dart';
+import 'package:campus_update/core/auth/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+
+/// Accepts any reset, so these tests are about the rules on screen.
+class _FakeAuth implements AuthRepository {
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {}
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
+}
 
 Future<void> boot(WidgetTester t) async {
   t.view.physicalSize = const Size(393, 852);
@@ -19,7 +34,9 @@ Future<void> boot(WidgetTester t) async {
     routes: [
       GoRoute(
         path: Routes.resetPassword,
-        builder: (_, __) => const ResetPasswordScreen(),
+        builder: (_, __) => const ResetPasswordScreen(
+          args: PasswordResetArgs(email: 'ada@example.com', code: '12345678'),
+        ),
       ),
       GoRoute(
         path: Routes.passwordResetSuccess,
@@ -29,6 +46,7 @@ Future<void> boot(WidgetTester t) async {
   );
   await t.pumpWidget(
     ProviderScope(
+      overrides: [authRepositoryProvider.overrideWithValue(_FakeAuth())],
       child: MaterialApp.router(theme: AppTheme.light(), routerConfig: r),
     ),
   );

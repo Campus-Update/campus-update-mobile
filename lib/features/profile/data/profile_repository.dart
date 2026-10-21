@@ -45,6 +45,21 @@ class ProfileRepository {
     }
   }
 
+  /// `POST /auth/change-password`. Signs out every other device.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _dio.post<void>(
+        '/api/v1/auth/change-password',
+        data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+      );
+    } on DioException catch (e) {
+      throw ApiException.from(e);
+    }
+  }
+
   /// `PUT /auth/academic-settings`: the academic IDs and feed settings,
   /// replaced as one set. See [UserProfile.toAcademicSettingsJson].
   Future<UserProfile> updateAcademicSettings(UserProfile profile) async {

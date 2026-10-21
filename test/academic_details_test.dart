@@ -70,6 +70,16 @@ class _FakeRepo implements AuthRepository {
 
   @override
   Future<void> signOut() async {}
+
+  @override
+  Future<void> forgotPassword(String email) async {}
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {}
 }
 
 /// Answers `GET /auth/profile` as the API does straight after registering:

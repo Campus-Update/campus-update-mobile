@@ -40,6 +40,19 @@ class _FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {}
+
+  /// What the password reset flow sent, in order.
+  final sent = <String>[];
+
+  @override
+  Future<void> forgotPassword(String email) async => sent.add('forgot $email');
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async => sent.add('reset $email $code $newPassword');
 }
 
 /// Stands in for GET /auth/profile.
@@ -71,6 +84,12 @@ class _FakeProfileRepository implements ProfileRepository {
   @override
   Future<UserProfile> updateAcademicSettings(UserProfile profile) async =>
       profile;
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {}
 }
 
 void main() {
@@ -374,12 +393,13 @@ void main() {
   testWidgets('forgot password flow navigates to OTP verification with email', (
     tester,
   ) async {
+    final auth = _FakeAuthRepository();
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
         fakeSchoolsOverride,
-        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        authRepositoryProvider.overrideWithValue(auth),
         profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
       ],
     );
@@ -409,12 +429,13 @@ void main() {
     // Verify it navigated to OTP screen with email
     expect(find.text('Check Your Email'), findsOneWidget);
     expect(
-      find.text("We've sent a 6-digit verification code to user@example.com"),
+      find.text("We've sent an 8-digit verification code to user@example.com"),
       findsOneWidget,
     );
+    expect(auth.sent, ['forgot user@example.com']);
 
-    // Enter 6 digit OTP to navigate to Create New Password
-    await tester.enterText(find.byType(EditableText).first, '123456');
+    // The API's reset code is 8 digits; the last one moves on
+    await tester.enterText(find.byType(EditableText).first, '12345678');
     await tester.pumpAndSettle();
 
     expect(find.text('Create New Password'), findsOneWidget);
@@ -429,6 +450,9 @@ void main() {
     await tester.ensureVisible(find.text('Reset Password'));
     await tester.tap(find.text('Reset Password'));
     await tester.pumpAndSettle();
+
+    // The code goes with the new password; there is no call to check it first
+    expect(auth.sent.last, 'reset user@example.com 12345678 Password123!');
 
     // Verify it navigated to Password Reset success screen
     expect(find.text('Password Reset!'), findsOneWidget);
