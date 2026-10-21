@@ -2,8 +2,11 @@ import 'package:campus_update/app/theme/app_theme.dart';
 import 'package:campus_update/core/auth/auth_repository.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/network/api_exception.dart';
+import 'package:campus_update/core/storage/storage_providers.dart';
 import 'package:campus_update/features/auth/domain/institution.dart';
 import 'package:campus_update/features/profile/data/profile_providers.dart';
+import 'package:campus_update/features/profile/data/profile_repository.dart';
+import 'package:campus_update/features/profile/domain/user_profile.dart';
 import 'package:campus_update/features/auth/domain/registration_draft.dart';
 import 'package:campus_update/features/auth/presentation/screens/academic_details_screen.dart';
 import 'package:campus_update/shared/widgets/widgets.dart';
@@ -11,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final osun = Institution.fromJson({
   'id': 'inst',
@@ -66,6 +70,35 @@ class _FakeRepo implements AuthRepository {
 
   @override
   Future<void> signOut() async {}
+
+  @override
+  Future<void> forgotPassword(String email) async {}
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {}
+}
+
+/// Answers `GET /auth/profile` as the API does straight after registering:
+/// the name and the academic IDs just sent.
+class _FakeProfileRepo implements ProfileRepository {
+  @override
+  Future<UserProfile> fetch() async => const UserProfile(
+    email: 'ada@example.com',
+    firstName: 'Ada',
+    lastName: 'Lovelace',
+    institutionId: 'inst',
+    facultyId: 'f1',
+    departmentId: 'd1',
+    programmeId: 'p1',
+    academicLevelId: 'l1',
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
 Future<void> choose(WidgetTester t, Finder select, String option) async {
@@ -261,8 +294,15 @@ void main() {
 void _registrationTests() {
   testWidgets('a finished form registers and signs in', (t) async {
     final repo = _FakeRepo();
+    // Phone storage, where signing in looks for the profile just fetched.
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(
-      overrides: [authRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        authRepositoryProvider.overrideWithValue(repo),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepo()),
+      ],
     );
     addTearDown(container.dispose);
     container.read(registrationDraftProvider.notifier)
@@ -305,13 +345,15 @@ void _registrationTests() {
     expect(json['lastName'], 'Lovelace');
     expect(json['role'], 'Student');
 
-    // Register returns tokens only and there is no profile endpoint, so this
-    // is the one moment the name can be kept. Without it the home screen
-    // greets a brand new user with no name at all.
+    // Register returns tokens only, so the profile is read back as login
+    // does. Without it Profile shows no school, faculty or level until the
+    // next sign-in.
     final profile = container.read(userProfileProvider);
     expect(profile?.firstName, 'Ada');
     expect(profile?.lastName, 'Lovelace');
     expect(profile?.displayName, 'Ada');
+    expect(profile?.institutionId, 'inst');
+    expect(profile?.academicLevelId, 'l1');
     expect(json['institutionId'], 'inst');
     expect(json['facultyId'], 'f1');
     expect(json['departmentId'], 'd1');

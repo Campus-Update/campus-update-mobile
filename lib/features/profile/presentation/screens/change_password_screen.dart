@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_form_panel.dart';
 import '../../../../shared/widgets/app_input.dart';
+import '../../data/profile_repository.dart';
 import '../widgets/profile_screen_header.dart';
 
 /// Screen allowing the user to update their account password.
@@ -72,7 +74,24 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     }
 
     setState(() => _busy = true);
-    await Future<void>.delayed(const Duration(milliseconds: 300));
+    try {
+      await ref
+          .read(profileRepositoryProvider)
+          .changePassword(
+            currentPassword: _currentPasswordController.text,
+            newPassword: _newPasswordController.text,
+          );
+    } on ApiException catch (e) {
+      // The API's own words: a wrong current password, or a new one that
+      // matches it.
+      if (mounted) {
+        setState(() => _busy = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+      return;
+    }
     if (!mounted) return;
     setState(() => _busy = false);
 

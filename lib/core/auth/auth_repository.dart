@@ -110,6 +110,33 @@ class AuthRepository {
 
   Future<void> signOut() => _storage.clear();
 
+  /// `POST /auth/forgot-password`: emails an 8-digit reset code. The API
+  /// answers the same whether or not the address has an account, and sends
+  /// at most one code a minute.
+  Future<void> forgotPassword(String email) =>
+      _send('/api/v1/auth/forgot-password', {'email': email});
+
+  /// `POST /auth/reset-password`: the code and the new password together;
+  /// there is no separate call to check the code first. Signs out every
+  /// other device.
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) => _send('/api/v1/auth/reset-password', {
+    'email': email,
+    'code': code,
+    'newPassword': newPassword,
+  });
+
+  Future<void> _send(String path, Map<String, dynamic> body) async {
+    try {
+      await _dio.post<void>(path, data: body);
+    } on DioException catch (e) {
+      throw ApiException.from(e);
+    }
+  }
+
   Future<AuthSession> _post(String path, Map<String, dynamic> body) async {
     try {
       final res = await _dio.post<Map<String, dynamic>>(path, data: body);
