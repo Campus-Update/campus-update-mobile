@@ -8,7 +8,7 @@ enum Flavor { dev, staging, prod }
 abstract final class Env {
   // ---------------------------------------------------------------------------
   // Change this one line to switch environment.
-  static const Flavor _active = Flavor.dev;
+  static const Flavor _active = Flavor.staging;
   // ---------------------------------------------------------------------------
 
   /// The deployed development API. Running the backend on your own machine
@@ -17,8 +17,10 @@ abstract final class Env {
   /// cannot see the laptop's loopback on its own.
   static const _devUrl = 'https://campus-update-api.vercel.app';
 
-  // Neither exists yet; placeholders until there is somewhere to point them.
-  static const _stagingUrl = 'https://staging.campusupdate.example/';
+  /// The deployed staging API, a separate database from dev.
+  static const _stagingUrl = 'https://campus-update-api-staging.vercel.app';
+
+  // Does not exist yet; a placeholder until there is somewhere to point it.
   static const _prodUrl = 'https://api.campusupdate.example/';
 
   static const Flavor flavor = bool.hasEnvironment('FLAVOR')
