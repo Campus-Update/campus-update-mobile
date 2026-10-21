@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/auth/auth_repository.dart';
 import '../../../../core/auth/auth_state.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../profile/data/profile_providers.dart';
+import '../../../profile/data/profile_repository.dart';
 import '../../domain/institution.dart';
 import '../../domain/registration_draft.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -85,12 +87,16 @@ class _AcademicDetailsScreenState extends ConsumerState<AcademicDetailsScreen> {
     try {
       await ref.read(authRepositoryProvider).register(request);
       drafts.clear();
-      // Registering returns a session, so there is no separate sign-in.
-      //
-      // The name goes with it. Register returns tokens only and there is no
-      // profile endpoint to read it back from, so this is the one moment the
-      // app knows who it just signed up; without it the home screen greets a
-      // brand new user with no name at all.
+      // Registering returns a session, so there is no separate sign-in. It
+      // returns tokens only, though, so the profile is read back as login
+      // does: without it the phone never learns the academic IDs just sent,
+      // and Profile shows no school, faculty or level until the next login.
+      try {
+        final profile = await ref.read(profileRepositoryProvider).fetch();
+        await ref.read(userProfileProvider.notifier).setProfile(profile);
+      } on ApiException {
+        // Signed up regardless; the typed name below still greets them.
+      }
       ref
           .read(authProvider.notifier)
           .signedIn(
