@@ -10,6 +10,7 @@ import '../../../../shared/widgets/widgets.dart';
 import '../../data/calendar_repository.dart';
 import '../widgets/calendar_event_card.dart';
 import '../widgets/calendar_grid.dart';
+import '../widgets/official_calendar_card.dart';
 
 class CalendarScreen extends ConsumerWidget {
   const CalendarScreen({super.key});
@@ -107,6 +108,11 @@ class CalendarScreen extends ConsumerWidget {
                 thickness: 1,
                 color: AppColors.fieldBorder,
               ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              // The school's own calendar from the API, as a picture.
+              const OfficialCalendarCard(),
 
               const SizedBox(height: AppSpacing.md),
 
