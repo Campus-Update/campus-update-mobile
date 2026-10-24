@@ -9,6 +9,7 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../shared/domain/content_item.dart';
 import '../../../../shared/utils/date_format.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../../../news/data/news_repository.dart';
 import '../../../profile/data/profile_providers.dart';
 import '../../data/home_feed_providers.dart';
 
@@ -126,15 +127,22 @@ class _HomeHeader extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              greeting,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF111827),
-                letterSpacing: -0.3,
+            // A long name or a large text size wraps rather than pushing the
+            // buttons off the screen.
+            Flexible(
+              child: Text(
+                greeting,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.3,
+                ),
               ),
             ),
+            const SizedBox(width: 12),
             Row(
               children: [
                 IconButton(
@@ -322,52 +330,61 @@ class _FeedIconPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// Category filter strip under the greeting.
+/// Category filter strip under the greeting. Every tab but 'For You' sends
+/// its name to the API as the category for all three sections below.
+///
+/// The design also has 'All' before 'For You'. It is left out: the API
+/// always narrows the feed to the user, so it would show the same as
+/// 'For You'.
 ///
 /// Measured off the home design export: all six labels share one light grey
 /// (sampled #80-#95, against #101010 for the greeting on the same frame, so
 /// none of them is near-black), and the selected one is marked by an
 /// underline rather than a pill, a fill or a colour change.
-class _CategoryTabs extends StatefulWidget {
+class _CategoryTabs extends ConsumerWidget {
   const _CategoryTabs();
 
-  @override
-  State<_CategoryTabs> createState() => _CategoryTabsState();
-}
-
-class _CategoryTabsState extends State<_CategoryTabs> {
+  static const _forYou = 'For You';
   static const _categories = [
-    'All',
-    'For You',
+    _forYou,
     'General',
     'Campus',
     'Technology',
     'Health',
   ];
 
-  /// The design underlines 'For You', not 'All'.
-  int _selected = 1;
-
   @override
-  Widget build(BuildContext context) {
-    // Scrolls horizontally, since at 13pt the six labels can run past the
-    // edge of a narrow phone.
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (var i = 0; i < _categories.length; i++)
-            _CategoryTab(
-              // 'General', 'Campus' and 'Technology' are also category labels
-              // on the Latest News items below, so the tabs carry keys to stay
-              // unambiguous.
-              key: ValueKey('category-tab-${_categories[i]}'),
-              label: _categories[i],
-              selected: i == _selected,
-              isLast: i == _categories.length - 1,
-              onTap: () => setState(() => _selected = i),
-            ),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selected = ref.watch(homeCategoryProvider) ?? _forYou;
+    // Spread across the full width, first tab at the left gutter and last at
+    // the right. Where the labels cannot fit — a narrow phone, or a large
+    // text size — they keep their minimum gap and scroll instead.
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              for (var i = 0; i < _categories.length; i++)
+                _CategoryTab(
+                  // 'General', 'Campus' and 'Technology' are also category
+                  // labels on the Latest News items below, so the tabs carry
+                  // keys to stay unambiguous.
+                  key: ValueKey('category-tab-${_categories[i]}'),
+                  label: _categories[i],
+                  selected: _categories[i] == selected,
+                  isLast: i == _categories.length - 1,
+                  onTap: () => ref
+                      .read(homeCategoryProvider.notifier)
+                      .select(
+                        _categories[i] == _forYou ? null : _categories[i],
+                      ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -698,7 +715,13 @@ class _LatestNewsSection extends ConsumerWidget {
       children: [
         SectionHeader(
           title: 'Latest News',
-          onAction: () => context.go(Routes.news),
+          onAction: () {
+            // News opens on the same category as the tab picked here.
+            ref
+                .read(selectedNewsCategoryProvider.notifier)
+                .select(ref.read(homeCategoryProvider) ?? 'All');
+            context.go(Routes.news);
+          },
         ),
         const SizedBox(height: 14),
         _SectionFeed(

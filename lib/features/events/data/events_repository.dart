@@ -17,13 +17,17 @@ abstract class EventsRepository {
 /// here. The API orders by urgency and then publish date, so this reads every
 /// page before putting them in the order they happen. The Events tab and the
 /// home section both read it, so they always agree.
-Future<List<ContentItem>> upcomingEvents(FeedRepository feed) async {
+Future<List<ContentItem>> upcomingEvents(
+  FeedRepository feed, {
+  String? category,
+}) async {
   const pageSize = 100; // The API's largest page.
   const maxPages = 10; // A ceiling, should the API keep returning full pages.
   final items = <ContentItem>[];
   for (var page = 1; page <= maxPages; page++) {
     final batch = await feed.feed(
       type: ContentType.event,
+      category: category,
       page: page,
       pageSize: pageSize,
     );

@@ -136,4 +136,19 @@ void main() {
 
     expect(events.map((e) => e.id), ['yesterday', 'soon', 'later']);
   });
+
+  test('a home tab sends its category to every home section', () async {
+    final feed = _PagedFeed(const []);
+    final container = ProviderContainer(
+      overrides: [feedRepositoryProvider.overrideWithValue(feed)],
+    );
+    addTearDown(container.dispose);
+
+    container.read(homeCategoryProvider.notifier).select('Campus');
+    await container.read(breakingNewsProvider.future);
+    await container.read(latestNewsProvider.future);
+    await container.read(upcomingEventsProvider.future);
+
+    expect(feed.categories, ['Campus', 'Campus', 'Campus']);
+  });
 }

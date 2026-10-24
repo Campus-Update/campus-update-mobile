@@ -10,6 +10,7 @@ import 'package:campus_update/features/profile/data/profile_repository.dart';
 import 'package:campus_update/features/profile/domain/user_profile.dart';
 import 'package:campus_update/shared/data/feed_repository.dart';
 import 'package:campus_update/shared/widgets/widgets.dart';
+import 'package:campus_update/app/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -725,8 +726,10 @@ void main() {
     await tester.pumpWidget(homeUnder(container));
     await tester.pumpAndSettle();
 
+    // 'All' is left out on purpose: the API always narrows the feed to the
+    // user, so it would show the same as 'For You'.
+    expect(categoryTab('All'), findsNothing);
     for (final label in [
-      'All',
       'For You',
       'General',
       'Campus',
@@ -736,6 +739,50 @@ void main() {
       expect(categoryTab(label), findsOneWidget, reason: 'missing tab: $label');
     }
   });
+
+  for (final (name, width, textScale, fits) in [
+    // Tests draw text in a font far wider than the app's, so the tabs only
+    // fit side by side here at tablet width.
+    ('a tablet', 800.0, 1.0, true),
+    ('a narrow phone', 320.0, 1.0, false),
+    ('large text', 390.0, 2.0, false),
+  ]) {
+    testWidgets('the category tabs fit $name without overflowing', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 900);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = textScale;
+      addTearDown(tester.view.reset);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          fakeFeedOverride,
+          fakeSchoolsOverride,
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+          profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(authProvider.notifier).signedIn();
+
+      await tester.pumpWidget(homeUnder(container));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final first = tester.getTopLeft(categoryTab('For You')).dx;
+      final last = tester.getTopRight(categoryTab('Health')).dx;
+      if (fits) {
+        // First and last tabs sit on the two gutters.
+        expect(first, moreOrLessEquals(AppSpacing.gutter, epsilon: 1));
+        expect(last, moreOrLessEquals(width - AppSpacing.gutter, epsilon: 1));
+      } else {
+        // Too wide for the screen: the strip scrolls instead.
+        expect(last, greaterThan(width - AppSpacing.gutter));
+      }
+    });
+  }
 
   testWidgets('tapping a category tab moves the underline to it', (
     tester,

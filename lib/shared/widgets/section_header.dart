@@ -28,16 +28,23 @@ class SectionHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: AppFonts.medium,
-            color: AppColors.feedTitle,
-            letterSpacing: -0.2,
+        // Wraps on a narrow screen or at a large text size, so 'See all'
+        // stays on screen.
+        Flexible(
+          child: Text(
+            title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: AppFonts.medium,
+              color: AppColors.feedTitle,
+              letterSpacing: -0.2,
+            ),
           ),
         ),
-        if (onAction != null)
+        if (onAction != null) ...[
+          const SizedBox(width: 12),
           GestureDetector(
             onTap: onAction,
             child: Text(
@@ -49,6 +56,7 @@ class SectionHeader extends StatelessWidget {
               ),
             ),
           ),
+        ],
       ],
     );
   }
