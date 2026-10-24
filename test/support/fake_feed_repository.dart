@@ -13,6 +13,7 @@ class FakeFeedRepository implements FeedRepository {
     ContentType? type,
     Urgency? urgency,
     String? search,
+    String? category,
     int page = 1,
     int pageSize = 20,
   }) async {

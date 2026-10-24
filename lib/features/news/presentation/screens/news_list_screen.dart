@@ -24,7 +24,7 @@ class NewsListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCategory = ref.watch(selectedNewsCategoryProvider);
-    final newsAsync = ref.watch(filteredNewsListProvider);
+    final newsAsync = ref.watch(newsListProvider);
     final hasMore = ref.watch(newsListProvider.notifier).hasMore;
 
     return Scaffold(

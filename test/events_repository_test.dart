@@ -13,16 +13,19 @@ class _PagedFeed implements FeedRepository {
   final List<ContentItem> items;
   final pages = <int>[];
   final opened = <String>[];
+  final categories = <String?>[];
 
   @override
   Future<List<ContentItem>> feed({
     ContentType? type,
     Urgency? urgency,
     String? search,
+    String? category,
     int page = 1,
     int pageSize = 20,
   }) async {
     pages.add(page);
+    categories.add(category);
     return items.skip((page - 1) * pageSize).take(pageSize).toList();
   }
 

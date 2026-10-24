@@ -20,6 +20,7 @@ class FeedRepository {
     ContentType? type,
     Urgency? urgency,
     String? search,
+    String? category,
     int page = 1,
     int pageSize = 20,
   }) async {
@@ -31,6 +32,8 @@ class FeedRepository {
           if (urgency != null) 'urgency': _apiName(urgency.name),
           if (search != null && search.trim().isNotEmpty)
             'search': search.trim(),
+          // Matched exactly by the API, capitals included.
+          if (category != null) 'category': category,
           'page': page,
           'pageSize': pageSize,
         },

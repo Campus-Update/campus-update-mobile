@@ -46,6 +46,18 @@ void main() {
     expect(adapter.paths.single, contains('urgency=Urgent'));
   });
 
+  test(
+    'a category reaches the API as typed, and none is sent without one',
+    () async {
+      final adapter = _Adapter(const []);
+      await _repo(adapter).feed(type: ContentType.news, category: 'Campus');
+      await _repo(adapter).feed(type: ContentType.news);
+
+      expect(adapter.paths.first, contains('category=Campus'));
+      expect(adapter.paths.last, isNot(contains('category')));
+    },
+  );
+
   test('items come back parsed', () async {
     final adapter = _Adapter([
       {

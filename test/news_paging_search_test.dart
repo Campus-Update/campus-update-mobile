@@ -11,6 +11,10 @@ class _RecordingNewsRepository implements NewsRepository {
   final pages = <int>[];
   final queries = <String>[];
 
+  /// The category of every request, null for none.
+  final categories = <String?>[];
+  final opened = <String>[];
+
   final _all = [
     for (var i = 1; i <= 25; i++)
       NewsItem(
@@ -27,6 +31,7 @@ class _RecordingNewsRepository implements NewsRepository {
     String? query,
     int page = 1,
   }) async {
+    categories.add(category);
     if (query != null) {
       queries.add(query);
       return _all.where((n) => n.title.contains(query)).toList();
@@ -36,7 +41,10 @@ class _RecordingNewsRepository implements NewsRepository {
   }
 
   @override
-  Future<NewsItem?> getNewsById(String id) async => null;
+  Future<NewsItem?> getNewsById(String id) async {
+    opened.add(id);
+    return _all.firstWhere((n) => n.id == id);
+  }
 
   @override
   Future<void> toggleBookmark(String id) async {}
@@ -83,5 +91,50 @@ void main() {
     expect(repo.queries, ['Article 2']);
     expect(find.text('Article 21'), findsOneWidget);
     expect(find.text('Article 1'), findsNothing);
+  });
+
+  testWidgets('a chip asks the API for its category, and All for none', (
+    tester,
+  ) async {
+    final repo = _RecordingNewsRepository();
+    await tester.pumpWidget(_under(const NewsListScreen(), repo));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Campus'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('All'));
+    await tester.pumpAndSettle();
+
+    expect(repo.categories, [null, 'Campus', null]);
+  });
+
+  testWidgets('search sends the query and the chip together', (tester) async {
+    final repo = _RecordingNewsRepository();
+    await tester.pumpWidget(_under(const NewsSearchScreen(), repo));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Health'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'Article');
+    await tester.pumpAndSettle();
+
+    expect(repo.queries, ['Article']);
+    expect(repo.categories.last, 'Health');
+  });
+
+  test('an article is fetched even when the list holds it', () async {
+    final repo = _RecordingNewsRepository();
+    final container = ProviderContainer(
+      overrides: [newsRepositoryProvider.overrideWithValue(repo)],
+    );
+    addTearDown(container.dispose);
+    final list = container.listen(newsListProvider, (_, _) {});
+    await Future<void>.delayed(Duration.zero);
+    expect(list.read().value, isNotEmpty);
+
+    container.listen(newsArticleProvider('n1'), (_, _) {});
+    await Future<void>.delayed(Duration.zero);
+
+    expect(repo.opened, ['n1']);
   });
 }
