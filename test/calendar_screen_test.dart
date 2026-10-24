@@ -1,31 +1,76 @@
 import 'package:campus_update/app/app.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
-import 'package:campus_update/features/calendar/presentation/screens/calendar_detail_screen.dart';
+import 'package:campus_update/features/calendar/data/calendar_repository.dart';
 import 'package:campus_update/features/calendar/presentation/screens/calendar_screen.dart';
 import 'package:campus_update/features/calendar/presentation/widgets/calendar_event_card.dart';
 import 'package:campus_update/features/calendar/presentation/widgets/calendar_grid.dart';
-import 'package:campus_update/shared/widgets/back_button_circle.dart';
-import 'package:campus_update/features/calendar/data/calendar_repository.dart';
+import 'package:campus_update/features/events/data/events_repository.dart';
+import 'package:campus_update/features/events/domain/event_item.dart';
+import 'package:campus_update/features/events/presentation/screens/event_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'support/fake_feed_repository.dart';
 import 'support/fake_calendar.dart';
+import 'support/fake_feed_repository.dart';
 import 'support/fake_schools.dart';
 
-/// The calendar opens on the current month; these tests check the July 2026
-/// sample events, so they start there.
+/// The calendar opens on the current month; these tests start on July 2026,
+/// where [_Events] has its dates.
 class _July2026 extends ActiveMonthNotifier {
   @override
   DateTime build() => DateTime(2026, 7);
 }
 
-class _July15 extends SelectedDateNotifier {
+/// Events as the API would send them: one over two days, one on a single
+/// day, one in August and one with no date yet.
+class _Events implements EventsRepository {
+  static final events = [
+    EventItem(
+      id: 'fair',
+      title: 'Career fair',
+      description: 'Meet employers.',
+      location: 'Main hall',
+      dateFormatted: 'JUL 15, 2026',
+      time: '9:00 AM - 4:00 PM',
+      startsAt: DateTime(2026, 7, 15, 9),
+      endsAt: DateTime(2026, 7, 16, 16),
+    ),
+    EventItem(
+      id: 'debate',
+      title: 'Inter-faculty debate',
+      description: 'The final round.',
+      location: 'Senate building',
+      dateFormatted: 'JUL 20, 2026',
+      time: '2:00 PM',
+      startsAt: DateTime(2026, 7, 20, 14),
+    ),
+    EventItem(
+      id: 'games',
+      title: 'Sports week',
+      description: 'Inter-hall games.',
+      location: 'Sports complex',
+      dateFormatted: 'AUG 3, 2026',
+      startsAt: DateTime(2026, 8, 3, 8),
+    ),
+    const EventItem(
+      id: 'tba',
+      title: 'Alumni dinner',
+      description: 'Date to come.',
+      location: 'Registry',
+      dateFormatted: 'Date to be announced',
+      time: '',
+    ),
+  ];
+
   @override
-  DateTime? build() => DateTime(2026, 7, 15);
+  Future<List<EventItem>> getEvents() async => events;
+
+  @override
+  Future<EventItem?> getEventById(String id) async =>
+      events.where((e) => e.id == id).firstOrNull;
 }
 
 void main() {
@@ -36,88 +81,15 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  testWidgets(
-    'navigating to calendar tab displays Calendar screen matching design',
-    (tester) async {
-      final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          fakeFeedOverride,
-          fakeSchoolsOverride,
-          fakeCalendarOverride,
-          activeMonthProvider.overrideWith(_July2026.new),
-          selectedDateProvider.overrideWith(_July15.new),
-        ],
-      );
-      addTearDown(container.dispose);
-      container.read(authProvider.notifier).signedIn();
-
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: const CampusUpdateApp(),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      // Tap on Calendar tab in bottom navigation
-      await tester.tap(find.text('Calendar'));
-      await tester.pumpAndSettle();
-
-      // Verify CalendarScreen is displayed
-      expect(find.byType(CalendarScreen), findsOneWidget);
-
-      // Verify Header Elements
-      expect(
-        find.descendant(
-          of: find.byType(CalendarScreen),
-          matching: find.text('Calendar'),
-        ),
-        findsOneWidget,
-      );
-      expect(find.byIcon(Icons.search_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
-
-      // Verify Month Header & Navigation
-      expect(find.text('July 2026'), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_left_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_right_rounded), findsWidgets);
-
-      // Verify Calendar Grid
-      expect(find.byType(CalendarGrid), findsOneWidget);
-      expect(find.text('Su'), findsOneWidget);
-      expect(find.text('Mo'), findsOneWidget);
-      expect(find.text('Tu'), findsOneWidget);
-      expect(find.text('We'), findsOneWidget);
-      expect(find.text('Th'), findsOneWidget);
-      expect(find.text('Fr'), findsOneWidget);
-      expect(find.text('Sa'), findsOneWidget);
-
-      // Verify "July 2026 Dates" section
-      expect(find.text('July 2026 Dates'), findsOneWidget);
-      expect(find.byType(CalendarEventCard), findsWidgets);
-
-      // Verify specific academic dates from the design
-      expect(find.text('Second semester lectures'), findsOneWidget);
-      expect(find.text('Course registration opens'), findsOneWidget);
-      expect(
-        find.textContaining('Matriculation ceremony for the 2025/2026 session'),
-        findsOneWidget,
-      );
-    },
-  );
-
-  testWidgets('tapping next and previous month navigates the calendar month', (
-    tester,
-  ) async {
+  Future<void> openCalendar(WidgetTester tester) async {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         fakeFeedOverride,
         fakeSchoolsOverride,
         fakeCalendarOverride,
+        eventsRepositoryProvider.overrideWithValue(_Events()),
         activeMonthProvider.overrideWith(_July2026.new),
-        selectedDateProvider.overrideWith(_July15.new),
       ],
     );
     addTearDown(container.dispose);
@@ -130,152 +102,105 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-
-    // Navigate to Calendar
     await tester.tap(find.text('Calendar'));
     await tester.pumpAndSettle();
+  }
 
+  testWidgets('the month lists its events from the API', (tester) async {
+    await openCalendar(tester);
+
+    expect(find.byType(CalendarScreen), findsOneWidget);
     expect(find.text('July 2026'), findsOneWidget);
+    expect(find.byType(CalendarGrid), findsOneWidget);
+    expect(find.text('July 2026 events'), findsOneWidget);
 
-    // Tap next month (the first chevron_right_rounded on the screen is in the month header)
+    // July's two dated events; August's and the undated one stay out.
+    expect(find.byType(CalendarEventCard), findsNWidgets(2));
+    expect(find.text('Career fair'), findsOneWidget);
+    expect(find.text('Inter-faculty debate'), findsOneWidget);
+    expect(find.text('Sports week'), findsNothing);
+    expect(find.text('Alumni dinner'), findsNothing);
+    expect(find.text('9:00 AM - 4:00 PM · Main hall'), findsOneWidget);
+  });
+
+  testWidgets('every day of an event gets a dot', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        eventsRepositoryProvider.overrideWithValue(_Events()),
+        activeMonthProvider.overrideWith(_July2026.new),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.listen(eventsListProvider, (_, _) {});
+    await tester.pump();
+
+    expect(container.read(eventDaysInActiveMonthProvider), {15, 16, 20});
+  });
+
+  testWidgets('picking a day narrows the list, and Whole month undoes it', (
+    tester,
+  ) async {
+    await openCalendar(tester);
+
+    // The 16th is the career fair's second day.
+    await tester.tap(
+      find.descendant(of: find.byType(CalendarGrid), matching: find.text('16')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Events on Thu 16 July'), findsOneWidget);
+    expect(find.text('Career fair'), findsOneWidget);
+    expect(find.text('Inter-faculty debate'), findsNothing);
+
+    await tester.tap(find.text('Whole month'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('July 2026 events'), findsOneWidget);
+    expect(find.text('Inter-faculty debate'), findsOneWidget);
+  });
+
+  testWidgets('a day with nothing on says so', (tester) async {
+    await openCalendar(tester);
+
+    await tester.tap(
+      find.descendant(of: find.byType(CalendarGrid), matching: find.text('2')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('No events on this day.'), findsOneWidget);
+  });
+
+  testWidgets('next and previous change the month and its events', (
+    tester,
+  ) async {
+    await openCalendar(tester);
+
     await tester.tap(find.byIcon(Icons.chevron_right_rounded).first);
     await tester.pumpAndSettle();
 
     expect(find.text('August 2026'), findsOneWidget);
-    expect(find.text('August 2026 Dates'), findsOneWidget);
-
-    // Tap previous month twice (to June 2026)
-    await tester.tap(find.byIcon(Icons.chevron_left_rounded));
-    await tester.pumpAndSettle();
-    expect(find.text('July 2026'), findsOneWidget);
+    expect(find.text('Sports week'), findsOneWidget);
+    expect(find.text('Career fair'), findsNothing);
 
     await tester.tap(find.byIcon(Icons.chevron_left_rounded));
     await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.chevron_left_rounded));
+    await tester.pumpAndSettle();
+
     expect(find.text('June 2026'), findsOneWidget);
+    expect(find.text('No events this month.'), findsOneWidget);
   });
 
-  testWidgets(
-    'tapping an event opens CalendarDetailScreen with details matching design and can pop back',
-    (tester) async {
-      final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          fakeFeedOverride,
-          fakeSchoolsOverride,
-          fakeCalendarOverride,
-          activeMonthProvider.overrideWith(_July2026.new),
-          selectedDateProvider.overrideWith(_July15.new),
-        ],
-      );
-      addTearDown(container.dispose);
-      container.read(authProvider.notifier).signedIn();
+  testWidgets('an event opens the event detail', (tester) async {
+    await openCalendar(tester);
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: const CampusUpdateApp(),
-        ),
-      );
-      await tester.pumpAndSettle();
+    final fair = find.text('Career fair');
+    await tester.ensureVisible(fair);
+    await tester.pumpAndSettle();
+    await tester.tap(fair);
+    await tester.pumpAndSettle();
 
-      // Navigate to Calendar
-      await tester.tap(find.text('Calendar'));
-      await tester.pumpAndSettle();
-
-      // Tap on the Matriculation ceremony event
-      final eventFinder = find.textContaining(
-        'Matriculation ceremony for the 2025/2026 session',
-      );
-      await tester.ensureVisible(eventFinder);
-      await tester.pumpAndSettle();
-      await tester.tap(eventFinder);
-      await tester.pumpAndSettle();
-
-      // Verify CalendarDetailScreen is rendered
-      expect(find.byType(CalendarDetailScreen), findsOneWidget);
-      expect(find.byType(BackButtonCircle), findsOneWidget);
-
-      // Verify event details matching the design
-      expect(find.text('Academics'), findsOneWidget);
-      expect(find.text('Official event'), findsOneWidget);
-      expect(
-        find.text('Matriculation ceremony for the 2025/2026 session'),
-        findsOneWidget,
-      );
-      expect(find.text('Fri 25 September'), findsOneWidget);
-      expect(find.text('9:00am — 12:00pm'), findsOneWidget);
-      expect(find.text('University Sports Complex'), findsOneWidget);
-      expect(
-        find.text(
-          'Attendance required for all fresh students. Academic gown compulsory.',
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('Office of Student Affairs'), findsOneWidget);
-      expect(find.text('Students'), findsOneWidget);
-      expect(
-        find.textContaining(
-          'The matriculation ceremony for newly admitted students holds at the sports complex.',
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('Save this events'), findsOneWidget);
-
-      // Tap back button to return to calendar list
-      await tester.tap(find.byType(BackButtonCircle));
-      await tester.pumpAndSettle();
-
-      // Verify back on CalendarScreen
-      expect(find.byType(CalendarScreen), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'tapping Save this events button toggles state on CalendarDetailScreen',
-    (tester) async {
-      final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          fakeFeedOverride,
-          fakeSchoolsOverride,
-          fakeCalendarOverride,
-          activeMonthProvider.overrideWith(_July2026.new),
-          selectedDateProvider.overrideWith(_July15.new),
-        ],
-      );
-      addTearDown(container.dispose);
-      container.read(authProvider.notifier).signedIn();
-
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: const CampusUpdateApp(),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      // Navigate to Calendar
-      await tester.tap(find.text('Calendar'));
-      await tester.pumpAndSettle();
-
-      // Open event detail
-      final eventFinder = find.textContaining(
-        'Matriculation ceremony for the 2025/2026 session',
-      );
-      await tester.ensureVisible(eventFinder);
-      await tester.pumpAndSettle();
-      await tester.tap(eventFinder);
-      await tester.pumpAndSettle();
-
-      // Verify Save button and tap it
-      final saveButtonFinder = find.text('Save this events');
-      await tester.ensureVisible(saveButtonFinder);
-      await tester.pumpAndSettle();
-      await tester.tap(saveButtonFinder);
-      await tester.pumpAndSettle();
-
-      // Verify toggled state
-      expect(find.text('Saved to calendar'), findsOneWidget);
-    },
-  );
+    expect(find.byType(EventDetailScreen), findsOneWidget);
+    expect(find.text('Register Now'), findsOneWidget);
+  });
 }
