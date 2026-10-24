@@ -48,6 +48,9 @@ class _RecordingNewsRepository implements NewsRepository {
 
   @override
   Future<void> toggleBookmark(String id) async {}
+
+  @override
+  List<String> savedIds() => const [];
 }
 
 Widget _under(Widget screen, NewsRepository repo) => ProviderScope(

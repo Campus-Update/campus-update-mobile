@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/storage/prefs_storage.dart';
+import '../../../core/storage/storage_providers.dart';
 import '../../../shared/data/feed_repository.dart';
 import '../../../shared/domain/content_item.dart';
 import '../../../shared/domain/content_source.dart';
@@ -15,17 +17,21 @@ abstract class NewsRepository {
   });
   Future<NewsItem?> getNewsById(String id);
   Future<void> toggleBookmark(String id);
+
+  /// Ids of the saved articles, most recently saved first.
+  List<String> savedIds();
 }
 
 /// News from `GET /api/v1/feed?type=News`.
 ///
-/// The API has no bookmark endpoint, so bookmarks live in memory for the
-/// session and are lost on restart.
+/// The API has no bookmark endpoint yet, so saved articles are kept on the
+/// phone: their ids only, per account, in [PrefsStorage]. They survive a
+/// restart but not a reinstall, and do not follow the user to another phone.
 class ApiNewsRepository implements NewsRepository {
-  ApiNewsRepository(this._feed);
+  ApiNewsRepository(this._feed, this._storage);
 
   final FeedRepository _feed;
-  final _bookmarked = <String>{};
+  final PrefsStorage _storage;
 
   /// [category] is sent to the API as is; null lists every category.
   @override
@@ -50,8 +56,14 @@ class ApiNewsRepository implements NewsRepository {
 
   @override
   Future<void> toggleBookmark(String id) async {
-    if (!_bookmarked.remove(id)) _bookmarked.add(id);
+    final ids = savedIds();
+    await _storage.setSavedArticleIds(
+      ids.contains(id) ? [...ids.where((i) => i != id)] : [id, ...ids],
+    );
   }
+
+  @override
+  List<String> savedIds() => _storage.savedArticleIds;
 
   NewsItem _toNewsItem(ContentItem item) {
     final publishedAt = item.publishedAt;
@@ -66,7 +78,7 @@ class ApiNewsRepository implements NewsRepository {
           ? 'Recent update'
           : AppDateFormat.relative(publishedAt),
       publishedAt: publishedAt,
-      isBookmarked: _bookmarked.contains(item.id),
+      isBookmarked: savedIds().contains(item.id),
       author: item.sourceName ?? 'Campus Update Staff',
       source: item.source,
     );
@@ -79,7 +91,10 @@ class ApiNewsRepository implements NewsRepository {
 const newsPageSize = 20;
 
 final newsRepositoryProvider = Provider<NewsRepository>((ref) {
-  return ApiNewsRepository(ref.watch(feedRepositoryProvider));
+  return ApiNewsRepository(
+    ref.watch(feedRepositoryProvider),
+    ref.watch(prefsStorageProvider),
+  );
 });
 
 /// State notifier managing selected news category filter.
@@ -182,13 +197,14 @@ class NewsListNotifier extends Notifier<AsyncValue<List<NewsItem>>> {
     }
   }
 
-  void toggleBookmark(String id) {
+  Future<void> toggleBookmark(String id) async {
     // The repository keeps bookmarks even for items outside this list, such as
     // a search result further down than the pages loaded here.
-    ref.read(newsRepositoryProvider).toggleBookmark(id);
+    await ref.read(newsRepositoryProvider).toggleBookmark(id);
     // An article fetched on its own reads its bookmark back from the
-    // repository.
+    // repository, and the Saved articles screen lists what it holds.
     ref.invalidate(newsByIdProvider(id));
+    ref.invalidate(savedArticlesProvider);
     state.whenData((items) {
       state = AsyncValue.data([
         for (final item in items)
@@ -281,4 +297,23 @@ final newsItemByIdProvider = Provider.family<NewsItem?, String>((ref, id) {
     (item) => item?.id == id,
     orElse: () => null,
   );
+});
+
+/// The Saved articles screen: each saved id read from `/content/{id}`, most
+/// recently saved first. An article the API no longer returns — archived, or
+/// out of the user's audience — is left out.
+final savedArticlesProvider = FutureProvider.autoDispose<List<NewsItem>>((
+  ref,
+) async {
+  final repo = ref.watch(newsRepositoryProvider);
+  final articles = await Future.wait(
+    repo.savedIds().map((id) async {
+      try {
+        return await repo.getNewsById(id);
+      } catch (_) {
+        return null;
+      }
+    }),
+  );
+  return articles.nonNulls.toList();
 });

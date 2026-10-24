@@ -191,4 +191,10 @@ class MockNewsRepository implements NewsRepository {
       _items[index] = current.copyWith(isBookmarked: !current.isBookmarked);
     }
   }
+
+  @override
+  List<String> savedIds() => [
+    for (final item in _items)
+      if (item.isBookmarked) item.id,
+  ];
 }

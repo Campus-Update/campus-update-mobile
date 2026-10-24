@@ -177,13 +177,7 @@ class ProfileScreen extends ConsumerWidget {
                         ProfileMenuItem(
                           title: 'Saved articles',
                           trailingIcon: Icons.bookmark_border_outlined,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Saved articles coming soon'),
-                              ),
-                            );
-                          },
+                          onTap: () => context.push(Routes.savedArticles),
                         ),
                         ProfileMenuItem(
                           title: 'Support',
