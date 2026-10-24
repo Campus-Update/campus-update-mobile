@@ -3,11 +3,10 @@ import 'content_source.dart';
 /// One item from `GET /api/v1/feed` or `/content` — news, an announcement, an
 /// event or an advert.
 ///
-/// The API's `ContentResponse` carries only id, title, body, type, status,
-/// urgency, sourceType, sourceName and publishedAt. The screens also want a
-/// category, a summary, an image and an event's date and place; those are read
-/// here when present so they appear the day the backend starts sending them,
-/// and are null until then.
+/// The API's `ContentResponse` also carries a category, a cover image and an
+/// event's dates, place, registration link and sponsor. It never returns a
+/// summary, though `POST /content` accepts one; that is read here when present
+/// so it appears the day the backend starts sending it.
 class ContentItem {
   const ContentItem({
     required this.id,
@@ -22,7 +21,10 @@ class ContentItem {
     this.summary,
     this.imageUrl,
     this.eventStartsAt,
+    this.eventEndsAt,
     this.eventLocation,
+    this.registrationUrl,
+    this.sponsorName,
   });
 
   final String id;
@@ -37,20 +39,24 @@ class ContentItem {
 
   final DateTime? publishedAt;
 
-  /// Not in the API yet.
   final String? category;
 
   /// Not returned by the API yet, though `POST /content` accepts one.
   final String? summary;
 
-  /// Not in the API yet.
+  /// A signed link when the image is stored by the API; it stops working
+  /// 15 minutes after the response.
   final String? imageUrl;
 
-  /// Not returned by the API yet, though `POST /content` accepts it.
   final DateTime? eventStartsAt;
-
-  /// Not returned by the API yet, though `POST /content` accepts it.
+  final DateTime? eventEndsAt;
   final String? eventLocation;
+
+  /// Where to sign up for an event, when it takes sign-ups.
+  final String? registrationUrl;
+
+  /// Who is paying for an event or an advert.
+  final String? sponsorName;
 
   /// What sits above the title on a card: the category once the API has one,
   /// and until then the trust label — 'Official', 'Official Event'.
@@ -73,7 +79,10 @@ class ContentItem {
       summary: _text(json['summary']),
       imageUrl: _text(json['imageUrl']),
       eventStartsAt: _date(json['eventStartsAt']),
+      eventEndsAt: _date(json['eventEndsAt']),
       eventLocation: _text(json['eventLocation']),
+      registrationUrl: _text(json['registrationUrl']),
+      sponsorName: _text(json['sponsorName']),
     );
   }
 
