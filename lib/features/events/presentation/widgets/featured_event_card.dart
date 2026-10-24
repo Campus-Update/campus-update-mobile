@@ -141,13 +141,9 @@ class FeaturedEventCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 14),
-
-          // "Register Now" / "Registered" Button using shared AppButton
           AppButton(
-            label: event.isRegistered ? 'Registered' : 'Register Now',
-            trailingIcon: event.isRegistered
-                ? Icons.check_circle_outline_rounded
-                : Icons.calendar_month_outlined,
+            label: 'Register Now',
+            trailingIcon: Icons.calendar_month_outlined,
             height: 48,
             fontSize: 15,
             onPressed: onRegisterTap,

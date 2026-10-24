@@ -6,6 +6,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../data/events_repository.dart';
+import '../event_action_handlers.dart';
 
 class EventDetailScreen extends ConsumerWidget {
   const EventDetailScreen({super.key, required this.id});
@@ -242,27 +243,19 @@ class EventDetailScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: AppButton(
-                          label: event.isRegistered
-                              ? 'Registered'
-                              : 'Register Now',
-                          onPressed: () {
-                            ref
-                                .read(eventsListProvider.notifier)
-                                .toggleRegistration(event.id);
-                          },
+                          label: 'Register Now',
+                          onPressed: () =>
+                              registerForEvent(context, ref, event),
                         ),
                       ),
                       const SizedBox(width: 12),
                       IconButton.filledTonal(
-                        onPressed: () {
-                          ref
-                              .read(eventsListProvider.notifier)
-                              .toggleCalendar(event.id);
-                        },
-                        icon: Icon(
-                          event.isAddedToCalendar
-                              ? Icons.calendar_month
-                              : Icons.calendar_month_outlined,
+                        tooltip: 'Add to calendar',
+                        onPressed: event.startsAt == null
+                            ? null
+                            : () => addEventToCalendar(context, ref, event),
+                        icon: const Icon(
+                          Icons.calendar_month_outlined,
                           color: AppColors.indigo,
                         ),
                         style: IconButton.styleFrom(

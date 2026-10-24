@@ -49,6 +49,12 @@
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSCalendarsUsageDescription</key>
+		<string>Campus Update adds the events you choose to your calendar.</string>
+		<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+		<string>Campus Update adds the events you choose to your calendar.</string>
+		<key>NSContactsUsageDescription</key>
+		<string>The calendar uses your contacts to suggest an event's location.</string>
 		<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

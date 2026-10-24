@@ -751,10 +751,8 @@ class _UpcomingEventsSection extends ConsumerWidget {
     );
   }
 
-  /// 'Mon 21 September · Main Auditorium'.
-  ///
-  /// The API does not return an event's date or place yet, so until it does
-  /// this falls back to who published it.
+  /// 'Mon 21 September · Main Auditorium', or who published it when the
+  /// event has neither.
   static String _eventMeta(ContentItem item) {
     final startsAt = item.eventStartsAt;
     final parts = [

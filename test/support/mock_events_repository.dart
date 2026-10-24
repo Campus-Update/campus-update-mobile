@@ -5,8 +5,8 @@ import 'package:campus_update/features/events/domain/event_item.dart';
 class MockEventsRepository implements EventsRepository {
   const MockEventsRepository();
 
-  static const events = [
-    EventItem(
+  static final events = [
+    const EventItem(
       id: 'featured-1',
       title: 'Global Economic Summit 2024',
       description:
@@ -17,6 +17,7 @@ class MockEventsRepository implements EventsRepository {
       imageUrl: 'assets/images/events_featured.png',
       isFeatured: true,
       category: 'Summit',
+      registrationUrl: 'https://example.com/summit',
     ),
     EventItem(
       id: 'event-1',
@@ -27,6 +28,8 @@ class MockEventsRepository implements EventsRepository {
       dateFormatted: 'OCT 12, 2024',
       time: '10:00 AM - 02:00 PM',
       category: 'Campus',
+      startsAt: DateTime(2024, 10, 12, 10),
+      endsAt: DateTime(2024, 10, 12, 14),
     ),
     EventItem(
       id: 'event-2',

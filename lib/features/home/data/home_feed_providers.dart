@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/data/feed_repository.dart';
+import '../../events/data/events_repository.dart';
 import '../../../shared/domain/content_item.dart';
 import '../../../shared/domain/content_source.dart';
 
@@ -20,8 +21,9 @@ final latestNewsProvider = FutureProvider<List<ContentItem>>(
       .feed(type: ContentType.news, pageSize: _sectionSize),
 );
 
+/// The next events, the same list the Events tab starts with.
 final upcomingEventsProvider = FutureProvider<List<ContentItem>>(
-  (ref) => ref
-      .watch(feedRepositoryProvider)
-      .feed(type: ContentType.event, pageSize: _sectionSize),
+  (ref) async => (await upcomingEvents(
+    ref.watch(feedRepositoryProvider),
+  )).take(_sectionSize).toList(),
 );

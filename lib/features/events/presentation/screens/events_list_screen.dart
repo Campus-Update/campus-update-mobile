@@ -6,7 +6,9 @@ import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../../../profile/data/profile_providers.dart';
 import '../../data/events_repository.dart';
+import '../event_action_handlers.dart';
 import '../widgets/event_card.dart';
 import '../widgets/featured_event_card.dart';
 
@@ -18,6 +20,9 @@ class EventsListScreen extends ConsumerWidget {
     final events = ref.watch(eventsListProvider);
     final featuredEvent = ref.watch(featuredEventProvider);
     final monthlyEvents = ref.watch(monthlyEventsProvider);
+    // The API sends no events at all while they are switched off.
+    final eventsOff =
+        ref.watch(userProfileProvider.select((p) => p?.eventsEnabled)) == false;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -79,9 +84,11 @@ class EventsListScreen extends ConsumerWidget {
                         ref.read(eventsListProvider.notifier).refresh(),
                   )
                 else if (featuredEvent == null)
-                  const EmptyState(
+                  EmptyState(
                     icon: Icons.event_outlined,
-                    message: 'No upcoming events.',
+                    message: eventsOff
+                        ? 'Events are switched off for your account.'
+                        : 'No upcoming events.',
                   ),
 
                 // Hero Featured Event Card
@@ -90,30 +97,17 @@ class EventsListScreen extends ConsumerWidget {
                     event: featuredEvent,
                     onTap: () =>
                         context.push('${Routes.events}/${featuredEvent.id}'),
-                    onRegisterTap: () {
-                      ref
-                          .read(eventsListProvider.notifier)
-                          .toggleRegistration(featuredEvent.id);
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            featuredEvent.isRegistered
-                                ? 'Registration cancelled for ${featuredEvent.title}'
-                                : 'Successfully registered for ${featuredEvent.title}!',
-                          ),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    },
+                    onRegisterTap: () =>
+                        registerForEvent(context, ref, featuredEvent),
                   ),
                   const SizedBox(height: 28),
                 ],
 
-                // "This month" Section Header
+                // The design's 'This month', renamed: the list holds every
+                // other event the API sends, not only this month's.
                 if (monthlyEvents.isNotEmpty)
                   Text(
-                    'This month',
+                    'More events',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontSize: 19,
                       fontWeight: AppFonts.medium,
@@ -134,22 +128,9 @@ class EventsListScreen extends ConsumerWidget {
                     return EventCard(
                       event: event,
                       onTap: () => context.push('${Routes.events}/${event.id}'),
-                      onCalendarTap: () {
-                        ref
-                            .read(eventsListProvider.notifier)
-                            .toggleCalendar(event.id);
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              event.isAddedToCalendar
-                                  ? 'Removed from your calendar'
-                                  : 'Event added to your calendar!',
-                            ),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      },
+                      onCalendarTap: event.startsAt == null
+                          ? null
+                          : () => addEventToCalendar(context, ref, event),
                     );
                   },
                 ),

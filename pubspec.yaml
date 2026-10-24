@@ -43,6 +43,8 @@ dependencies:
   json_annotation: ^4.9.0
   flutter_svg: ^2.3.0
   image_picker: ^1.2.2
+  url_launcher: ^6.3.2
+  add_2_calendar: ^3.0.1
 
 dev_dependencies:
   flutter_test:
