@@ -27,6 +27,17 @@ class OfficialCalendar {
   /// e.g. 2025/2026.
   final String academicSession;
 
+  /// The session, unless the title already names it — '2026/2027 Academic
+  /// Calendar' needs no '· 2026/2027' after it. Null when there is nothing
+  /// to add.
+  String? get sessionNotInTitle =>
+      academicSession.isEmpty || title.contains(academicSession)
+      ? null
+      : academicSession;
+
+  /// The title with the session after it when the title lacks it.
+  String get heading => [title, ?sessionNotInTitle].join(' · ');
+
   /// A PNG, JPEG or WebP. Uploaded ones are signed links that stop working
   /// after 15 minutes, so the calendar is fetched again before it is opened.
   final String imageUrl;
