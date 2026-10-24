@@ -10,12 +10,14 @@ class EventCard extends StatelessWidget {
     super.key,
     required this.event,
     required this.onTap,
-    required this.onCalendarTap,
+    this.onCalendarTap,
   });
 
   final EventItem event;
   final VoidCallback onTap;
-  final VoidCallback onCalendarTap;
+
+  /// Null while the event has no date, which disables the button.
+  final VoidCallback? onCalendarTap;
 
   @override
   Widget build(BuildContext context) {
@@ -115,12 +117,8 @@ class EventCard extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: AppButton(
-                          label: event.isAddedToCalendar
-                              ? 'In calendar'
-                              : 'Add to calendar',
-                          trailingIcon: event.isAddedToCalendar
-                              ? Icons.check_circle_outline_rounded
-                              : Icons.calendar_month_outlined,
+                          label: 'Add to calendar',
+                          trailingIcon: Icons.calendar_month_outlined,
                           height: 34,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,

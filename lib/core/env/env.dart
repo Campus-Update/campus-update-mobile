@@ -8,20 +8,22 @@ enum Flavor { dev, staging, prod }
 abstract final class Env {
   // ---------------------------------------------------------------------------
   // Change this one line to switch environment.
-  static const Flavor _active = Flavor.staging;
+  static const Flavor _active = Flavor.dev;
   // ---------------------------------------------------------------------------
 
-  /// The deployed development API. Running the backend on your own machine
-  /// instead needs a different host: `10.0.2.2` from the Android emulator, or
-  /// `adb reverse tcp:5124 tcp:5124` and `localhost` from a real phone, which
-  /// cannot see the laptop's loopback on its own.
-  static const _devUrl = 'https://campus-update-api.vercel.app';
+  /// The API to develop against. The backend team's staging deployment is the
+  /// one carrying current work, so dev and staging share it. Running the
+  /// backend on your own machine instead needs a different host: `10.0.2.2`
+  /// from the Android emulator, or `adb reverse tcp:5124 tcp:5124` and
+  /// `localhost` from a real phone, which cannot see the laptop's loopback on
+  /// its own.
+  static const _devUrl = _stagingUrl;
 
-  /// The deployed staging API, a separate database from dev.
+  /// The deployed staging API.
   static const _stagingUrl = 'https://campus-update-api-staging.vercel.app';
 
-  // Does not exist yet; a placeholder until there is somewhere to point it.
-  static const _prodUrl = 'https://api.campusupdate.example/';
+  /// The production API.
+  static const _prodUrl = 'https://campus-update-api.vercel.app';
 
   static const Flavor flavor = bool.hasEnvironment('FLAVOR')
       ? _flavorFromDefine
@@ -32,9 +34,9 @@ abstract final class Env {
     defaultValue: _urlFor,
   );
 
-  static const String _urlFor = _active == Flavor.prod
+  static const String _urlFor = flavor == Flavor.prod
       ? _prodUrl
-      : _active == Flavor.staging
+      : flavor == Flavor.staging
       ? _stagingUrl
       : _devUrl;
 
@@ -46,14 +48,4 @@ abstract final class Env {
       : Flavor.dev;
 
   static bool get isDev => flavor == Flavor.dev;
-
-  /// Whether an empty feed is filled with `MockFeed` content.
-  ///
-  /// The dev API has no content yet, so screens would otherwise show nothing
-  /// but empty states. The API is still called every time; its answer is used
-  /// as soon as it has anything in it. Never on in staging or prod. Turn it
-  /// off with `--dart-define=MOCK_EMPTY_FEED=false`.
-  static const bool mockEmptyFeed =
-      bool.fromEnvironment('MOCK_EMPTY_FEED', defaultValue: true) &&
-      flavor == Flavor.dev;
 }

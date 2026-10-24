@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/storage/prefs_storage.dart';
+import '../../../core/storage/storage_providers.dart';
 import '../../../shared/data/feed_repository.dart';
 import '../../../shared/domain/content_item.dart';
 import '../../../shared/domain/content_source.dart';
@@ -15,210 +17,23 @@ abstract class NewsRepository {
   });
   Future<NewsItem?> getNewsById(String id);
   Future<void> toggleBookmark(String id);
-}
 
-class MockNewsRepository implements NewsRepository {
-  MockNewsRepository() {
-    _items = [
-      const NewsItem(
-        id: 'news-1',
-        title:
-            'New Library Wing Opens with 24/7 Study Lounges and Modern Research Facilities',
-        category: 'Campus',
-        timeAgo: 'Recent update',
-        summary:
-            'The long-awaited North Wing of the University Central Library officially opened today, featuring state-of-the-art digital media pods, collaborative study rooms, and quiet research chambers.',
-        body:
-            'The university administration celebrated the ribbon-cutting ceremony for the newly constructed North Wing of the Main Campus Library. The expansion adds over 500 new study spaces, high-speed fiber connectivity, collaborative media production pods, and specialized research terminals with access to international academic databases.\n\nStudents will now have 24/7 access to the ground floor reading halls using their digital campus ID cards. University Librarian Dr. Eleanor Vance commended the student union for their input on the design, ensuring accessible workstations and natural lighting throughout the architectural blueprint.',
-        author: 'Campus News Desk',
-        source: ContentSource.officialSchool,
-        readTime: '3 min read',
-      ),
-      const NewsItem(
-        id: 'news-2',
-        title:
-            'City Council Approves New Campus Bus Line and Subsidized Student Transit Passes',
-        category: 'General',
-        timeAgo: 'Updated recently',
-        summary:
-            'A revised public transit ordinance provides dedicated express shuttle services connecting major student residential districts directly to campus gates.',
-        body:
-            'In a unanimous vote yesterday evening, the Metropolitan Transit Authority approved a cooperative transit pact with the university. Starting next Monday, the new Line 14 Express bus will operate every 10 minutes during peak morning and evening lecture hours.\n\nAdditionally, full-time undergraduate and graduate students will be eligible for a 60% fare discount upon presenting their active student barcode via the Campus Update app or standard student credential.',
-        author: 'Civic Affairs Bureau',
-        source: ContentSource.campusUpdate,
-        readTime: '4 min read',
-      ),
-      const NewsItem(
-        id: 'news-3',
-        title:
-            'Engineering Department Unveils Cutting-Edge AI and Robotics Laboratory',
-        category: 'Technology',
-        timeAgo: 'Updated recently',
-        summary:
-            'Faculty of Engineering partners with industry innovators to launch an autonomous robotics workshop equipped with GPU compute clusters.',
-        body:
-            'The Department of Computer & Electrical Engineering has commissioned a multi-million-dollar AI and Robotics lab. Funded through a strategic partnership with leading technology firms, the facility hosts advanced industrial robotic arms, drone prototyping testbeds, and dedicated local neural-network training nodes.\n\nDean of Engineering remarked that students enrolled in robotics, computer science, and mechatronics courses will begin practical laboratory sessions in the newly unveiled space starting this academic term.',
-        author: 'Faculty of Engineering',
-        source: ContentSource.officialSchool,
-        readTime: '5 min read',
-      ),
-      const NewsItem(
-        id: 'news-4',
-        title:
-            'Major Security Update Required for Campus WiFi and Single Sign-On Access',
-        category: 'Technology',
-        timeAgo: 'Updated recently',
-        summary:
-            'Information Technology Services mandates a certificate renewal for all personal and institutional devices connected to the campus wireless network.',
-        body:
-            'To maintain compliance with modern cybersecurity protocols, IT Services will deploy an updated root certificate across all university networks at midnight this Friday. Students and faculty members are advised to update their device security profiles through the IT self-service portal to avoid connection interruptions.\n\nSupport desks will be stationed at the student union building and the library to assist anyone experiencing authentication difficulties during the migration window.',
-        author: 'IT Services Directorate',
-        source: ContentSource.officialSchool,
-        readTime: '2 min read',
-      ),
-      const NewsItem(
-        id: 'news-5',
-        title:
-            'Severe Thunderstorm Warning: Evening Outdoor Campus Events Rescheduled',
-        category: 'Weather',
-        timeAgo: 'Updated recently',
-        summary:
-            'National Meteorological Service issues a severe weather alert with anticipated high wind gusts and heavy rainfall starting at 5:00 PM.',
-        body:
-            'Due to an incoming severe weather front carrying localized thunderstorm activity, campus safety personnel have advised all outdoor extracurricular events scheduled after 5:00 PM today to be moved indoors or postponed.\n\nIntramural sports fixtures scheduled on the central athletic fields will be rescheduled for Saturday afternoon. Shuttle services will remain operational with cautious speed limits in effect across campus roads.',
-        author: 'Campus Safety & Emergency Operations',
-        source: ContentSource.officialSchool,
-        readTime: '2 min read',
-      ),
-      const NewsItem(
-        id: 'news-6',
-        title:
-            'Major Security Update Released for Departmental Workstations and Lab Devices',
-        category: 'Technology',
-        timeAgo: 'Updated recently',
-        summary:
-            'Critical patches deployed to protect laboratory workstations and academic departmental systems against newly identified vulnerabilities.',
-        body:
-            'Following recommendations from the national cyber defense agency, system administrators have completed rolling out urgent patch updates across all computer clusters and laboratory computers. Network performance should remain stable, and all student lab systems are now verified secure for coursework.',
-        author: 'Network Security Operations',
-        source: ContentSource.campusUpdate,
-        readTime: '3 min read',
-      ),
-      const NewsItem(
-        id: 'news-7',
-        title:
-            'Annual Inter-Faculty Sports Festival Registration Officially Commences',
-        category: 'General',
-        timeAgo: 'Updated recently',
-        summary:
-            'Students from all faculties are invited to register teams for football, track & field, volleyball, and chess tournaments.',
-        body:
-            'Registration is now open for the 2026 Inter-Faculty Games! Departmental captains must submit final team rosters before Friday at 4:00 PM. Over 1,200 student athletes are expected to compete across twenty sporting disciplines throughout the two-week festival.',
-        author: 'Sports Advisory Council',
-        source: ContentSource.campusUpdate,
-        readTime: '3 min read',
-      ),
-      const NewsItem(
-        id: 'news-8',
-        title: 'Campus Solar Energy Grid Expansion Completed Ahead of Schedule',
-        category: 'Campus',
-        timeAgo: 'Updated recently',
-        summary:
-            'Rooftop photovoltaic arrays installed across lecture halls will generate over 35% of peak daytime electricity consumption.',
-        body:
-            'The Green Campus Initiative reached a major milestone today with the commissioning of solar arrays atop the Science Complex and Engineering buildings. This initiative is estimated to offset hundreds of metric tons of carbon emissions annually while providing real-time telemetry data for renewable energy students.',
-        author: 'Sustainability Directorate',
-        source: ContentSource.officialSchool,
-        readTime: '4 min read',
-      ),
-      const NewsItem(
-        id: 'news-9',
-        title:
-            'Severe Heatwave Advisory: Hydration Stations Deployed Across Campus Grounds',
-        category: 'Weather',
-        timeAgo: 'Updated recently',
-        summary:
-            'Temperatures expected to exceed 34°C; additional shaded rest areas and free chilled water dispensers installed along major walking paths.',
-        body:
-            'With forecasted temperatures peaking over 34°C this week, the University Health Centre reminds students to drink plenty of fluids and limit strenuous physical exertion during peak afternoon hours. Free chilled water stations have been positioned near all main lecture building entrances.',
-        author: 'University Health Services',
-        source: ContentSource.campusUpdate,
-        readTime: '2 min read',
-      ),
-    ];
-  }
-
-  late List<NewsItem> _items;
-
-  @override
-  Future<List<NewsItem>> getNews({
-    String? category,
-    String? query,
-    int page = 1,
-  }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 150));
-    var result = List<NewsItem>.from(_items);
-
-    if (category != null &&
-        category.isNotEmpty &&
-        category.toLowerCase() != 'all') {
-      result = result.where((item) {
-        final cat = item.category.toLowerCase();
-        final filter = category.toLowerCase();
-        if (filter == 'tech' || filter == 'technology') {
-          return cat == 'tech' || cat == 'technology';
-        }
-        return cat == filter;
-      }).toList();
-    }
-
-    if (query != null && query.trim().isNotEmpty) {
-      final q = query.toLowerCase().trim();
-      result = result
-          .where(
-            (item) =>
-                item.title.toLowerCase().contains(q) ||
-                item.summary.toLowerCase().contains(q) ||
-                item.category.toLowerCase().contains(q),
-          )
-          .toList();
-    }
-
-    return result.skip((page - 1) * newsPageSize).take(newsPageSize).toList();
-  }
-
-  @override
-  Future<NewsItem?> getNewsById(String id) async {
-    await Future<void>.delayed(const Duration(milliseconds: 100));
-    try {
-      return _items.firstWhere((item) => item.id == id);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  @override
-  Future<void> toggleBookmark(String id) async {
-    final index = _items.indexWhere((item) => item.id == id);
-    if (index != -1) {
-      final current = _items[index];
-      _items[index] = current.copyWith(isBookmarked: !current.isBookmarked);
-    }
-  }
+  /// Ids of the saved articles, most recently saved first.
+  List<String> savedIds();
 }
 
 /// News from `GET /api/v1/feed?type=News`.
 ///
-/// The API has no bookmark endpoint, so bookmarks live in memory for the
-/// session and are lost on restart.
+/// The API has no bookmark endpoint yet, so saved articles are kept on the
+/// phone: their ids only, per account, in [PrefsStorage]. They survive a
+/// restart but not a reinstall, and do not follow the user to another phone.
 class ApiNewsRepository implements NewsRepository {
-  ApiNewsRepository(this._feed);
+  ApiNewsRepository(this._feed, this._storage);
 
   final FeedRepository _feed;
-  final _bookmarked = <String>{};
+  final PrefsStorage _storage;
 
-  /// [category] is ignored: the API has no category to filter on yet, and the
-  /// list screen filters what comes back.
+  /// [category] is sent to the API as is; null lists every category.
   @override
   Future<List<NewsItem>> getNews({
     String? category,
@@ -228,6 +43,7 @@ class ApiNewsRepository implements NewsRepository {
     final items = await _feed.feed(
       type: ContentType.news,
       search: query,
+      category: category,
       page: page,
       pageSize: newsPageSize,
     );
@@ -240,8 +56,14 @@ class ApiNewsRepository implements NewsRepository {
 
   @override
   Future<void> toggleBookmark(String id) async {
-    if (!_bookmarked.remove(id)) _bookmarked.add(id);
+    final ids = savedIds();
+    await _storage.setSavedArticleIds(
+      ids.contains(id) ? [...ids.where((i) => i != id)] : [id, ...ids],
+    );
   }
+
+  @override
+  List<String> savedIds() => _storage.savedArticleIds;
 
   NewsItem _toNewsItem(ContentItem item) {
     final publishedAt = item.publishedAt;
@@ -256,7 +78,7 @@ class ApiNewsRepository implements NewsRepository {
           ? 'Recent update'
           : AppDateFormat.relative(publishedAt),
       publishedAt: publishedAt,
-      isBookmarked: _bookmarked.contains(item.id),
+      isBookmarked: savedIds().contains(item.id),
       author: item.sourceName ?? 'Campus Update Staff',
       source: item.source,
     );
@@ -268,9 +90,11 @@ class ApiNewsRepository implements NewsRepository {
 /// How many news items one request asks for.
 const newsPageSize = 20;
 
-/// Tests override this with [MockNewsRepository].
 final newsRepositoryProvider = Provider<NewsRepository>((ref) {
-  return ApiNewsRepository(ref.watch(feedRepositoryProvider));
+  return ApiNewsRepository(
+    ref.watch(feedRepositoryProvider),
+    ref.watch(prefsStorageProvider),
+  );
 });
 
 /// State notifier managing selected news category filter.
@@ -300,11 +124,20 @@ final newsSearchQueryProvider =
       NewsSearchQueryNotifier.new,
     );
 
-/// The News tab's list, loaded a page at a time.
+/// The selected chip as the API's category filter: null for 'All'.
+String? _apiCategory(String chip) => chip.toLowerCase() == 'all' ? null : chip;
+
+/// The News tab's list for the selected category, loaded a page at a time.
+/// Picking another chip starts again from the first page.
 class NewsListNotifier extends Notifier<AsyncValue<List<NewsItem>>> {
   int _page = 1;
   bool _hasMore = true;
   bool _loadingMore = false;
+  String? _category;
+
+  /// Bumped on every first-page load, so an answer for a chip the user has
+  /// already moved on from is dropped.
+  int _generation = 0;
 
   /// Whether another page may exist. A page shorter than [newsPageSize] was
   /// the last one.
@@ -312,18 +145,24 @@ class NewsListNotifier extends Notifier<AsyncValue<List<NewsItem>>> {
 
   @override
   AsyncValue<List<NewsItem>> build() {
+    _category = _apiCategory(ref.watch(selectedNewsCategoryProvider));
     _loadFirstPage();
     return const AsyncValue.loading();
   }
 
   Future<void> _loadFirstPage() async {
+    final generation = ++_generation;
     _page = 1;
     _hasMore = true;
     try {
-      final items = await ref.read(newsRepositoryProvider).getNews();
+      final items = await ref
+          .read(newsRepositoryProvider)
+          .getNews(category: _category);
+      if (generation != _generation) return;
       _hasMore = items.length >= newsPageSize;
       state = AsyncValue.data(items);
     } catch (e, st) {
+      if (generation != _generation) return;
       state = AsyncValue.error(e, st);
     }
   }
@@ -340,14 +179,17 @@ class NewsListNotifier extends Notifier<AsyncValue<List<NewsItem>>> {
     final current = state.value;
     if (current == null || !_hasMore || _loadingMore) return;
     _loadingMore = true;
+    final generation = _generation;
     try {
       final next = await ref
           .read(newsRepositoryProvider)
-          .getNews(page: _page + 1);
+          .getNews(category: _category, page: _page + 1);
+      if (generation != _generation) return;
       _page++;
       _hasMore = next.length >= newsPageSize;
       state = AsyncValue.data([...current, ...next]);
     } catch (_) {
+      if (generation != _generation) return;
       _hasMore = false;
       state = AsyncValue.data([...current]);
     } finally {
@@ -355,13 +197,14 @@ class NewsListNotifier extends Notifier<AsyncValue<List<NewsItem>>> {
     }
   }
 
-  void toggleBookmark(String id) {
+  Future<void> toggleBookmark(String id) async {
     // The repository keeps bookmarks even for items outside this list, such as
     // a search result further down than the pages loaded here.
-    ref.read(newsRepositoryProvider).toggleBookmark(id);
+    await ref.read(newsRepositoryProvider).toggleBookmark(id);
     // An article fetched on its own reads its bookmark back from the
-    // repository.
+    // repository, and the Saved articles screen lists what it holds.
     ref.invalidate(newsByIdProvider(id));
+    ref.invalidate(savedArticlesProvider);
     state.whenData((items) {
       state = AsyncValue.data([
         for (final item in items)
@@ -378,23 +221,13 @@ final newsListProvider =
       NewsListNotifier.new,
     );
 
-/// The loaded list narrowed to the selected category chip.
-///
-/// The API has no category filter yet, so this happens on the phone.
-final filteredNewsListProvider = Provider<AsyncValue<List<NewsItem>>>((ref) {
-  final category = ref.watch(selectedNewsCategoryProvider);
-  return ref
-      .watch(newsListProvider)
-      .whenData((items) => _inCategory(items, category));
-});
-
-/// What the search screen lists: the API's matches for the query, narrowed to
-/// the selected chip. With no query, it is the loaded list.
+/// What the search screen lists: the API's matches for the query in the
+/// selected category. With no query, it is the News tab's list.
 final newsSearchResultsProvider = Provider<AsyncValue<List<NewsItem>>>((ref) {
   final query = ref.watch(newsSearchQueryProvider).trim();
-  if (query.isEmpty) return ref.watch(filteredNewsListProvider);
+  if (query.isEmpty) return ref.watch(newsListProvider);
 
-  final category = ref.watch(selectedNewsCategoryProvider);
+  final category = _apiCategory(ref.watch(selectedNewsCategoryProvider));
   // Bookmarks toggled on this screen land in the list, so read them back from
   // there for the results it also holds.
   final loaded = {
@@ -402,46 +235,54 @@ final newsSearchResultsProvider = Provider<AsyncValue<List<NewsItem>>>((ref) {
       item.id: item,
   };
   return ref
-      .watch(_newsSearchProvider(query))
+      .watch(_newsSearchProvider((query: query, category: category)))
       .whenData(
-        (items) => _inCategory([
+        (items) => [
           for (final item in items)
             item.copyWith(
               isBookmarked: loaded[item.id]?.isBookmarked ?? item.isBookmarked,
             ),
-        ], category),
+        ],
       );
 });
 
-/// One search request per query. Waits for typing to pause first, so a query
-/// typed letter by letter makes one call rather than one per letter.
+/// One search request per query and category. Waits for typing to pause
+/// first, so a query typed letter by letter makes one call rather than one per
+/// letter.
 final _newsSearchProvider = FutureProvider.autoDispose
-    .family<List<NewsItem>, String>((ref, query) async {
+    .family<List<NewsItem>, ({String query, String? category})>((
+      ref,
+      search,
+    ) async {
       var superseded = false;
       ref.onDispose(() => superseded = true);
       await Future<void>.delayed(const Duration(milliseconds: 350));
       if (superseded) return const [];
-      return ref.read(newsRepositoryProvider).getNews(query: query);
+      return ref
+          .read(newsRepositoryProvider)
+          .getNews(query: search.query, category: search.category);
     });
 
-List<NewsItem> _inCategory(List<NewsItem> items, String category) {
-  if (category.toLowerCase() == 'all') return items;
-  final filter = category.toLowerCase();
-  return items.where((item) => item.category.toLowerCase() == filter).toList();
-}
-
-/// One article for the detail screen.
-///
-/// Read from the News list when it holds the article, which keeps bookmarks in
-/// step with it. Otherwise — opened from home before the News tab has loaded,
-/// say — fetched on its own with `GET /content/{id}`.
+/// One article for the detail screen, always fetched from `/content/{id}` so
+/// the API counts the view and the image link is fresh. The copy in the list,
+/// when there is one, shows while the fetch is in flight or if it fails, and
+/// its bookmark is the one shown, since the list is where it is toggled.
 final newsArticleProvider = Provider.family<AsyncValue<NewsItem?>, String>((
   ref,
   id,
 ) {
   final fromList = ref.watch(newsItemByIdProvider(id));
+  final fetched = ref.watch(newsByIdProvider(id));
+  final article = fetched.value;
+  if (article != null) {
+    return AsyncValue.data(
+      fromList == null
+          ? article
+          : article.copyWith(isBookmarked: fromList.isBookmarked),
+    );
+  }
   if (fromList != null) return AsyncValue.data(fromList);
-  return ref.watch(newsByIdProvider(id));
+  return fetched;
 });
 
 /// A single article straight from the repository.
@@ -456,4 +297,23 @@ final newsItemByIdProvider = Provider.family<NewsItem?, String>((ref, id) {
     (item) => item?.id == id,
     orElse: () => null,
   );
+});
+
+/// The Saved articles screen: each saved id read from `/content/{id}`, most
+/// recently saved first. An article the API no longer returns — archived, or
+/// out of the user's audience — is left out.
+final savedArticlesProvider = FutureProvider.autoDispose<List<NewsItem>>((
+  ref,
+) async {
+  final repo = ref.watch(newsRepositoryProvider);
+  final articles = await Future.wait(
+    repo.savedIds().map((id) async {
+      try {
+        return await repo.getNewsById(id);
+      } catch (_) {
+        return null;
+      }
+    }),
+  );
+  return articles.nonNulls.toList();
 });

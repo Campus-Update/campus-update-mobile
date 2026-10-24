@@ -2,16 +2,23 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
-import '../../domain/calendar_event.dart';
+import '../../../events/domain/event_item.dart';
 
+/// One event in the list under the calendar grid: its start day, title, and
+/// when and where.
 class CalendarEventCard extends StatelessWidget {
   const CalendarEventCard({super.key, required this.event, this.onTap});
 
-  final CalendarEvent event;
+  final EventItem event;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final details = [
+      if (event.time.isNotEmpty) event.time,
+      if (event.location.isNotEmpty) event.location,
+    ].join(' · ');
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -31,7 +38,7 @@ class CalendarEventCard extends StatelessWidget {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  '${event.day}',
+                  '${event.startsAt?.toLocal().day ?? ''}',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: AppFonts.medium,
@@ -59,7 +66,7 @@ class CalendarEventCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      event.category,
+                      details.isEmpty ? event.category : details,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

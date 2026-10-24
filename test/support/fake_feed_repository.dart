@@ -9,13 +9,11 @@ class FakeFeedRepository implements FeedRepository {
   int calls = 0;
 
   @override
-  bool get mockWhenEmpty => false;
-
-  @override
   Future<List<ContentItem>> feed({
     ContentType? type,
     Urgency? urgency,
     String? search,
+    String? category,
     int page = 1,
     int pageSize = 20,
   }) async {

@@ -40,10 +40,7 @@ class OfficialCalendarCard extends ConsumerWidget {
         : state.hasError
         ? "Couldn't load it. Tap to try again."
         : published
-        ? [
-            calendar.academicSession,
-            'Tap to view',
-          ].where((s) => s.isNotEmpty).join(' · ')
+        ? [?calendar.sessionNotInTitle, 'Tap to view'].join(' · ')
         : 'Your school has not published it yet.';
 
     return Material(
@@ -100,11 +97,46 @@ class OfficialCalendarCard extends ConsumerWidget {
   }
 }
 
-/// The calendar picture, pinch to zoom.
-class _CalendarImageScreen extends StatelessWidget {
+/// The calendar picture, pinch to zoom. When the picture will not load,
+/// Try again fetches the calendar afresh, since its link may have expired.
+class _CalendarImageScreen extends ConsumerStatefulWidget {
   const _CalendarImageScreen({required this.calendar});
 
   final OfficialCalendar calendar;
+
+  @override
+  ConsumerState<_CalendarImageScreen> createState() =>
+      _CalendarImageScreenState();
+}
+
+class _CalendarImageScreenState extends ConsumerState<_CalendarImageScreen> {
+  late OfficialCalendar _calendar = widget.calendar;
+
+  /// Bumped on every retry, so the picture loads again even when the link
+  /// comes back unchanged.
+  int _attempt = 0;
+  bool _retrying = false;
+
+  Future<void> _retry() async {
+    setState(() => _retrying = true);
+    try {
+      final calendar = await ref.refresh(officialCalendarProvider.future);
+      if (!mounted) return;
+      if (calendar == null) {
+        // Withdrawn since the screen opened.
+        Navigator.of(context).pop();
+        return;
+      }
+      setState(() {
+        _calendar = calendar;
+        _attempt++;
+      });
+    } on ApiException {
+      // The picture's own error message stays up with its button.
+    } finally {
+      if (mounted) setState(() => _retrying = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,10 +146,7 @@ class _CalendarImageScreen extends StatelessWidget {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         title: Text(
-          [
-            calendar.title,
-            calendar.academicSession,
-          ].where((s) => s.isNotEmpty).join(' · '),
+          _calendar.heading,
           style: const TextStyle(fontFamily: AppFonts.family, fontSize: 16),
         ),
       ),
@@ -125,14 +154,37 @@ class _CalendarImageScreen extends StatelessWidget {
         maxScale: 5,
         child: Center(
           child: Image.network(
-            calendar.imageUrl,
+            _calendar.imageUrl,
+            key: ValueKey(_attempt),
             fit: BoxFit.contain,
             loadingBuilder: (_, child, progress) => progress == null
                 ? child
                 : const CircularProgressIndicator(color: Colors.white),
-            errorBuilder: (_, __, ___) => const Text(
-              "Couldn't load the calendar.",
-              style: TextStyle(color: Colors.white),
+            errorBuilder: (_, _, _) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Couldn't load the calendar.",
+                  style: TextStyle(color: Colors.white),
+                ),
+                const SizedBox(height: 12),
+                _retrying
+                    ? const SizedBox.square(
+                        dimension: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : OutlinedButton(
+                        onPressed: _retry,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white54),
+                        ),
+                        child: const Text('Try again'),
+                      ),
+              ],
             ),
           ),
         ),

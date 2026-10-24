@@ -20,7 +20,6 @@ import '../features/auth/presentation/screens/select_school_screen.dart';
 import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/auth/presentation/screens/verify_otp_screen.dart';
-import '../features/calendar/presentation/screens/calendar_detail_screen.dart';
 import '../features/calendar/presentation/screens/calendar_screen.dart';
 import '../features/events/presentation/screens/event_detail_screen.dart';
 import '../features/events/presentation/screens/events_list_screen.dart';
@@ -29,6 +28,7 @@ import '../features/news/presentation/screens/news_detail_screen.dart';
 import '../features/news/presentation/screens/news_list_screen.dart';
 import '../features/news/presentation/screens/news_search_screen.dart';
 import '../features/notifications/presentation/screens/notifications_screen.dart';
+import '../features/profile/presentation/screens/saved_articles_screen.dart';
 import '../features/profile/presentation/screens/account_info_screen.dart';
 import '../features/profile/presentation/screens/change_password_screen.dart';
 import '../features/profile/presentation/screens/edit_profile_screen.dart';
@@ -76,6 +76,8 @@ abstract final class Routes {
   static const settings = '/profile/settings';
   static const changePassword = '/profile/change-password';
   static const support = '/profile/support';
+  static const savedArticles = '/profile/saved';
+  static String savedArticle(String id) => '$savedArticles/$id';
 
   /// Routes reachable without a session.
   static const unauthenticated = {
@@ -237,6 +239,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const ChangePasswordScreen(),
       ),
       GoRoute(path: Routes.support, builder: (_, __) => const SupportScreen()),
+      GoRoute(
+        path: Routes.savedArticles,
+        builder: (_, __) => const SavedArticlesScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, s) => NewsDetailScreen(id: s.pathParameters['id']!),
+          ),
+        ],
+      ),
 
       StatefulShellRoute.indexedStack(
         builder: (_, __, shell) => _TabShell(shell: shell),
@@ -316,7 +328,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: ':id',
                     parentNavigatorKey: _rootNavigatorKey,
                     builder: (_, s) =>
-                        CalendarDetailScreen(id: s.pathParameters['id']!),
+                        EventDetailScreen(id: s.pathParameters['id']!),
                   ),
                 ],
               ),

@@ -74,6 +74,19 @@ class PrefsStorage {
     await _prefs.remove(_currentUserEmail);
   }
 
+  /// Saved articles are kept per account, so two people signing in on one
+  /// phone keep separate lists.
+  String get _savedArticlesKey =>
+      'saved_articles_${currentUserEmail ?? 'signed_out'}';
+
+  /// Ids of the articles saved on this phone, most recently saved first. Only
+  /// ids are kept: the articles themselves are read from the API.
+  List<String> get savedArticleIds =>
+      _prefs.getStringList(_savedArticlesKey) ?? const [];
+
+  Future<void> setSavedArticleIds(List<String> ids) =>
+      _prefs.setStringList(_savedArticlesKey, ids);
+
   static const _userPreferencesKey = 'user_preferences';
 
   UserPreferences getUserPreferences() {

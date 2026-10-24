@@ -1,10 +1,7 @@
-import 'institution.dart';
+import 'package:campus_update/features/auth/domain/institution.dart';
 
-/// Default mock institution data matching Lead City University.
-///
-/// Used as a fallback when offline or before the school tree has been
-/// fetched from the network, providing the exact structure shown in
-/// the design specifications.
+/// A school shaped like the one in the designs, for tests that need a
+/// faculty/department/programme tree.
 final defaultLeadCityUniversity = Institution(
   id: 'lead-city-university',
   name: 'Lead City University',

@@ -9,6 +9,7 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../shared/domain/content_item.dart';
 import '../../../../shared/utils/date_format.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../../../news/data/news_repository.dart';
 import '../../../profile/data/profile_providers.dart';
 import '../../data/home_feed_providers.dart';
 
@@ -46,7 +47,7 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _HomeHeader(userName: userName),
+                _HomeHeader(userName: userName, onRefresh: () => _refresh(ref)),
                 // Measured ~13pt from the greeting to the tab labels and ~11pt
                 // from the underline to the card; the tabs carry 6pt of tap
                 // padding either side, so these are the remainder.
@@ -89,9 +90,12 @@ class HomeScreen extends ConsumerWidget {
 
 /// Top header containing the Campus Update badge, greeting, and action buttons.
 class _HomeHeader extends ConsumerWidget {
-  const _HomeHeader({this.userName});
+  const _HomeHeader({this.userName, required this.onRefresh});
 
   final String? userName;
+
+  /// The same reload as pulling the page down.
+  final Future<void> Function() onRefresh;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -126,30 +130,25 @@ class _HomeHeader extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              greeting,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF111827),
-                letterSpacing: -0.3,
+            // A long name or a large text size wraps rather than pushing the
+            // buttons off the screen.
+            Flexible(
+              child: Text(
+                greeting,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.3,
+                ),
               ),
             ),
+            const SizedBox(width: 12),
             Row(
               children: [
-                IconButton(
-                  onPressed: () {
-                    // Feed refresh
-                  },
-                  icon: const Icon(
-                    Icons.sync_rounded,
-                    size: 24,
-                    color: Color(0xFF374151),
-                  ),
-                  splashRadius: 20,
-                  constraints: const BoxConstraints(),
-                  padding: const EdgeInsets.all(6),
-                ),
+                _RefreshButton(onPressed: onRefresh),
                 const SizedBox(width: 8),
                 const NotificationButton(color: Color(0xFF374151)),
               ],
@@ -157,6 +156,53 @@ class _HomeHeader extends ConsumerWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// The refresh icon beside the bell. Shows a spinner in its place until the
+/// reload finishes, and ignores taps meanwhile.
+class _RefreshButton extends StatefulWidget {
+  const _RefreshButton({required this.onPressed});
+
+  final Future<void> Function() onPressed;
+
+  @override
+  State<_RefreshButton> createState() => _RefreshButtonState();
+}
+
+class _RefreshButtonState extends State<_RefreshButton> {
+  bool _busy = false;
+
+  Future<void> _refresh() async {
+    setState(() => _busy = true);
+    try {
+      await widget.onPressed();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: 'Refresh',
+      onPressed: _busy ? null : _refresh,
+      icon: _busy
+          ? const SizedBox.square(
+              dimension: 24,
+              child: Padding(
+                padding: EdgeInsets.all(3),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFF374151),
+                ),
+              ),
+            )
+          : const Icon(Icons.sync_rounded, size: 24, color: Color(0xFF374151)),
+      splashRadius: 20,
+      constraints: const BoxConstraints(),
+      padding: const EdgeInsets.all(6),
     );
   }
 }
@@ -322,52 +368,61 @@ class _FeedIconPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// Category filter strip under the greeting.
+/// Category filter strip under the greeting. Every tab but 'For You' sends
+/// its name to the API as the category for all three sections below.
+///
+/// The design also has 'All' before 'For You'. It is left out: the API
+/// always narrows the feed to the user, so it would show the same as
+/// 'For You'.
 ///
 /// Measured off the home design export: all six labels share one light grey
 /// (sampled #80-#95, against #101010 for the greeting on the same frame, so
 /// none of them is near-black), and the selected one is marked by an
 /// underline rather than a pill, a fill or a colour change.
-class _CategoryTabs extends StatefulWidget {
+class _CategoryTabs extends ConsumerWidget {
   const _CategoryTabs();
 
-  @override
-  State<_CategoryTabs> createState() => _CategoryTabsState();
-}
-
-class _CategoryTabsState extends State<_CategoryTabs> {
+  static const _forYou = 'For You';
   static const _categories = [
-    'All',
-    'For You',
+    _forYou,
     'General',
     'Campus',
     'Technology',
     'Health',
   ];
 
-  /// The design underlines 'For You', not 'All'.
-  int _selected = 1;
-
   @override
-  Widget build(BuildContext context) {
-    // Scrolls horizontally, since at 13pt the six labels can run past the
-    // edge of a narrow phone.
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (var i = 0; i < _categories.length; i++)
-            _CategoryTab(
-              // 'General', 'Campus' and 'Technology' are also category labels
-              // on the Latest News items below, so the tabs carry keys to stay
-              // unambiguous.
-              key: ValueKey('category-tab-${_categories[i]}'),
-              label: _categories[i],
-              selected: i == _selected,
-              isLast: i == _categories.length - 1,
-              onTap: () => setState(() => _selected = i),
-            ),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selected = ref.watch(homeCategoryProvider) ?? _forYou;
+    // Spread across the full width, first tab at the left gutter and last at
+    // the right. Where the labels cannot fit — a narrow phone, or a large
+    // text size — they keep their minimum gap and scroll instead.
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              for (var i = 0; i < _categories.length; i++)
+                _CategoryTab(
+                  // 'General', 'Campus' and 'Technology' are also category
+                  // labels on the Latest News items below, so the tabs carry
+                  // keys to stay unambiguous.
+                  key: ValueKey('category-tab-${_categories[i]}'),
+                  label: _categories[i],
+                  selected: _categories[i] == selected,
+                  isLast: i == _categories.length - 1,
+                  onTap: () => ref
+                      .read(homeCategoryProvider.notifier)
+                      .select(
+                        _categories[i] == _forYou ? null : _categories[i],
+                      ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -698,7 +753,13 @@ class _LatestNewsSection extends ConsumerWidget {
       children: [
         SectionHeader(
           title: 'Latest News',
-          onAction: () => context.go(Routes.news),
+          onAction: () {
+            // News opens on the same category as the tab picked here.
+            ref
+                .read(selectedNewsCategoryProvider.notifier)
+                .select(ref.read(homeCategoryProvider) ?? 'All');
+            context.go(Routes.news);
+          },
         ),
         const SizedBox(height: 14),
         _SectionFeed(
@@ -751,10 +812,8 @@ class _UpcomingEventsSection extends ConsumerWidget {
     );
   }
 
-  /// 'Mon 21 September · Main Auditorium'.
-  ///
-  /// The API does not return an event's date or place yet, so until it does
-  /// this falls back to who published it.
+  /// 'Mon 21 September · Main Auditorium', or who published it when the
+  /// event has neither.
   static String _eventMeta(ContentItem item) {
     final startsAt = item.eventStartsAt;
     final parts = [

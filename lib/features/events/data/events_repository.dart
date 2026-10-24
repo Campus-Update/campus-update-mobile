@@ -11,20 +11,44 @@ abstract class EventsRepository {
   Future<EventItem?> getEventById(String id);
 }
 
-/// Events from `GET /api/v1/feed?type=Event`, one from `/content/{id}`.
+/// Every event the API sends, soonest first and undated ones last.
 ///
-/// The API has no registration or calendar endpoints, so those are kept by
-/// [EventsNotifier] for the session.
+/// Which events are still current is the API's call, so nothing is dropped
+/// here. The API orders by urgency and then publish date, so this reads every
+/// page before putting them in the order they happen. The Events tab and the
+/// home section both read it, so they always agree.
+Future<List<ContentItem>> upcomingEvents(
+  FeedRepository feed, {
+  String? category,
+}) async {
+  const pageSize = 100; // The API's largest page.
+  const maxPages = 10; // A ceiling, should the API keep returning full pages.
+  final items = <ContentItem>[];
+  for (var page = 1; page <= maxPages; page++) {
+    final batch = await feed.feed(
+      type: ContentType.event,
+      category: category,
+      page: page,
+      pageSize: pageSize,
+    );
+    items.addAll(batch);
+    if (batch.length < pageSize) break;
+  }
+
+  final dated = items.where((e) => e.eventStartsAt != null).toList()
+    ..sort((a, b) => a.eventStartsAt!.compareTo(b.eventStartsAt!));
+  return [...dated, ...items.where((e) => e.eventStartsAt == null)];
+}
+
+/// Events from `GET /api/v1/feed?type=Event`, one from `/content/{id}`.
 class ApiEventsRepository implements EventsRepository {
   const ApiEventsRepository(this._feed);
 
   final FeedRepository _feed;
 
   @override
-  Future<List<EventItem>> getEvents() async {
-    final items = await _feed.feed(type: ContentType.event);
-    return items.map(_toEventItem).toList();
-  }
+  Future<List<EventItem>> getEvents() async =>
+      (await upcomingEvents(_feed)).map(_toEventItem).toList();
 
   @override
   Future<EventItem?> getEventById(String id) async =>
@@ -36,87 +60,36 @@ class ApiEventsRepository implements EventsRepository {
       id: item.id,
       title: item.title,
       description: item.excerpt,
-      // The API does not return an event's place or date yet; until it does,
-      // who published it stands in for the place.
+      // An event with no place given falls back to who published it.
       location: item.eventLocation ?? item.sourceName ?? '',
       dateFormatted: startsAt == null
           ? 'Date to be announced'
           : AppDateFormat.eventDate(startsAt),
-      time: startsAt == null ? '' : AppDateFormat.time(startsAt),
+      time: startsAt == null ? '' : _timeRange(startsAt, item.eventEndsAt),
       imageUrl: item.imageUrl,
       category: item.label,
+      startsAt: startsAt,
+      endsAt: item.eventEndsAt,
+      registrationUrl: item.registrationUrl,
+      sponsorName: item.sponsorName,
     );
+  }
+
+  /// '9:00 AM - 11:00 AM' on one day, '9:00 AM - OCT 14, 2026, 5:00 PM'
+  /// across several, '9:00 AM' with no end.
+  static String _timeRange(DateTime start, DateTime? end) {
+    final from = AppDateFormat.time(start);
+    if (end == null) return from;
+    final s = start.toLocal();
+    final e = end.toLocal();
+    final sameDay = s.year == e.year && s.month == e.month && s.day == e.day;
+    final to = sameDay
+        ? AppDateFormat.time(end)
+        : '${AppDateFormat.eventDate(end)}, ${AppDateFormat.time(end)}';
+    return '$from - $to';
   }
 }
 
-/// The events this screen was first built against. Tests use it.
-class MockEventsRepository implements EventsRepository {
-  const MockEventsRepository();
-
-  static const events = [
-    EventItem(
-      id: 'featured-1',
-      title: 'Global Economic Summit 2024',
-      description:
-          'Join industry leaders for an exclusive day of panels discussing the future of global markets and economic trends across major sectors.',
-      location: 'Metropolis Convention Center',
-      dateFormatted: 'OCT 12, 2024',
-      time: '09:00 AM - 05:00 PM',
-      imageUrl: 'assets/images/events_featured.png',
-      isFeatured: true,
-      category: 'Summit',
-    ),
-    EventItem(
-      id: 'event-1',
-      title: 'New Library Wing Opens Ahead of Schedule',
-      description:
-          'Tour the newly expanded digital research archives and collaborative study spaces at the North Campus Library.',
-      location: 'Metropolis Convention Center',
-      dateFormatted: 'OCT 12, 2024',
-      time: '10:00 AM - 02:00 PM',
-      category: 'Campus',
-    ),
-    EventItem(
-      id: 'event-2',
-      title: 'Annual Tech & AI Innovation Hackathon',
-      description:
-          '48-hour collaborative build sprint solving real-world campus sustainability challenges with mentorship from industry experts.',
-      location: 'Science & Engineering Complex',
-      dateFormatted: 'OCT 18, 2024',
-      time: '08:00 AM - 06:00 PM',
-      category: 'Hackathon',
-    ),
-    EventItem(
-      id: 'event-3',
-      title: 'Fall Career & Internship Expo',
-      description:
-          'Meet recruiters from top engineering, finance, and creative technology companies looking for graduating seniors and interns.',
-      location: 'University Grand Ballroom',
-      dateFormatted: 'OCT 24, 2024',
-      time: '11:00 AM - 04:00 PM',
-      category: 'Career',
-    ),
-    EventItem(
-      id: 'event-4',
-      title: 'Student Government Presidential Debate',
-      description:
-          'Hear candidate platforms on campus housing, meal plan reform, and student activity funding ahead of upcoming elections.',
-      location: 'Student Union Auditorium',
-      dateFormatted: 'NOV 02, 2024',
-      time: '06:00 PM - 08:30 PM',
-      category: 'Town Hall',
-    ),
-  ];
-
-  @override
-  Future<List<EventItem>> getEvents() async => events;
-
-  @override
-  Future<EventItem?> getEventById(String id) async =>
-      events.where((e) => e.id == id).firstOrNull;
-}
-
-/// Tests override this with [MockEventsRepository].
 final eventsRepositoryProvider = Provider<EventsRepository>(
   (ref) => ApiEventsRepository(ref.watch(feedRepositoryProvider)),
 );
@@ -133,7 +106,7 @@ final featuredEventProvider = Provider<EventItem?>((ref) {
   return events.where((e) => e.isFeatured).firstOrNull ?? events.firstOrNull;
 });
 
-/// Everything under 'This month': the events other than the featured one.
+/// Everything under 'More events': the events other than the featured one.
 final monthlyEventsProvider = Provider<List<EventItem>>((ref) {
   final events = ref.watch(eventsListProvider).value ?? const <EventItem>[];
   final featured = ref.watch(featuredEventProvider);
@@ -145,20 +118,17 @@ final eventByIdProvider = Provider.family<EventItem?, String>((ref, id) {
   return events.where((e) => e.id == id).firstOrNull;
 });
 
-/// One event for the detail screen: from the list when it holds it, otherwise
-/// fetched on its own — opened from home before the Events tab has loaded.
+/// One event for the detail screen, always fetched from `/content/{id}` so
+/// the API counts the view. The copy in the list, when there is one, shows
+/// while the fetch is in flight or if it fails.
 final eventDetailProvider = Provider.family<AsyncValue<EventItem?>, String>((
   ref,
   id,
 ) {
   final fromList = ref.watch(eventByIdProvider(id));
-  if (fromList != null) return AsyncValue.data(fromList);
-  final notifier = ref.watch(eventsListProvider.notifier);
-  // Rebuild when registration or calendar flags change.
-  ref.watch(eventsListProvider);
-  return ref
-      .watch(eventFetchProvider(id))
-      .whenData((event) => event == null ? null : notifier.withFlags(event));
+  final fetched = ref.watch(eventFetchProvider(id));
+  final event = fetched.value ?? fromList;
+  return event != null ? AsyncValue.data(event) : fetched;
 });
 
 final eventFetchProvider = FutureProvider.autoDispose
@@ -166,12 +136,8 @@ final eventFetchProvider = FutureProvider.autoDispose
       (ref, id) => ref.read(eventsRepositoryProvider).getEventById(id),
     );
 
-/// The Events tab's list, plus the registration and calendar choices made
-/// this session.
+/// The Events tab's list.
 class EventsNotifier extends Notifier<AsyncValue<List<EventItem>>> {
-  final _registered = <String>{};
-  final _inCalendar = <String>{};
-
   @override
   AsyncValue<List<EventItem>> build() {
     _load();
@@ -181,7 +147,7 @@ class EventsNotifier extends Notifier<AsyncValue<List<EventItem>>> {
   Future<void> _load() async {
     try {
       final events = await ref.read(eventsRepositoryProvider).getEvents();
-      state = AsyncValue.data(events.map(withFlags).toList());
+      state = AsyncValue.data(events);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -190,27 +156,5 @@ class EventsNotifier extends Notifier<AsyncValue<List<EventItem>>> {
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     await _load();
-  }
-
-  /// [event] with this session's registration and calendar choices applied.
-  EventItem withFlags(EventItem event) => event.copyWith(
-    isRegistered: event.isRegistered || _registered.contains(event.id),
-    isAddedToCalendar:
-        event.isAddedToCalendar || _inCalendar.contains(event.id),
-  );
-
-  void toggleRegistration(String id) => _toggle(_registered, id, (e) {
-    return e.copyWith(isRegistered: !e.isRegistered);
-  });
-
-  void toggleCalendar(String id) => _toggle(_inCalendar, id, (e) {
-    return e.copyWith(isAddedToCalendar: !e.isAddedToCalendar);
-  });
-
-  void _toggle(Set<String> set, String id, EventItem Function(EventItem) flip) {
-    if (!set.remove(id)) set.add(id);
-    final events = state.value;
-    if (events == null) return;
-    state = AsyncValue.data([for (final e in events) e.id == id ? flip(e) : e]);
   }
 }

@@ -45,5 +45,15 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Register Now opens the organiser's page in the browser. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
+        <!-- Add to calendar hands the event to the calendar app. -->
+        <intent>
+            <action android:name="android.intent.action.INSERT"/>
+            <data android:mimeType="vnd.android.cursor.item/event"/>
+        </intent>
     </queries>
 </manifest>

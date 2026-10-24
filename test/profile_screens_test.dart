@@ -2,7 +2,7 @@ import 'package:campus_update/app/theme/app_theme.dart';
 import 'package:campus_update/core/storage/prefs_storage.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
 import 'package:campus_update/features/auth/data/school_repository.dart';
-import 'package:campus_update/features/auth/domain/default_institution.dart';
+import 'support/default_institution.dart';
 import 'package:campus_update/features/profile/data/preferences_provider.dart';
 import 'package:campus_update/features/profile/data/profile_providers.dart';
 import 'package:campus_update/features/profile/data/profile_repository.dart';
@@ -45,6 +45,18 @@ class _PasswordRepo implements ProfileRepository {
   dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
+/// A signed-in student, named as in the designs.
+const _jeremiah = UserProfile(
+  firstName: 'Jeremiah',
+  lastName: 'Alalade',
+  email: 'ajeremiahfig@gmail.com',
+  institutionName: 'Lead City University',
+  facultyName: 'Faculty of Computting Information Technology (FOCIT)',
+  departmentName: 'Software Engineering',
+  programmeName: 'Software Engineering',
+  academicLevelName: 'Software Engineering',
+);
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -75,17 +87,33 @@ void main() {
     );
   }
 
+  /// A container with [_jeremiah] signed in.
+  Future<ProviderContainer> signedIn() async {
+    final container = ProviderContainer(
+      overrides: [
+        prefsStorageProvider.overrideWithValue(storage),
+        schoolsProvider.overrideWith(
+          (ref) => Future.value([defaultLeadCityUniversity]),
+        ),
+      ],
+    );
+    await container.read(userProfileProvider.notifier).setProfile(_jeremiah);
+    return container;
+  }
+
   group('ProfileScreen (Screen 1)', () {
     testWidgets('renders Profile screen with user card and menu items', (
       tester,
     ) async {
-      await tester.pumpWidget(createTestWidget(const ProfileScreen()));
+      await tester.pumpWidget(
+        createTestWidget(const ProfileScreen(), await signedIn()),
+      );
       await tester.pumpAndSettle();
 
       // Header
       expect(find.text('Profile'), findsOneWidget);
 
-      // Default user card details
+      // User card details
       expect(find.text('Jeremiah Alalade'), findsOneWidget);
       expect(find.text('ajeremiahfig@gmail.com'), findsOneWidget);
       expect(find.text('Lead City University'), findsOneWidget);
@@ -137,18 +165,28 @@ void main() {
     testWidgets(
       'shows initials when no avatar is selected, without hardcoding image',
       (tester) async {
-        await tester.pumpWidget(createTestWidget(const ProfileScreen()));
+        await tester.pumpWidget(
+          createTestWidget(const ProfileScreen(), await signedIn()),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('JA'), findsOneWidget);
       },
     );
+
+    testWidgets('signed out, no sample user stands in', (tester) async {
+      await tester.pumpWidget(createTestWidget(const ProfileScreen()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Jeremiah Alalade'), findsNothing);
+      expect(find.text('Lead City University'), findsNothing);
+    });
   });
 
   group('AccountInformationScreen (Screen 2)', () {
     testWidgets('renders account details rows accurately', (tester) async {
       await tester.pumpWidget(
-        createTestWidget(const AccountInformationScreen()),
+        createTestWidget(const AccountInformationScreen(), await signedIn()),
       );
       await tester.pumpAndSettle();
 
@@ -156,7 +194,7 @@ void main() {
       expect(find.text('Personal details'), findsOneWidget);
       expect(find.text('Edit'), findsOneWidget);
 
-      // Check fields and default values
+      // Check fields and values
       expect(find.text('First Name'), findsOneWidget);
       expect(find.text('Jeremiah'), findsOneWidget);
       expect(find.text('Last Name'), findsOneWidget);

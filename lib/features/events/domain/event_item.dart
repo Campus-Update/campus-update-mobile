@@ -8,9 +8,11 @@ class EventItem {
     this.time = '10:00 AM',
     this.imageUrl,
     this.isFeatured = false,
-    this.isRegistered = false,
-    this.isAddedToCalendar = false,
     this.category = 'Summit',
+    this.startsAt,
+    this.endsAt,
+    this.registrationUrl,
+    this.sponsorName,
   });
 
   final String id;
@@ -21,9 +23,15 @@ class EventItem {
   final String time;
   final String? imageUrl;
   final bool isFeatured;
-  final bool isRegistered;
-  final bool isAddedToCalendar;
   final String category;
+
+  /// When it begins; null while the date is still to be announced.
+  final DateTime? startsAt;
+  final DateTime? endsAt;
+
+  /// Where to sign up; null when the event takes no sign-ups.
+  final String? registrationUrl;
+  final String? sponsorName;
 
   EventItem copyWith({
     String? id,
@@ -34,8 +42,6 @@ class EventItem {
     String? time,
     String? imageUrl,
     bool? isFeatured,
-    bool? isRegistered,
-    bool? isAddedToCalendar,
     String? category,
   }) {
     return EventItem(
@@ -47,9 +53,11 @@ class EventItem {
       time: time ?? this.time,
       imageUrl: imageUrl ?? this.imageUrl,
       isFeatured: isFeatured ?? this.isFeatured,
-      isRegistered: isRegistered ?? this.isRegistered,
-      isAddedToCalendar: isAddedToCalendar ?? this.isAddedToCalendar,
       category: category ?? this.category,
+      startsAt: startsAt,
+      endsAt: endsAt,
+      registrationUrl: registrationUrl,
+      sponsorName: sponsorName,
     );
   }
 }

@@ -70,6 +70,7 @@ class _FakeAnnouncementsFeedRepository extends FakeFeedRepository {
     ContentType? type,
     Urgency? urgency,
     String? search,
+    String? category,
     int page = 1,
     int pageSize = 20,
   }) async {
@@ -103,6 +104,7 @@ class _FailingFeedRepository extends FakeFeedRepository {
     ContentType? type,
     Urgency? urgency,
     String? search,
+    String? category,
     int page = 1,
     int pageSize = 20,
   }) async {

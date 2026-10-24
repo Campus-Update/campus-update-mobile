@@ -7,6 +7,8 @@ import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../../../../shared/utils/date_format.dart';
+import '../../../events/data/events_repository.dart';
 import '../../data/calendar_repository.dart';
 import '../widgets/calendar_event_card.dart';
 import '../widgets/calendar_grid.dart';
@@ -19,7 +21,7 @@ class CalendarScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final activeMonth = ref.watch(activeMonthProvider);
     final selectedDate = ref.watch(selectedDateProvider);
-    final monthEvents = ref.watch(monthEventsProvider);
+    final listed = ref.watch(listedEventsProvider);
     final eventDays = ref.watch(eventDaysInActiveMonthProvider);
 
     final monthTitle = DateFormat('MMMM yyyy').format(activeMonth);
@@ -164,37 +166,53 @@ class CalendarScreen extends ConsumerWidget {
 
               const SizedBox(height: AppSpacing.lg),
 
-              // Reusable Section Header
-              SectionHeader(title: '$monthTitle Dates'),
+              // The month's events, or the picked day's.
+              SectionHeader(
+                title: selectedDate == null
+                    ? '$monthTitle events'
+                    : 'Events on ${AppDateFormat.weekdayDay(selectedDate)}',
+                actionLabel: 'Whole month',
+                onAction: selectedDate == null
+                    ? null
+                    : () => ref
+                          .read(selectedDateProvider.notifier)
+                          .clearSelection(),
+              ),
 
               const SizedBox(height: AppSpacing.sm),
 
-              // List of Dates
-              if (monthEvents.isEmpty) ...[
-                const EmptyState(
-                  message: 'No scheduled dates for this month.',
-                  icon: Icons.event_busy_outlined,
+              listed.when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                  child: Loader(),
                 ),
-              ] else ...[
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: monthEvents.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 2),
-                  itemBuilder: (context, index) {
-                    final event = monthEvents[index];
-                    return CalendarEventCard(
-                      event: event,
-                      onTap: () {
-                        ref
-                            .read(selectedDateProvider.notifier)
-                            .selectDate(event.date);
-                        context.push('${Routes.calendar}/${event.id}');
-                      },
-                    );
-                  },
+                error: (_, _) => ErrorState(
+                  message: "Couldn't load events.",
+                  onRetry: () =>
+                      ref.read(eventsListProvider.notifier).refresh(),
                 ),
-              ],
+                data: (events) => events.isEmpty
+                    ? EmptyState(
+                        message: selectedDate == null
+                            ? 'No events this month.'
+                            : 'No events on this day.',
+                        icon: Icons.event_busy_outlined,
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: events.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 2),
+                        itemBuilder: (context, index) {
+                          final event = events[index];
+                          return CalendarEventCard(
+                            event: event,
+                            onTap: () =>
+                                context.push('${Routes.calendar}/${event.id}'),
+                          );
+                        },
+                      ),
+              ),
 
               const SizedBox(height: AppSpacing.xxl),
             ],

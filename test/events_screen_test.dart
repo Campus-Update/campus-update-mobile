@@ -1,7 +1,9 @@
 import 'package:campus_update/app/app.dart';
 import 'package:campus_update/core/auth/auth_state.dart';
 import 'package:campus_update/core/storage/storage_providers.dart';
+import 'package:campus_update/features/events/data/event_actions.dart';
 import 'package:campus_update/features/events/data/events_repository.dart';
+import 'package:campus_update/features/events/domain/event_item.dart';
 import 'package:campus_update/features/events/presentation/screens/event_detail_screen.dart';
 import 'package:campus_update/features/events/presentation/screens/events_list_screen.dart';
 import 'package:campus_update/features/events/presentation/widgets/event_card.dart';
@@ -9,10 +11,31 @@ import 'package:campus_update/features/events/presentation/widgets/featured_even
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'support/mock_events_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_feed_repository.dart';
 import 'support/fake_schools.dart';
+
+/// Records what the buttons asked for instead of leaving the app.
+class _FakeEventActions implements EventActions {
+  final registered = <String>[];
+  final calendared = <String>[];
+  bool opens = true;
+
+  @override
+  Future<bool> openRegistration(EventItem event) async {
+    registered.add(event.id);
+    return opens;
+  }
+
+  @override
+  bool addToCalendar(EventItem event) {
+    calendared.add(event.id);
+    return true;
+  }
+}
 
 void main() {
   late SharedPreferences prefs;
@@ -66,8 +89,8 @@ void main() {
       expect(find.text('Global Economic Summit 2024'), findsOneWidget);
       expect(find.text('Register Now'), findsOneWidget);
 
-      // Verify "This month" section and list items
-      expect(find.text('This month'), findsOneWidget);
+      // Verify "More events" section and list items
+      expect(find.text('More events'), findsOneWidget);
       expect(find.byType(EventCard), findsWidgets);
       expect(
         find.textContaining('New Library Wing Opens Ahead of Schedule'),
@@ -77,9 +100,8 @@ void main() {
     },
   );
 
-  testWidgets('tapping Register Now toggles registration state', (
-    tester,
-  ) async {
+  Future<_FakeEventActions> openEvents(WidgetTester tester) async {
+    final actions = _FakeEventActions();
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
@@ -88,6 +110,7 @@ void main() {
         eventsRepositoryProvider.overrideWithValue(
           const MockEventsRepository(),
         ),
+        eventActionsProvider.overrideWithValue(actions),
       ],
     );
     addTearDown(container.dispose);
@@ -100,63 +123,70 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-
-    // Navigate to Events
     await tester.tap(find.text('Events'));
     await tester.pumpAndSettle();
+    return actions;
+  }
 
-    // Tap Register Now
+  testWidgets('Register Now opens the registration page', (tester) async {
+    final actions = await openEvents(tester);
+
     await tester.tap(find.text('Register Now'));
     await tester.pumpAndSettle();
 
-    // Should now show "Registered"
-    expect(find.text('Registered'), findsOneWidget);
-    expect(
-      find.textContaining('Successfully registered for Global Economic Summit'),
-      findsOneWidget,
-    );
+    expect(actions.registered, ['featured-1']);
   });
 
-  testWidgets('tapping Add to calendar toggles calendar state', (tester) async {
-    final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        fakeFeedOverride,
-        fakeSchoolsOverride,
-        eventsRepositoryProvider.overrideWithValue(
-          const MockEventsRepository(),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-    container.read(authProvider.notifier).signedIn();
+  testWidgets('a page that will not open says so', (tester) async {
+    (await openEvents(tester)).opens = false;
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: const CampusUpdateApp(),
-      ),
-    );
+    await tester.tap(find.text('Register Now'));
     await tester.pumpAndSettle();
 
-    // Navigate to Events
-    await tester.tap(find.text('Events'));
-    await tester.pumpAndSettle();
+    expect(find.text("Couldn't open the registration page."), findsOneWidget);
+  });
 
-    // Scroll down to make monthly events visible
+  testWidgets('Register Now with no sign-up page adds to the calendar', (
+    tester,
+  ) async {
+    final actions = await openEvents(tester);
     await tester.drag(
       find.byType(SingleChildScrollView),
       const Offset(0, -300),
     );
     await tester.pumpAndSettle();
+    await tester.tap(
+      find.text('New Library Wing Opens Ahead of Schedule').first,
+    );
+    await tester.pumpAndSettle();
 
-    // Tap the first "Add to calendar" button
+    final register = find.descendant(
+      of: find.byType(EventDetailScreen),
+      matching: find.text('Register Now'),
+    );
+    await tester.ensureVisible(register);
+    await tester.pumpAndSettle();
+    await tester.tap(register);
+    await tester.pumpAndSettle();
+
+    expect(actions.registered, isEmpty);
+    expect(actions.calendared, ['event-1']);
+  });
+
+  testWidgets('Add to calendar hands the event to the calendar', (
+    tester,
+  ) async {
+    final actions = await openEvents(tester);
+
+    await tester.drag(
+      find.byType(SingleChildScrollView),
+      const Offset(0, -300),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Add to calendar').first);
     await tester.pumpAndSettle();
 
-    // Should now show "In calendar"
-    expect(find.text('In calendar'), findsOneWidget);
-    expect(find.text('Event added to your calendar!'), findsOneWidget);
+    expect(actions.calendared, ['event-1']);
   });
 
   testWidgets(
