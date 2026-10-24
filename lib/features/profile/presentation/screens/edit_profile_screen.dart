@@ -8,7 +8,6 @@ import '../../../../shared/widgets/app_input.dart';
 import '../../../../shared/widgets/app_select.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../auth/data/school_repository.dart';
-import '../../../auth/domain/default_institution.dart';
 import '../../../auth/domain/institution.dart';
 import '../../data/profile_providers.dart';
 import '../widgets/profile_screen_header.dart';
@@ -99,11 +98,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   /// The signed-in user's own school, from `GET /schools`, whose faculties
-  /// the dropdowns offer. Signed out, the screen shows the sample user, so it
-  /// offers the sample school. Null while the schools load.
+  /// the dropdowns offer. Null while the schools load, or signed out.
   Institution? _school() {
     final profile = ref.watch(userProfileProvider);
-    if (profile == null) return defaultLeadCityUniversity;
+    if (profile == null) return null;
     final schools = ref.watch(schoolsProvider).value ?? const <Institution>[];
     return schools.where((s) => s.id == profile.institutionId).firstOrNull;
   }
@@ -119,7 +117,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final notifier = ref.read(userProfileProvider.notifier);
 
     // Signed in, the change goes to the API; signed out, there is only the
-    // sample user on this phone to update.
+    // copy on this phone to update.
     if (ref.read(userProfileProvider) != null) {
       try {
         await notifier.saveDetails(

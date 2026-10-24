@@ -273,15 +273,3 @@ class UserProfile {
     allCampusFeed: server.allCampusFeed,
   );
 }
-
-/// Default mock user profile data matching the design specification.
-const defaultMockUserProfile = UserProfile(
-  firstName: 'Jeremiah',
-  lastName: 'Alalade',
-  email: 'ajeremiahfig@gmail.com',
-  institutionName: 'Lead City University',
-  facultyName: 'Faculty of Computting Information Technology (FOCIT)',
-  departmentName: 'Software Engineering',
-  programmeName: 'Software Engineering',
-  academicLevelName: 'Software Engineering',
-);

@@ -9,9 +9,6 @@ class FakeFeedRepository implements FeedRepository {
   int calls = 0;
 
   @override
-  bool get mockWhenEmpty => false;
-
-  @override
   Future<List<ContentItem>> feed({
     ContentType? type,
     Urgency? urgency,

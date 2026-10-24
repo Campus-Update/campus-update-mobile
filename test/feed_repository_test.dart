@@ -33,28 +33,20 @@ class _Adapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-FeedRepository _repo(_Adapter adapter, {required bool mockWhenEmpty}) =>
-    FeedRepository(
-      Dio(BaseOptions(baseUrl: 'https://api.test'))
-        ..httpClientAdapter = adapter,
-      mockWhenEmpty: mockWhenEmpty,
-    );
+FeedRepository _repo(_Adapter adapter) => FeedRepository(
+  Dio(BaseOptions(baseUrl: 'https://api.test'))..httpClientAdapter = adapter,
+);
 
 void main() {
-  test('an empty feed still calls the API, then falls back to mock', () async {
+  test('filters reach the API capitalised', () async {
     final adapter = _Adapter(const []);
-    final items = await _repo(
-      adapter,
-      mockWhenEmpty: true,
-    ).feed(type: ContentType.news);
+    await _repo(adapter).feed(type: ContentType.news, urgency: Urgency.urgent);
 
     expect(adapter.paths.single, contains('/api/v1/feed?type=News'));
-    expect(items, isNotEmpty);
-    expect(items.every((i) => i.type == ContentType.news), isTrue);
-    expect(items.every((i) => i.imageUrl != null), isTrue);
+    expect(adapter.paths.single, contains('urgency=Urgent'));
   });
 
-  test('real content wins over the mock', () async {
+  test('items come back parsed', () async {
     final adapter = _Adapter([
       {
         'id': 'real-1',
@@ -65,24 +57,14 @@ void main() {
         'sourceType': 'Official',
       },
     ]);
-    final items = await _repo(adapter, mockWhenEmpty: true).feed();
+    final items = await _repo(adapter).feed();
 
     expect(items.map((i) => i.id), ['real-1']);
   });
 
-  test('with the mock off, an empty feed stays empty', () async {
-    final items = await _repo(_Adapter(const []), mockWhenEmpty: false).feed();
+  test('an empty feed stays empty', () async {
+    final items = await _repo(_Adapter(const [])).feed();
 
     expect(items, isEmpty);
-  });
-
-  test('urgent mock items fill the hero', () async {
-    final items = await _repo(
-      _Adapter(const []),
-      mockWhenEmpty: true,
-    ).feed(urgency: Urgency.urgent, pageSize: 3);
-
-    expect(items, hasLength(3));
-    expect(items.every((i) => i.urgency == Urgency.urgent), isTrue);
   });
 }

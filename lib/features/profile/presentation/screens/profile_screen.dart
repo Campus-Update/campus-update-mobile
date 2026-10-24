@@ -22,10 +22,9 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(userProfileProvider);
-    final user = profile ?? defaultMockUserProfile;
+    final user = profile ?? const UserProfile();
     final displayName = user.fullName;
     final displayEmail = user.email ?? '';
-    // Signed out, the screen shows the sample user, with that user's school.
     final displayInstitution =
         (profile == null
                 ? AcademicPlacement.stored(user)

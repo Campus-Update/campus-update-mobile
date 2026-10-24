@@ -9,6 +9,8 @@ import 'package:campus_update/features/events/presentation/widgets/featured_even
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'support/mock_events_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_feed_repository.dart';
