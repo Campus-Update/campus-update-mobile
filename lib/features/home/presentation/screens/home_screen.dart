@@ -47,7 +47,7 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _HomeHeader(userName: userName),
+                _HomeHeader(userName: userName, onRefresh: () => _refresh(ref)),
                 // Measured ~13pt from the greeting to the tab labels and ~11pt
                 // from the underline to the card; the tabs carry 6pt of tap
                 // padding either side, so these are the remainder.
@@ -90,9 +90,12 @@ class HomeScreen extends ConsumerWidget {
 
 /// Top header containing the Campus Update badge, greeting, and action buttons.
 class _HomeHeader extends ConsumerWidget {
-  const _HomeHeader({this.userName});
+  const _HomeHeader({this.userName, required this.onRefresh});
 
   final String? userName;
+
+  /// The same reload as pulling the page down.
+  final Future<void> Function() onRefresh;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -145,19 +148,7 @@ class _HomeHeader extends ConsumerWidget {
             const SizedBox(width: 12),
             Row(
               children: [
-                IconButton(
-                  onPressed: () {
-                    // Feed refresh
-                  },
-                  icon: const Icon(
-                    Icons.sync_rounded,
-                    size: 24,
-                    color: Color(0xFF374151),
-                  ),
-                  splashRadius: 20,
-                  constraints: const BoxConstraints(),
-                  padding: const EdgeInsets.all(6),
-                ),
+                _RefreshButton(onPressed: onRefresh),
                 const SizedBox(width: 8),
                 const NotificationButton(color: Color(0xFF374151)),
               ],
@@ -165,6 +156,53 @@ class _HomeHeader extends ConsumerWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// The refresh icon beside the bell. Shows a spinner in its place until the
+/// reload finishes, and ignores taps meanwhile.
+class _RefreshButton extends StatefulWidget {
+  const _RefreshButton({required this.onPressed});
+
+  final Future<void> Function() onPressed;
+
+  @override
+  State<_RefreshButton> createState() => _RefreshButtonState();
+}
+
+class _RefreshButtonState extends State<_RefreshButton> {
+  bool _busy = false;
+
+  Future<void> _refresh() async {
+    setState(() => _busy = true);
+    try {
+      await widget.onPressed();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: 'Refresh',
+      onPressed: _busy ? null : _refresh,
+      icon: _busy
+          ? const SizedBox.square(
+              dimension: 24,
+              child: Padding(
+                padding: EdgeInsets.all(3),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFF374151),
+                ),
+              ),
+            )
+          : const Icon(Icons.sync_rounded, size: 24, color: Color(0xFF374151)),
+      splashRadius: 20,
+      constraints: const BoxConstraints(),
+      padding: const EdgeInsets.all(6),
     );
   }
 }

@@ -784,6 +784,31 @@ void main() {
     });
   }
 
+  testWidgets('the refresh button reloads every home section', (tester) async {
+    final feed = FakeFeedRepository();
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        feedRepositoryProvider.overrideWithValue(feed),
+        fakeSchoolsOverride,
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(authProvider.notifier).signedIn();
+
+    await tester.pumpWidget(homeUnder(container));
+    await tester.pumpAndSettle();
+    final before = feed.calls;
+
+    await tester.tap(find.byTooltip('Refresh'));
+    await tester.pumpAndSettle();
+
+    // The hero, Latest News and Upcoming Events each asked again.
+    expect(feed.calls - before, 3);
+  });
+
   testWidgets('tapping a category tab moves the underline to it', (
     tester,
   ) async {
