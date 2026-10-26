@@ -5,96 +5,267 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router.dart';
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_spacing.dart';
 import '../../../../core/storage/storage_providers.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../widgets/onboarding/announcements_illustration.dart';
+import '../widgets/onboarding/events_illustration.dart';
+import '../widgets/onboarding/news_illustration.dart';
+import '../widgets/onboarding/onboarding_backdrop.dart';
+import '../widgets/onboarding/onboarding_style.dart';
+import '../widgets/onboarding/slide_to_next_button.dart';
 
-/// First run only.
+/// First run only: three animated pages introducing news, announcements and
+/// the calendar.
 ///
-/// The design is a single photograph carved into three joined pieces: a tall
-/// panel, a narrow bridge carrying the page marks, and a pill at the foot that
-/// the primary button sits inside. The carve is white page showing through, so
-/// the whole thing is one image behind one clip path — see [_CarveClipper].
+/// It opens on exactly what the splash screen shows — the mark on the indigo
+/// surface — and dissolves from there into the first page, so the hand-over
+/// from splash is seamless. Each page then builds itself in: artwork first,
+/// then the pill, title and body. Moving on slides the page away to the left;
+/// the lavender ground behind stays put.
 ///
-/// Every measurement below was taken off the design export and is expressed in
-/// logical pixels at its 393pt frame width.
-class OnboardingScreen extends ConsumerWidget {
+/// Built from the motion export alone — there is no Figma for these screens
+/// yet — so the measurements in the onboarding widgets are readings off video
+/// frames. See onboarding_style.dart.
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
-  static const _photo = 'assets/images/onboarding.png';
+  @override
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
+}
 
-  /// Recorded on the way out, so onboarding is shown once and never again.
-  Future<void> _leaveTo(
-    BuildContext context,
-    WidgetRef ref,
-    String route,
-  ) async {
-    await ref.read(prefsStorageProvider).setOnboardingSeen(true);
-    if (context.mounted) context.go(route);
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
+    with TickerProviderStateMixin {
+  static final _pages = [
+    _Page(
+      label: 'Official News',
+      icon: Icons.article_outlined,
+      title: 'Stay Informed With\nOfficial News',
+      body:
+          'Read verified news from your school,\nsorted for your faculty '
+          'and level.',
+      fill: 0.48,
+      art: (enter, idle) => NewsIllustration(enter: enter, idle: idle),
+    ),
+    _Page(
+      label: 'Announcements',
+      icon: Icons.notifications_none_rounded,
+      title: 'Never Miss What\nMatters Most',
+      body: 'Clear priority labels show you what\nneeds your attention first.',
+      fill: 0.71,
+      art: (enter, idle) => AnnouncementsIllustration(enter: enter, idle: idle),
+    ),
+    _Page(
+      label: 'Events & Calendar',
+      icon: Icons.calendar_month_outlined,
+      title: 'Events and Dates,\nAll in One Place',
+      body:
+          'Find campus events and keep track of\nexams, registration and '
+          'holidays.',
+      fill: 1,
+      art: (enter, idle) => EventsIllustration(enter: enter, idle: idle),
+    ),
+  ];
+
+  /// The dissolve from the splash into the first page.
+  late final _intro = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  );
+
+  /// One page building itself in. Restarted for every page.
+  late final _enter = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1300),
+  );
+
+  /// The current page sliding away.
+  late final _exit = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 280),
+  );
+
+  /// Loops for as long as the screen is up: tags bob, the dial creeps, the
+  /// chevrons shimmer.
+  late final _idle = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 6),
+  );
+
+  /// How far into the dissolve the first page starts to build.
+  static const _firstPageAt = 0.3;
+
+  int _page = 0;
+
+  /// 1 when moving forward, -1 when going back, so pages leave the right way.
+  int _direction = 1;
+
+  bool _reduceMotion = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _intro.addListener(_startFirstPage);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (_reduceMotion) {
+      _intro.value = 1;
+      _enter.value = 1;
+      _idle.stop();
+    } else if (!_intro.isAnimating && _intro.value == 0) {
+      _intro.forward();
+      _idle.repeat();
+    }
+  }
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      // The page is white to the top edge, so the status bar needs dark icons.
-      value: SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: Colors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: _CarveMetrics.gutter,
-            ),
-            child: Column(
+  void _startFirstPage() {
+    if (_intro.value >= _firstPageAt && _enter.value == 0) {
+      _intro.removeListener(_startFirstPage);
+      _enter.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _intro.dispose();
+    _enter.dispose();
+    _exit.dispose();
+    _idle.dispose();
+    super.dispose();
+  }
+
+  bool get _isLast => _page == _pages.length - 1;
+
+  Future<void> _goTo(int page) async {
+    if (page < 0 || page >= _pages.length || page == _page) return;
+    if (_exit.isAnimating) return;
+    _direction = page > _page ? 1 : -1;
+    if (!_reduceMotion) await _exit.forward(from: 0);
+    if (!mounted) return;
+    setState(() => _page = page);
+    _exit.value = 0;
+    if (_reduceMotion) {
+      _enter.value = 1;
+    } else {
+      _enter.forward(from: 0);
+    }
+  }
+
+  /// Recorded on the way out, so onboarding is shown once and never again.
+  Future<void> _leaveTo(String route) async {
+    await ref.read(prefsStorageProvider).setOnboardingSeen(true);
+    if (mounted) context.go(route);
+  }
+
+  /// A swipe across the page turns it, as well as the button.
+  void _swipe(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity < -300) _goTo(_page + 1);
+    if (velocity > 300) _goTo(_page - 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final page = _pages[_page];
+    final width = MediaQuery.sizeOf(context).width;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return PopScope(
+      canPop: _page == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _goTo(_page - 1);
+      },
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark.copyWith(
+          statusBarColor: Colors.transparent,
+          systemNavigationBarColor: Colors.white,
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onHorizontalDragEnd: _swipe,
+            child: Stack(
               children: [
-                const SizedBox(height: AppSpacing.lg),
-                Expanded(
-                  child: _CarvedPhoto(
-                    photo: _photo,
-                    button: AppButton(
-                      label: 'Get Started',
-                      // The ring only belongs where the button sits on the
-                      // photograph, which is here and nowhere else.
-                      onImage: true,
-                      trailingIcon: Icons.chevron_right,
-                      onPressed: () => _leaveTo(context, ref, Routes.register),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  width: width,
+                  height:
+                      width * OnboardingCanvas.height / OnboardingCanvas.width,
+                  child: FittedBox(
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      width: OnboardingCanvas.width,
+                      height: OnboardingCanvas.height,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const OnboardingBackdrop(),
+                          Positioned.fill(
+                            child: ExcludeSemantics(
+                              child: _Leaving(
+                                exit: _exit,
+                                direction: _direction,
+                                child: _FadeOut(
+                                  child: KeyedSubtree(
+                                    key: ValueKey(_page),
+                                    child: page.art(_enter, _idle),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                // Wrap rather than Row: at a large text scale the line runs
-                // wider than the screen, and Wrap drops "Login" to the next
-                // line instead of overflowing.
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      'Already have an Account? ',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.graphite,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => _leaveTo(context, ref, Routes.login),
-                      behavior: HitTestBehavior.opaque,
-                      child: Text(
-                        'Login',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: AppColors.indigo,
-                          fontWeight: AppFonts.medium,
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, bottomInset + 21),
+                    child: Column(
+                      children: [
+                        const Spacer(),
+                        _Leaving(
+                          exit: _exit,
+                          direction: _direction,
+                          child: _PageText(page: page, enter: _enter),
                         ),
-                      ),
+                        const SizedBox(height: 45),
+                        FadeTransition(
+                          opacity: stage(_intro, 0.75, 1),
+                          child: SlideToNextButton(
+                            fill: page.fill,
+                            last: _isLast,
+                            idle: _idle,
+                            onNext: () => _goTo(_page + 1),
+                            onFinish: () => _leaveTo(Routes.register),
+                          ),
+                        ),
+                        const SizedBox(height: 21),
+                        _Leaving(
+                          exit: _exit,
+                          direction: 0,
+                          child: Visibility.maintain(
+                            visible: _isLast,
+                            child: FadeTransition(
+                              opacity: stage(_enter, 0.85, 1),
+                              child: _LoginPrompt(
+                                onLogin: () => _leaveTo(Routes.login),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.lg),
+                Positioned.fill(child: _SplashHandOver(intro: _intro)),
               ],
             ),
           ),
@@ -104,184 +275,252 @@ class OnboardingScreen extends ConsumerWidget {
   }
 }
 
-/// The carve, measured off the design at a 393pt frame width.
-///
-/// All vertical figures are distances up from the bottom of the photo, because
-/// the carve is anchored to the foot of the image while the panel above it
-/// takes whatever height the screen has left.
-abstract final class _CarveMetrics {
-  /// Page gutter. Tighter than [AppSpacing.gutter]; the design runs the
-  /// photograph almost to the screen edges.
-  static const gutter = 8.0;
+class _Page {
+  const _Page({
+    required this.label,
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.fill,
+    required this.art,
+  });
 
-  /// The tall panel. Its bottom corners are drawn a touch rounder than its
-  /// top ones — measured, not assumed.
-  static const panelRadiusTop = 22.0;
-  static const panelRadiusBottom = 28.0;
+  final String label;
+  final IconData icon;
+  final String title;
+  final String body;
 
-  /// The pill at the foot, which the button sits inside.
-  static const footHeight = 76.0;
-  static const footInset = 12.0;
+  /// How much of the button's track the pill covers on this page.
+  final double fill;
 
-  /// The white gap between panel and foot.
-  static const carveHeight = 27.0;
-
-  /// The bridge of photograph crossing that gap, at its narrowest. The gap is
-  /// cut by two pills, so the bridge flares out by [carveHeight] where it
-  /// meets the panel above and the foot below.
-  static const bridgeWaist = 106.0;
-
-  /// The three page marks, which fill the gap exactly top to bottom.
-  static const markWidth = 7.0;
-  static const markHeight = carveHeight;
-  static const markGap = 28.0;
-  static const markCount = 3;
-
-  /// Where the button sits inside the foot, leaving a ring of photograph
-  /// visible around it. These frame the button's full box — gradient plus its
-  /// pale ring — which is why the inset is not the one the gradient alone
-  /// would need.
-  static const buttonInset = 16.0;
-  static const buttonBottom = 10.0;
+  final Widget Function(Animation<double> enter, Animation<double> idle) art;
 }
 
-class _CarvedPhoto extends StatelessWidget {
-  const _CarvedPhoto({required this.photo, required this.button});
+/// Slides and fades its child away as the page leaves. A [direction] of 0
+/// fades in place.
+class _Leaving extends StatelessWidget {
+  const _Leaving({
+    required this.exit,
+    required this.direction,
+    required this.child,
+  });
 
-  final String photo;
-  final Widget button;
+  final Animation<double> exit;
+  final int direction;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        ClipPath(
-          clipper: const _CarveClipper(),
-          child: Image.asset(
-            photo,
-            fit: BoxFit.cover,
-            // Until the export is in place, show a flat brand ground rather
-            // than Flutter's missing-asset box.
-            errorBuilder: (_, __, ___) =>
-                const ColoredBox(color: AppColors.indigoSurface),
+    return AnimatedBuilder(
+      animation: exit,
+      builder: (context, child) {
+        final t = Curves.easeInCubic.transform(exit.value);
+        return Opacity(
+          opacity: 1 - t,
+          child: Transform.translate(
+            offset: Offset(-direction * 60 * t, 0),
+            child: child,
           ),
+        );
+      },
+      child: child,
+    );
+  }
+}
+
+/// Fades the foot of the artwork into the white page, as the ground behind
+/// it does.
+class _FadeOut extends StatelessWidget {
+  const _FadeOut({required this.child});
+
+  final Widget child;
+
+  static const _from = 365 / OnboardingCanvas.height;
+  static const _to = 428 / OnboardingCanvas.height;
+
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      blendMode: BlendMode.dstIn,
+      shaderCallback: (rect) => const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Colors.white, Colors.white, Colors.transparent],
+        stops: [0, _from, _to],
+      ).createShader(rect),
+      child: child,
+    );
+  }
+}
+
+/// The pill, title and body under the artwork, each arriving in turn.
+class _PageText extends StatelessWidget {
+  const _PageText({required this.page, required this.enter});
+
+  final _Page page;
+  final Animation<double> enter;
+
+  static const _title = TextStyle(
+    fontFamily: AppFonts.family,
+    fontSize: 38,
+    height: 44 / 38,
+    fontWeight: AppFonts.medium,
+    letterSpacing: -0.76,
+    color: AppColors.graphite,
+  );
+
+  static const _body = TextStyle(
+    fontFamily: AppFonts.family,
+    fontSize: 16,
+    height: 22 / 16,
+    fontWeight: AppFonts.regular,
+    letterSpacing: -0.32,
+    color: AppColors.fieldLabel,
+  );
+
+  Widget _rise(Animation<double> t, Widget child) => AnimatedBuilder(
+    animation: t,
+    builder: (context, child) => Opacity(
+      opacity: t.value,
+      child: Transform.translate(
+        offset: Offset(0, 14 * (1 - t.value)),
+        child: child,
+      ),
+    ),
+    child: child,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _rise(
+          stage(enter, 0.4, 0.6),
+          _PagePill(label: page.label, icon: page.icon),
         ),
-        const Positioned.fill(child: _PageMarks()),
-        Positioned(
-          left: _CarveMetrics.buttonInset,
-          right: _CarveMetrics.buttonInset,
-          bottom: _CarveMetrics.buttonBottom,
-          child: button,
+        const SizedBox(height: 17),
+        _rise(
+          stage(enter, 0.48, 0.75),
+          Text(page.title, textAlign: TextAlign.center, style: _title),
+        ),
+        const SizedBox(height: 1),
+        _rise(
+          stage(enter, 0.62, 0.88),
+          Text(page.body, textAlign: TextAlign.center, style: _body),
         ),
       ],
     );
   }
 }
 
-/// Cuts the photograph into the design's three joined pieces: the tall panel,
-/// the bridge, and the pill at the foot. What it removes is the white page
-/// behind, which is what gives the carved look.
-class _CarveClipper extends CustomClipper<Path> {
-  const _CarveClipper();
+/// The small labelled pill naming what a page is about.
+class _PagePill extends StatelessWidget {
+  const _PagePill({required this.label, required this.icon});
 
-  @override
-  Path getClip(Size size) {
-    final carveBottom = size.height - _CarveMetrics.footHeight;
-    final carveTop = carveBottom - _CarveMetrics.carveHeight;
-    const capRadius = _CarveMetrics.carveHeight / 2;
-    final centre = size.width / 2;
-
-    // The card, solid across the gap for now.
-    final solid = Path()
-      ..addRRect(
-        RRect.fromLTRBAndCorners(
-          0,
-          0,
-          size.width,
-          carveTop,
-          topLeft: const Radius.circular(_CarveMetrics.panelRadiusTop),
-          topRight: const Radius.circular(_CarveMetrics.panelRadiusTop),
-          bottomLeft: const Radius.circular(_CarveMetrics.panelRadiusBottom),
-          bottomRight: const Radius.circular(_CarveMetrics.panelRadiusBottom),
-        ),
-      )
-      ..addRect(Rect.fromLTRB(0, carveTop, size.width, carveBottom))
-      ..addRRect(
-        RRect.fromLTRBR(
-          _CarveMetrics.footInset,
-          carveBottom,
-          size.width - _CarveMetrics.footInset,
-          size.height,
-          const Radius.circular(_CarveMetrics.footHeight / 2),
-        ),
-      );
-
-    // Two pills taken out of the gap, one from each side. Their round caps
-    // are what give the bridge its waist and the panel and foot their flare;
-    // a plain rectangle here leaves square corners the design does not have.
-    // They overhang the card so their outer caps fall outside it.
-    const overhang = _CarveMetrics.carveHeight;
-    final cuts = Path()
-      ..addRRect(
-        RRect.fromLTRBR(
-          -overhang,
-          carveTop,
-          centre - _CarveMetrics.bridgeWaist / 2,
-          carveBottom,
-          const Radius.circular(capRadius),
-        ),
-      )
-      ..addRRect(
-        RRect.fromLTRBR(
-          centre + _CarveMetrics.bridgeWaist / 2,
-          carveTop,
-          size.width + overhang,
-          carveBottom,
-          const Radius.circular(capRadius),
-        ),
-      );
-
-    return Path.combine(PathOperation.difference, solid, cuts);
-  }
-
-  @override
-  bool shouldReclip(_CarveClipper oldClipper) => false;
-}
-
-/// The three marks sitting on the bridge. They fill the gap exactly, top to
-/// bottom, which is what sets their height.
-class _PageMarks extends StatelessWidget {
-  const _PageMarks();
+  final String label;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: _CarveMetrics.footHeight),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var i = 0; i < _CarveMetrics.markCount; i++) ...[
-              if (i > 0)
-                const SizedBox(
-                  width: _CarveMetrics.markGap - _CarveMetrics.markWidth,
-                ),
-              Container(
-                width: _CarveMetrics.markWidth,
-                height: _CarveMetrics.markHeight,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(
-                    _CarveMetrics.markWidth / 2,
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: OnboardingColors.pill,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: OnboardingColors.pillBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: AppColors.indigo),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: AppFonts.family,
+              fontSize: 14,
+              height: 20 / 14,
+              fontWeight: AppFonts.medium,
+              color: AppColors.graphite,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoginPrompt extends StatelessWidget {
+  const _LoginPrompt({required this.onLogin});
+
+  final VoidCallback onLogin;
+
+  @override
+  Widget build(BuildContext context) {
+    const style = TextStyle(
+      fontFamily: AppFonts.family,
+      fontSize: 13,
+      height: 20 / 13,
+      fontWeight: AppFonts.regular,
+      color: AppColors.graphite,
+    );
+    // Wrap rather than Row: at a large text scale the line runs wider than
+    // the screen, and Wrap drops "Login" to the next line instead of
+    // overflowing.
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        const Text('Already have an Account? ', style: style),
+        GestureDetector(
+          onTap: onLogin,
+          behavior: HitTestBehavior.opaque,
+          child: Text(
+            'Login',
+            style: style.copyWith(
+              color: AppColors.link,
+              fontWeight: AppFonts.medium,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// What the splash screen shows — the mark on the indigo surface — fading
+/// and swelling away to reveal the first page.
+class _SplashHandOver extends StatelessWidget {
+  const _SplashHandOver({required this.intro});
+
+  final Animation<double> intro;
+
+  @override
+  Widget build(BuildContext context) {
+    final out = stage(intro, 0, 0.45, curve: Curves.easeInOut);
+    return AnimatedBuilder(
+      animation: out,
+      builder: (context, _) {
+        if (out.value >= 1) return const SizedBox.shrink();
+        return IgnorePointer(
+          child: Opacity(
+            opacity: 1 - out.value,
+            child: ColoredBox(
+              color: AppColors.indigoSurface,
+              child: Center(
+                child: Transform.translate(
+                  offset: Offset(0, 24 * out.value),
+                  child: Transform.scale(
+                    scale: 1 + 0.15 * out.value,
+                    child: const AppLogo(size: 140),
                   ),
                 ),
               ),
-            ],
-          ],
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

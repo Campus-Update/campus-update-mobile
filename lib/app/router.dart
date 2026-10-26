@@ -133,9 +133,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: Routes.splash, builder: (_, __) => const SplashScreen()),
+      // No transition: onboarding opens on the splash's own frame and runs
+      // its own dissolve from there, so a platform transition would show the
+      // seam.
       GoRoute(
         path: Routes.onboarding,
-        builder: (_, __) => const OnboardingScreen(),
+        pageBuilder: (_, __) =>
+            const NoTransitionPage(child: OnboardingScreen()),
       ),
       GoRoute(path: Routes.login, builder: (_, __) => const LoginScreen()),
       GoRoute(
