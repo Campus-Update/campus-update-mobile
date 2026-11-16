@@ -16,9 +16,7 @@ class NewsIllustration extends StatelessWidget {
   final Animation<double> enter;
   final Animation<double> idle;
 
-  /// Until design exports the card's own photograph, the onboarding
-  /// photograph stands in.
-  static const _photo = 'assets/images/onboarding.png';
+  static const _photo = 'assets/images/onboarding_news.jpg';
 
   static const _markCentre = Offset(196.5, 116);
   static const _markSize = 54.0;
@@ -201,7 +199,8 @@ class _NewsCard extends StatelessWidget {
               width: double.infinity,
               height: 118,
               fit: BoxFit.cover,
-              alignment: const Alignment(0, -0.45),
+              // The students sit in the lower half, below the brick wall.
+              alignment: const Alignment(0, 0.5),
               errorBuilder: (_, __, ___) =>
                   const ColoredBox(color: AppColors.indigoSurface),
             ),
